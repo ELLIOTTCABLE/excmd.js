@@ -1,0 +1,22 @@
+{
+  "name": "excmd-parser",
+  "version": "0.0.1",
+  "sources": [
+    {
+      "dir": "src",
+      "ppx-specs": [
+        "@elliottcable/sedlex-ppx/ppx.js"
+      ]
+    }
+  ],
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "suffix": ".bs.js",
+  "bsc-flags": [
+    "-bs-super-errors",
+    "-bs-no-version-header"
+  ],
+  "refmt": 3
+}

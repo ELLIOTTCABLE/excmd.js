@@ -18,5 +18,8 @@
   "homepage": "https://github.com/ELLIOTTCABLE/excmd-parser#readme",
   "dependencies": {
     "bs-platform": "^4.0.2"
+  },
+  "devDependencies": {
+    "@elliottcable/sedlex-ppx": "^1.99.4-pre.1"
   }
 }
