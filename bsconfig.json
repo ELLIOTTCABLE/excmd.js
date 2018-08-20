@@ -3,11 +3,16 @@
   "version": "0.0.1",
   "sources": [
     {
-      "dir": "src",
-      "ppx-specs": [
-        "@elliottcable/sedlex-ppx/ppx.js"
-      ]
+      "dir": "src"
     }
+  ],
+  "ppx-flags": [
+    "ppx-sedlex/ppx.js"
+  ],
+  "bs-dependencies": [
+    "bs-sedlex",
+    "@elliottcable/bs-uchar",
+    "@elliottcable/bs-gen"
   ],
   "package-specs": {
     "module": "commonjs",
