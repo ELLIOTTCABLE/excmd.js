@@ -24,6 +24,9 @@ setup.log
 # Merlin configuring file for Vim and Emacs
 .merlin
 
+# opam directory-local switch
+_opam/
+
 
 # Node.js
 # =======
@@ -69,3 +72,10 @@ lib/bs/
 *.bs.js
 
 *.cmt
+
+
+# Menhir
+# ======
+src/tokens.ml*
+src/parserAutomaton.ml
+src/parserAutomaton.mli

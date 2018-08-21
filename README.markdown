@@ -7,6 +7,31 @@ the spirit of Vi's command-line / Vimscript / ex.
    [Tridactyl]: <https://github.com/cmcaine/tridactyl>
       "A Vim-like interface for Firefox, inspired by Vimperator/Pentadactyl."
 
+Building
+========
+Under development. Probably.
+
+For now (read: until I, or somebody else, publishes a packaged copy of Menhir to npm!), a local
+OCaml development-environment, matching the version of BuckleScript's fork of OCaml, is required.
+
+Here's a quick, up-to-date bootstrapping process for ~summer 2018:
+
+    sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
+    opam switch create ./ 4.02.3+buckle-master
+
+    # Sedlex is included from the JavaScript side; Menhir, from OCaml.
+    opam install reason merlin menhir
+
+Thereafter, when returning to the project, and before running `build` or any other OCaml-dependant
+commands, run:
+
+    # After i.e. `cd ~/Code/excmd-parser`
+    eval $(opam env --switch=. --set-switch)
+
+Finally,
+
+    npm build
+
 Notes:
 ======
 I'm going to be broadly following Unicode 11's [UAX #31 “Unicode Identifier And Pattern
