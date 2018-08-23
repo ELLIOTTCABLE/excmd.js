@@ -9,7 +9,7 @@
 (* %token <int> NUM10 *)
 (* %token <string> STREL *)
 
-%start <ExcmdAST.t> program
+%start <AST.t> program
 
 %%
 (* {2 Rules } *)
@@ -19,7 +19,7 @@ program:
   ;
 
 expression:
-   | LEFT_PAREN; it = identifier; RIGHT_PAREN { (it : ExcmdAST.statement) }
+   | LEFT_PAREN; it = identifier; RIGHT_PAREN { (it : AST.statement) }
    ;
 
 identifier:
