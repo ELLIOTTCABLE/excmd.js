@@ -8,16 +8,20 @@ type buffer = {
 }
 
 type token = Tokens.token * Lexing.position * Lexing.position
-type gen = unit -> token option
+type 'a gen = unit -> 'a option
 
-exception LexError of (Lexing.position * string) [@@deriving sexp]
-exception ParseError of token [@@deriving sexp]
+exception LexError of (Lexing.position * string)
+exception ParseError of token
 
 let sedlex_of_buffer buf = buf.sedlex
 let buffer_of_sedlex sedlex = { sedlex = sedlex; mode = Main }
 
 
-(* ### Helpers *)
+(* {2 Constructors } *)
+let buffer_of_string str =
+   buffer_of_sedlex (Sedlexing.Utf8.from_string str)
+
+(* {2 Helpers } *)
 let locate buf token =
    let start, curr = lexing_positions buf.sedlex in
    token, start, curr
@@ -25,7 +29,29 @@ let locate buf token =
 let utf8 buf = Sedlexing.Utf8.lexeme buf.sedlex
 
 
-(* ### Errors *)
+(* {2 Accessors } *)
+let token (tok : token) =
+   let (tok, _loc, _end) = tok in
+   tok
+
+let start_lnum (tok : token) =
+   let (_tok, loc, _end) = tok in
+   loc.pos_lnum
+
+let start_cnum (tok : token) =
+   let (_tok, loc, _end) = tok in
+   loc.pos_cnum - loc.pos_bol
+
+let end_lnum (tok : token) =
+   let (_tok, _start, loc) = tok in
+   loc.pos_lnum
+
+let end_cnum (tok : token) =
+   let (_tok, _start, loc) = tok in
+   loc.pos_cnum - loc.pos_bol
+
+
+(* {2 Errors } *)
 let lexfail buf s =
    let _start, curr = lexing_positions buf.sedlex in
    raise (LexError (curr, s))
@@ -39,7 +65,7 @@ let unreachable str =
    failwith (Printf.sprintf "Unreachable: %s" str)
 
 
-(* ### Regular expressions *)
+(* {2 Regular expressions } *)
 let newline_char =   [%sedlex.regexp? '\r' | '\n' ]
 let newline =        [%sedlex.regexp? "\r\n" | newline_char ]
 
@@ -66,7 +92,7 @@ let identifier =     [%sedlex.regexp?
 let pipe =           [%sedlex.regexp? '|' ]
 
 
-(* ### Lexer body *)
+(* {2 Lexer body } *)
 
 (* Swallow and discard whitespace; produces no tokens. *)
 let rec swallow_atmosphere buf =
@@ -154,7 +180,7 @@ and main buf =
 
 
 (** Return the next token, with location information. *)
-let token_loc buf =
+let next_loc buf =
    match buf.mode with
    | Main -> main buf
    | BlockComment depth -> block_comment depth buf
@@ -162,16 +188,16 @@ let token_loc buf =
 
 
 (** Return *just* the next token, discarding location information. *)
-let token buf =
-   let tok, _, _ = token_loc buf in tok
+let next buf =
+   let tok, _, _ = next_loc buf in tok
 
 let gen_loc buf =
-   fun () -> match token_loc buf with
+   fun () -> match next_loc buf with
       | EOF, _, _ -> None
       | _ as tuple -> Some tuple
 
 let gen buf =
-   fun () -> match token_loc buf with
+   fun () -> match next_loc buf with
       | EOF, _, _ -> None
       | tok, _, _ -> Some tok
 

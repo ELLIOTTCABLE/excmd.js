@@ -4,7 +4,7 @@
   "description": "Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
   "main": "index.js",
   "scripts": {
-    "build:tokens": "menhir --only-tokens src/parserAutomaton.mly --base src/tokens",
+    "build:tokens": "menhir --only-tokens src/parserAutomaton.mly --base src/tokens && cat src/tokens.tail.ml >> src/tokens.ml && cat src/tokens.tail.mli >> src/tokens.mli",
     "build:parser": "npm run build:tokens && menhir --log-automaton 1 --log-code 1 --log-grammar 1 --trace --external-tokens Tokens src/parserAutomaton.mly",
     "build": "npm run build:parser && bsb -make-world",
     "clean": "bsb -clean-world",
@@ -25,6 +25,11 @@
     "bs-sedlex": "^1.99.4-pre.8"
   },
   "devDependencies": {
+    "jest": "^23.5.0",
     "ppx-sedlex": "^1.99.4-pre.8"
+  },
+  "jest": {
+    "verbose": true,
+    "collectCoverage": true
   }
 }
