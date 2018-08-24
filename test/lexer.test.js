@@ -71,3 +71,53 @@ test('does not lex normal tokens inside a linewise comment', ()=> {
 
    expect(lexer.next(buf)).not.toBe(tokens.rIGHT_PAREN)
 })
+
+test('lexes a blockwise comment', ()=> {
+   const buf = of_string(`
+      /* This is a block-wise comment */
+   `)
+       , comment = " This is a block-wise comment "
+
+   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(comment))
+   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+})
+
+test('lexes a blockwise comment across multiple lines', ()=> {
+   const buf = of_string(`
+      /*
+       * This is a block-wise comment
+       */
+   `)
+       , comment = `
+       * This is a block-wise comment
+       `
+
+   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(comment))
+   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+})
+
+test('lexes a blockwise comment after another token', ()=> {
+   const buf = of_string(`
+      ( /* This is a block-wise comment */ )
+   `)
+       , comment = " This is a block-wise comment "
+
+   lexer.next(buf) // Discard one token
+
+   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(comment))
+   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+})
+
+test('lexes other tokens after a blockwise comment', ()=> {
+   const buf = of_string(`
+      ( /* This is a block-wise comment */ )
+   `)
+
+   // Discard four tokens
+   lexer.next(buf); lexer.next(buf); lexer.next(buf); lexer.next(buf);
+
+   expect(lexer.next(buf)).toBe(tokens.rIGHT_PAREN)
+})
