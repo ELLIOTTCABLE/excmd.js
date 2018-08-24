@@ -102,11 +102,10 @@ let rec swallow_atmosphere buf =
    | _ -> ()
 
 (* Produces a single line of comment, wholesale, as a token. *)
-let rec comment buf =
+and comment buf =
    let s = buf.sedlex in
    match%sedlex s with
-   | eof -> EOF |> locate buf
-   | Star (Compl newline_char) ->
+   | Star (Compl (newline_char | eof)) ->
      COMMENT_LINE (utf8 buf) |> locate buf
    | _ -> unreachable "comment"
 
@@ -160,7 +159,7 @@ and main buf =
    | eof -> EOF |> locate buf
 
    (* One-line comments are lexed as a single token ... *)
-   | ';' -> comment buf
+   | "//" -> comment buf
 
    (* ... while block-comments swap into a custom lexing-mode to handle proper nesting. *)
    | "/*" ->

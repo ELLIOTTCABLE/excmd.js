@@ -28,3 +28,11 @@ test.skip('provides line-location information', ()=> {
    expect(lexer.token(loc)).toBe(tokens.lEFT_PAREN)
    expect(lexer.start_lnum(loc)).toBe(1)
 })
+
+test('lexes a linewise comment', ()=> {
+   const buf = of_string(`
+      // This is a line-wise comment
+   `)
+       , comment = " This is a line-wise comment"
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_LINE(comment))
+})
