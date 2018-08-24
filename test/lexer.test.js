@@ -121,3 +121,25 @@ test('lexes other tokens after a blockwise comment', ()=> {
 
    expect(lexer.next(buf)).toBe(tokens.rIGHT_PAREN)
 })
+
+test('lexes nested blockwise comments', ()=> {
+   const buf = of_string(
+   //  1 2   3   4   5    6        7            8 9
+      `( /* This /* is a */ block-wise comment */ )`
+   )
+       , first = " This "
+       , second = " is a "
+       , third = " block-wise comment "
+
+   lexer.next(buf) // Discard one token
+
+   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(first))
+
+   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(second))
+   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(third))
+   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+})
