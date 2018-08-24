@@ -36,3 +36,38 @@ test('lexes a linewise comment', ()=> {
        , comment = " This is a line-wise comment"
    expect(lexer.next(buf)).toEqual(tokens.cOMMENT_LINE(comment))
 })
+
+test('lexes a linewise comment after another token', ()=> {
+   const buf = of_string(`
+      ( // This is a line-wise comment
+      )
+   `)
+       , comment = " This is a line-wise comment"
+
+   lexer.next(buf) // Discard one token
+
+   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_LINE(comment))
+})
+
+test('lexes other tokens after a linewise comment', ()=> {
+   const buf = of_string(`
+      ( // This is a line-wise comment
+      )
+   `)
+       , comment = " This is a line-wise comment"
+
+   lexer.next(buf); lexer.next(buf) // Discard two tokens
+
+   expect(lexer.next(buf)).toBe(tokens.rIGHT_PAREN)
+})
+
+test('does not lex normal tokens inside a linewise comment', ()=> {
+   const buf = of_string(`
+      ( // )
+   `)
+       , comment = " This is a line-wise comment"
+
+   lexer.next(buf); lexer.next(buf) // Discard two tokens
+
+   expect(lexer.next(buf)).not.toBe(tokens.rIGHT_PAREN)
+})
