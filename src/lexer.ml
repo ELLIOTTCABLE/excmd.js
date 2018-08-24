@@ -111,7 +111,7 @@ and comment buf =
 
 (* Wow. This is a monstrosity. *)
 and block_comment depth buf =
-   Js.log "token (mode: BlockComment)";
+   (* Js.log "token (mode: BlockComment)"; *)
    let s = buf.sedlex in
    match%sedlex s with
    | "*/" ->
@@ -152,7 +152,7 @@ and continuing_block_comment buf start acc =
    | _ -> unreachable "continuing_block_comment"
 
 and main buf =
-   Js.log "token (mode: Main)";
+   (* Js.log "token (mode: Main)"; *)
    swallow_atmosphere buf;
    let s = buf.sedlex in
    match%sedlex s with
