@@ -32,6 +32,15 @@ Finally,
 
     npm build
 
+Building Unicode-category regexen
+=================================
+These should already be committed to the repo, and shouldn't substantially change except with major
+Unicode versions; but:
+
+    cd pkg/
+    opam install . --deps-only --locked
+    dune exec pkg/generate_uchar_ranges.exe > src/uAX31.ml
+
 Notes:
 ======
 I'm going to be broadly following Unicode 11's [UAX #31 “Unicode Identifier And Pattern

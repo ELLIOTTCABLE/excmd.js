@@ -1,0 +1,8 @@
+opam-version: "2.0"
+maintainer: "ELLIOTTCABLE <me@ell.io>"
+authors: "ELLIOTTCABLE <me@ell.io>"
+depends: [
+   "merlin"
+   "ocp-indent"
+   "utop"
+]

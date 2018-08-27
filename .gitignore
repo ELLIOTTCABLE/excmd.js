@@ -1,3 +1,23 @@
+# BuckleScript
+# ============
+lib/bs/
+*.bs.js
+
+*.cmt
+
+
+# Menhir
+# ======
+src/tokens.ml*
+src/parserAutomaton.ml
+src/parserAutomaton.mli
+
+
+# Arcane-ass custom build-system for Unicode categories
+# =====================================================
+src/uAX31.ml
+
+
 # OCaml
 # =====
 *.annot
@@ -67,18 +87,3 @@ jspm_packages/
 
 # Yarn Integrity file
 .yarn-integrity
-
-
-# BuckleScript
-# ============
-lib/bs/
-*.bs.js
-
-*.cmt
-
-
-# Menhir
-# ======
-src/tokens.ml*
-src/parserAutomaton.ml
-src/parserAutomaton.mli

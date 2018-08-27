@@ -1,0 +1,3 @@
+(executable
+ (name generate_uchar_ranges)
+ (libraries uchar gen uucd))
