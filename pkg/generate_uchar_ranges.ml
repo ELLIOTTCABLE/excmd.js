@@ -10,13 +10,12 @@ let ucd_or_die inf = begin try
 with Sys_error e -> Printf.eprintf "%s\n%!" e; exit 1
 end
 
-let ucd = ucd_or_die "./pkg/ucd.nounihan.grouped.xml"
 
 let get_exn = function
   | Some x -> x
   | None   -> raise (Invalid_argument "Option.get")
 
-let name_of cp =
+let name_of ucd cp =
    let i = Uchar.to_int cp in
    match get_exn (Uucd.cp_prop ucd i Uucd.name) with
    | `Name s -> s
@@ -72,7 +71,7 @@ let collapse (entries : entry list) (cp : Uchar.t) : entry list =
 
    | [] -> [Single cp]
 
-let dump_matchers lid chars =
+let dump_matchers ucd lid chars =
    let is_first = ref true in
    Printf.printf "let %s = [%%sedlex.regexp?\n" lid;
    (List.fold_left collapse [] chars)
@@ -86,13 +85,22 @@ let dump_matchers lid chars =
       match entry with
       | Range (a, b) ->
          Printf.printf "0x%04X .. 0x%04X (* '%s' - '%s' *)\n"
-            (Uchar.to_int a) (Uchar.to_int b) (name_of a) (name_of b)
+            (Uchar.to_int a) (Uchar.to_int b) (name_of ucd a) (name_of ucd b)
       | Single cp ->
-         Printf.printf "0x%04X (* '%s' *)\n" (Uchar.to_int cp) (name_of cp)
+         Printf.printf "0x%04X (* '%s' *)\n" (Uchar.to_int cp) (name_of ucd cp)
    end);
    print_string "]\n\n"
 
 let () =
+   if Array.length Sys.argv < 2 then begin
+      Printf.eprintf "Please pass the path to ucd.*.grouped.xml as an argument!\n";
+      exit 1
+   end;
+
+   let path = Sys.argv.(1) in
+   let ucd = ucd_or_die path in
+   let dump_matchers = dump_matchers ucd in
+
    try while (s.curr <- Uchar.succ s.curr; true) do
       let i = Uchar.to_int s.curr in
 

@@ -4,9 +4,8 @@
   "description": "Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
   "main": "index.js",
   "scripts": {
-    "build:tokens": "menhir --only-tokens src/parserAutomaton.mly --base src/tokens && cat src/tokens.tail.ml >> src/tokens.ml && cat src/tokens.tail.mli >> src/tokens.mli",
-    "build:parser": "npm run build:tokens && menhir --log-automaton 1 --log-code 1 --log-grammar 1 --trace --external-tokens Tokens src/parserAutomaton.mly",
-    "build": "npm run build:parser && bsb -make-world",
+    "build": "npm run prepare",
+    "prepare": "make",
     "clean": "bsb -clean-world",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
