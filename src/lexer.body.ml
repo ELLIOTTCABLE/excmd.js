@@ -1,3 +1,5 @@
+(* The rest of this file is appended to uAX31.ml, the output of the Unicode classifier in pkg/. *)
+
 open Tokens
 open Sedlexing
 
