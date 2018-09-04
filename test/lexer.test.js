@@ -143,3 +143,9 @@ test('lexes nested blockwise comments', ()=> {
    expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(third))
    expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
 })
+
+test('lexes a simple identifier', ()=> {
+   const buf = of_string("hello")
+
+   expect(lexer.next(buf)).toEqual(tokens.iDENTIFIER("hello"))
+})
