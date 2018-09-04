@@ -3,7 +3,7 @@ all: build
 
 .PHONY: build
 build: src/lexer.ml src/parserAutomaton.ml
-	bsb -make-world
+	./node_modules/.bin/bsb -make-world
 
 src/parserAutomaton.ml: src/parserAutomaton.mly src/tokens.ml
 	menhir --log-automaton 1 --log-code 1 --log-grammar 1 --trace --external-tokens Tokens $<
@@ -34,4 +34,4 @@ clean:
 	rm -f src/uAX31.ml
 	rm -f pkg/ucd.nounihan.grouped.*
 	rm -rf _build/
-	bsb -clean-world
+	./node_modules/.bin/bsb -clean-world
