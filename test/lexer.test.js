@@ -150,10 +150,14 @@ test('lexes a simple identifier', ()=> {
    expect(lexer.next(buf)).toEqual(tokens.iDENTIFIER("hello"))
 })
 
+test('lexes a non-ASCII identifier', ()=> {
+   const buf = of_string("foo·bar")
+       , tok = lexer.next(buf)
+   expect(tok).toEqual(tokens.iDENTIFIER("foo·bar"))
+})
+
 // Yes, I used Google Translate. Don't h8.
 test.skip('lexes identifiers in non-English scripts', ()=> {
-   debugger;
-
    expect(lexer.next(of_string("حيوان_اليف"))).toEqual(tokens.iDENTIFIER("حيوان_اليف")) // Arabic
    expect(lexer.next(of_string("կենդանիներ"))).toEqual(tokens.iDENTIFIER("կենդանիներ")) // Armenian
    expect(lexer.next(of_string("পশু"))).toEqual(tokens.iDENTIFIER("পশু")) // Bengali
