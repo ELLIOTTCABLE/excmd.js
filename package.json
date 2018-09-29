@@ -20,10 +20,12 @@
   },
   "homepage": "https://github.com/ELLIOTTCABLE/excmd-parser#readme",
   "dependencies": {
-    "bs-platform": "^4.0.2",
-    "bs-sedlex": "^1.99.4-pre.8"
+    "bs-platform": "^4.0.5",
+    "bs-sedlex": "^1.99.4-pre.8",
+    "fast-text-encoding": "^1.0.0"
   },
   "devDependencies": {
+    "babel-preset-env": "^1.7.0",
     "jest": "^23.5.0",
     "ppx-sedlex": "^1.99.4-pre.8"
   },
