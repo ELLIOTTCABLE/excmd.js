@@ -1,11 +1,27 @@
-const lexer = require('../src/lexer.bs')
-const tokens = require('../src/tokens.bs')
+import lexer from '../src/lexer.bs'
+import tokens from '../src/tokens.bs'
+import createFakeUTF8String from '../src/fake_string'
 
-let of_string = lexer.buffer_of_string
+let of_string = function(js_string) {
+   const utf8_arr = createFakeUTF8String(js_string)
+   return lexer.buffer_of_string(utf8_arr)
+}
 
 test('lexes an EOF', ()=> {
    const buf = of_string('')
    expect(lexer.next(buf)).toBe(tokens.eOF)
+})
+
+test('lexes a single-character identifier', ()=> {
+   const buf = of_string("a")
+
+   expect(lexer.next(buf)).toEqual(tokens.iDENTIFIER("a"))
+})
+
+test('lexes a simple identifier', ()=> {
+   const buf = of_string("hello")
+
+   expect(lexer.next(buf)).toEqual(tokens.iDENTIFIER("hello"))
 })
 
 test('provides character-location information', ()=> {
@@ -142,12 +158,6 @@ test('lexes nested blockwise comments', ()=> {
 
    expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(third))
    expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
-})
-
-test('lexes a simple identifier', ()=> {
-   const buf = of_string("hello")
-
-   expect(lexer.next(buf)).toEqual(tokens.iDENTIFIER("hello"))
 })
 
 test('lexes a non-ASCII identifier', ()=> {
