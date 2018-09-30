@@ -104,7 +104,7 @@ let () =
    try while (s.curr <- Uchar.succ s.curr; true) do
       let i = Uchar.to_int s.curr in
 
-      if (i mod 0x1000) = 0 then Printf.eprintf "\o033[2K\rProcessing U+%04X ...%!" i;
+      if (i mod 0x1000) = 0 then Printf.eprintf "\033[2K\rProcessing U+%04X ...%!" i;
 
       (* UAX #31-R1a, A1: http://unicode.org/reports/tr31/#A1 *)
       begin match Uucd.cp_prop ucd i Uucd.joining_type with
