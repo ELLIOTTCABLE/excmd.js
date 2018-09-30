@@ -1,9 +1,9 @@
 import lexer from '../src/lexer.bs'
 import tokens from '../src/tokens.bs'
-import createFakeUTF8String from '../src/fake_string'
+import { toFakeUTF8String, fromFakeUTF8String } from '../src/fake_string'
 
 let of_string = function(js_string) {
-   const utf8_arr = createFakeUTF8String(js_string)
+   const utf8_arr = toFakeUTF8String(js_string)
    return lexer.buffer_of_string(utf8_arr)
 }
 
