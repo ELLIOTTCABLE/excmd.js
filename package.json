@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "npm run prepare",
-    "prepare": "make",
-    "clean": "bsb -clean-world",
+    "prepare": "make clean && make",
+    "clean": "make clean",
     "test": "jest"
   },
   "repository": {
