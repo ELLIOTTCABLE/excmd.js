@@ -2,16 +2,8 @@
 all: build
 
 .PHONY: build
-build: src/lexer.ml src/parserAutomaton.ml
+build: src/lexer.ml src/parserAutomaton.mly
 	./node_modules/.bin/bsb -make-world
-
-src/parserAutomaton.ml: src/parserAutomaton.mly src/tokens.ml
-	menhir --log-automaton 1 --log-code 1 --log-grammar 1 --trace --external-tokens Tokens $<
-
-src/tokens.%: src/parserAutomaton.mly
-	menhir --only-tokens $< --base src/tokens
-	tail -n +2 src/tokens.tail.ml >> src/tokens.ml
-	tail -n +2 src/tokens.tail.mli >> src/tokens.mli
 
 src/lexer.ml: src/uAX31.ml
 	cp $< $@
@@ -29,8 +21,6 @@ pkg/ucd.nounihan.grouped.zip:
 
 .PHONY: clean
 clean:
-	rm -f src/tokens.ml*
-	rm -f src/parserAutomaton.ml src/parserAutomaton.mli
 	rm -f src/uAX31.ml
 	rm -f pkg/ucd.nounihan.grouped.*
 	rm -rf _build/
