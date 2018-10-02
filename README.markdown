@@ -14,32 +14,35 @@ Under development. Probably.
 For now (read: until I, or somebody else, publishes a packaged copy of Menhir to npm!), a local
 OCaml development-environment, matching the version of BuckleScript's fork of OCaml, is required.
 
-Here's a quick, up-to-date bootstrapping process for ~summer 2018:
+Here's a quick, up-to-date bootstrapping process for ~fall 2018:
 
     sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
     opam switch create ./ 4.02.3+buckle-master
 
     # Sedlex is included from the JavaScript side; Menhir, from OCaml.
-    opam install reason merlin menhir
+    opam install dune reason merlin menhir
 
 Thereafter, when returning to the project, and before running `build` or any other OCaml-dependant
-commands, run:
+commands, you have to remember to run:
 
     # After i.e. `cd ~/Code/excmd-parser`
     eval $(opam env --switch=. --set-switch)
 
-Finally,
+On to building! Ninja handles most of the build, orchestrated by `bsb`. For incremental builds,
+while hacking, you can simply invoke that directly:
 
+    # A simple alias to `bsb -make-world`
     npm build
 
 Building Unicode-category regexen
 =================================
-These should already be committed to the repo, and shouldn't substantially change except with major
-Unicode versions; but:
+However, some of the lexer is *generated* from Unicode categories. You may have to download the
+Unicode Character Database before your first build, and generate the UAX31 regexen. These should
+already be committed to the repo, and shouldn't substantially change except with major Unicode
+versions; but if you need to:
 
-    cd pkg/
-    opam install . --deps-only --locked
-    dune exec pkg/generate_uchar_ranges.exe > src/uAX31.ml
+    (cd pkg; opam install . --deps-only --locked)
+    make
 
 Notes:
 ======
