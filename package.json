@@ -4,7 +4,7 @@
   "description": "Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
   "main": "index.js",
   "scripts": {
-    "build": "npm run prepare",
+    "build": "bsb -make-world",
     "prepare": "make clean && make",
     "clean": "make clean",
     "test": "jest"
