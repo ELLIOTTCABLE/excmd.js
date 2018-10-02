@@ -2,12 +2,8 @@
 all: build
 
 .PHONY: build
-build: src/lexer.ml src/parserAutomaton.mly
+build: pkg/ucd.nounihan.grouped.xml src/parserAutomaton.mly
 	./node_modules/.bin/bsb -make-world
-
-src/lexer.ml: src/uAX31.ml
-	cp $< $@
-	tail -n +2 src/lexer.body.ml >> $@
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
 	dune exec pkg/generate_uchar_ranges.exe $< > $@

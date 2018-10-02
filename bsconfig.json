@@ -5,6 +5,7 @@
     {
       "dir": "src",
       "generators": [
+         { "name": "prepend-uax31", "edge": ["lexer.ml", ":", "uAX31.ml", "lexer.body.ml"] },
          { "name": "menhir-tokens", "edge": ["tokens.ml", "tokens.mli", ":", "parserAutomaton.mly", "tokens.tail.ml", "tokens.tail.mli"] },
          { "name": "menhir", "edge": ["parserAutomaton.ml", ":", "parserAutomaton.mly", "tokens.ml"] }
       ]
@@ -12,6 +13,20 @@
   ],
   "ppx-flags": [
     "ppx-sedlex/ppx.js"
+  ],
+  "generators": [
+      {
+         "name": "menhir",
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly --external-tokens Tokens --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
+      },
+      {
+         "name": "menhir-tokens",
+         "command": "menhir --only-tokens $src_root_dir/src/parserAutomaton.mly --base $src_root_dir/src/tokens && tail -n +2 $src_root_dir/src/tokens.tail.ml >> $src_root_dir/src/tokens.ml && tail -n +2 $src_root_dir/src/tokens.tail.mli >> $src_root_dir/src/tokens.mli"
+      },
+      {
+         "name": "prepend-uax31",
+         "command": "cp $src_root_dir/src/uAX31.ml ${out} && tail -n +2 $src_root_dir/src/lexer.body.ml >> ${out}"
+      }
   ],
   "bs-dependencies": [
     "bs-sedlex",
@@ -27,15 +42,5 @@
     "-bs-super-errors",
     "-bs-no-version-header"
   ],
-  "refmt": 3,
-  "generators": [
-      {
-         "name": "menhir",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly --external-tokens Tokens --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
-      },
-      {
-         "name": "menhir-tokens",
-         "command": "menhir --only-tokens $src_root_dir/src/parserAutomaton.mly --base $src_root_dir/src/tokens && tail -n +2 $src_root_dir/src/tokens.tail.ml >> $src_root_dir/src/tokens.ml && tail -n +2 $src_root_dir/src/tokens.tail.mli >> $src_root_dir/src/tokens.mli"
-      }
-  ]
+  "refmt": 3
 }
