@@ -1,9 +1,15 @@
 opam-version: "2.0"
-name: "excmd-parser-pkg"
+name: "excmd-parser-pkg-tools"
 version: "~dev"
-maintainer: "ELLIOTTCABLE <me@ell.io>"
-authors: "ELLIOTTCABLE <me@ell.io>"
-depends: ["uchar" "gen" "uucd"]
+maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
+authors: "ELLIOTTCABLE <ocaml@ell.io>"
+build: [ [make] ]
+depends: [
+   "uchar" {>= "0.0.2" & < "0.1.0"}
+   "gen" {>= "0.4" & < "0.5"}
+
+   "uucd" {build & >= "11.0.0" & < "12.0.0"}
+]
 url {
   src: "file:///Users/ec/Sync/Code/excmd-parser/pkg"
 }
