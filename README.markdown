@@ -17,10 +17,7 @@ OCaml development-environment, matching the version of BuckleScript's fork of OC
 Here's a quick, up-to-date bootstrapping process for ~fall 2018:
 
     sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
-    opam switch create ./ 4.02.3+buckle-master
-
-    # Sedlex is included from the JavaScript side; Menhir, from OCaml.
-    opam install dune reason merlin menhir
+    opam switch create ./ --deps-only --locked
 
 Thereafter, when returning to the project, and before running `build` or any other OCaml-dependant
 commands, you have to remember to run:
@@ -34,14 +31,14 @@ while hacking, you can simply invoke that directly:
     # A simple alias to `bsb -make-world`
     npm build
 
-Building Unicode-category regexen
-=================================
-However, some of the lexer is *generated* from Unicode categories. You may have to download the
-Unicode Character Database before your first build, and generate the UAX31 regexen. These should
-already be committed to the repo, and shouldn't substantially change except with major Unicode
-versions; but if you need to:
+But the first time you clone the repository, you may need to ...
 
-    (cd pkg; opam install . --deps-only --locked)
+### Build the Unicode-category regexen
+Some of the lexer is *generated* from Unicode categories. You may have to download the Unicode
+Character Database before your first build, and generate the UAX31 regexen. (These should already be
+committed to the repo, and shouldn't change except with major Unicode versions.) Nonetheless, if you
+need to rebuild them:
+
     make
 
 Notes:
