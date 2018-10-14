@@ -2,7 +2,7 @@
 all: build
 
 .PHONY: build
-build: pkg/ucd.nounihan.grouped.xml src/parserAutomaton.mly
+build: src/uAX31.ml src/parserAutomaton.mly
 	./node_modules/.bin/bsb -make-world
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
