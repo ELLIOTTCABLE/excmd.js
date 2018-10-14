@@ -52,6 +52,33 @@ let end_cnum (tok : token) =
    let (_tok, _start, loc) = tok in
    loc.pos_cnum - loc.pos_bol
 
+(* FIXME: I really need ppx_deriving or something to DRY this up. Sigh, bsb. *)
+let show_token tok =
+   match tok with
+   | RIGHT_PAREN -> "RIGHT_PAREN"
+   | RIGHT_COMMENT_DELIM -> "RIGHT_COMMENT_DELIM"
+   | LEFT_PAREN -> "LEFT_PAREN"
+   | LEFT_COMMENT_DELIM -> "LEFT_COMMENT_DELIM"
+   | IDENTIFIER _ -> "IDENTIFIER"
+   | EOF -> "EOF"
+   | COMMENT_LINE _ -> "COMMENT_LINE"
+   | COMMENT_CHUNK _ -> "COMMENT_CHUNK"
+
+let compare_token a b =
+   if a = b then true
+   else match (a, b) with
+   | (IDENTIFIER _, IDENTIFIER _)
+   | (COMMENT_LINE _, COMMENT_LINE _)
+   | (COMMENT_CHUNK _, COMMENT_CHUNK _) -> true
+   | _ -> false
+
+let token_body tok =
+   match tok with
+   | IDENTIFIER s
+   | COMMENT_LINE s
+   | COMMENT_CHUNK s -> Some s
+   | _ -> None
+
 
 (* {2 Errors } *)
 let lexfail buf s =

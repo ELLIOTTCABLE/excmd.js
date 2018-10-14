@@ -9,27 +9,34 @@ let of_string = function(js_string) {
 
 test('lexes an EOF', ()=> {
    const buf = of_string('')
-   expect(lexer.next(buf)).toBe(tokens.eOF)
+       , tok = lexer.next(buf)
+
+   expect(lexer.show_token(tok)).toEqual("EOF")
 })
 
 test('lexes a single-character identifier', ()=> {
    const buf = of_string("a")
+       , tok = lexer.next(buf)
 
-   expect(lexer.next(buf)).toEqual(tokens.iDENTIFIER("a"))
+   expect(lexer.show_token(tok)).toEqual("IDENTIFIER")
+   expect(lexer.token_body(tok)).toEqual("a")
 })
 
 test('lexes a simple identifier', ()=> {
    const buf = of_string("hello")
+       , tok = lexer.next(buf)
 
-   expect(lexer.next(buf)).toEqual(tokens.iDENTIFIER("hello"))
+   expect(lexer.show_token(tok)).toEqual("IDENTIFIER")
+   expect(lexer.token_body(tok)).toEqual("hello")
 })
 
 test('provides character-location information', ()=> {
-                                   /* '01234' */
+                      /* '01234' */
    const buf = of_string(' ( ) ')
        , loc = lexer.next_loc(buf)
+       , tok = lexer.token(loc)
 
-   expect(lexer.token(loc)).toBe(tokens.lEFT_PAREN)
+   expect(lexer.show_token(tok)).toEqual("LEFT_PAREN")
    expect(lexer.start_cnum(loc)).toBe(1)
 })
 
@@ -40,8 +47,9 @@ test.skip('provides line-location information', ()=> {
       + "")                      // 2
 
    const loc = lexer.next_loc(buf)
+       , tok = lexer.token(loc)
 
-   expect(lexer.token(loc)).toBe(tokens.lEFT_PAREN)
+   expect(lexer.show_token(tok)).toEqual("LEFT_PAREN")
    expect(lexer.start_lnum(loc)).toBe(1)
 })
 
@@ -50,7 +58,10 @@ test('lexes a linewise comment', ()=> {
       // This is a line-wise comment
    `)
        , comment = " This is a line-wise comment"
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_LINE(comment))
+       , tok = lexer.next(buf)
+
+   expect(lexer.show_token(tok)).toEqual("COMMENT_LINE")
+   expect(lexer.token_body(tok)).toEqual(comment)
 })
 
 test('lexes a linewise comment after another token', ()=> {
@@ -59,10 +70,11 @@ test('lexes a linewise comment after another token', ()=> {
       )
    `)
        , comment = " This is a line-wise comment"
+       , _   = lexer.next(buf) // Discard one token
+       , tok = lexer.next(buf)
 
-   lexer.next(buf) // Discard one token
-
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_LINE(comment))
+   expect(lexer.show_token(tok)).toEqual("COMMENT_LINE")
+   expect(lexer.token_body(tok)).toEqual(comment)
 })
 
 test('lexes other tokens after a linewise comment', ()=> {
@@ -70,22 +82,22 @@ test('lexes other tokens after a linewise comment', ()=> {
       ( // This is a line-wise comment
       )
    `)
-       , comment = " This is a line-wise comment"
+       , _   = lexer.next(buf) // Discard one token
+       , __  = lexer.next(buf) // Discard another token
+       , tok = lexer.next(buf)
 
-   lexer.next(buf); lexer.next(buf) // Discard two tokens
-
-   expect(lexer.next(buf)).toBe(tokens.rIGHT_PAREN)
+   expect(lexer.show_token(tok)).toEqual("RIGHT_PAREN")
 })
 
 test('does not lex normal tokens inside a linewise comment', ()=> {
    const buf = of_string(`
       ( // )
    `)
-       , comment = " This is a line-wise comment"
+       , _   = lexer.next(buf) // Discard one token
+       , __  = lexer.next(buf) // Discard another token
+       , tok = lexer.next(buf)
 
-   lexer.next(buf); lexer.next(buf) // Discard two tokens
-
-   expect(lexer.next(buf)).not.toBe(tokens.rIGHT_PAREN)
+   expect(lexer.show_token(tok)).not.toEqual("RIGHT_PAREN")
 })
 
 test('lexes a blockwise comment', ()=> {
@@ -93,10 +105,14 @@ test('lexes a blockwise comment', ()=> {
       /* This is a block-wise comment */
    `)
        , comment = " This is a block-wise comment "
+       , tok1 = lexer.next(buf)
+       , tok2 = lexer.next(buf)
+       , tok3 = lexer.next(buf)
 
-   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(comment))
-   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+   expect(lexer.show_token(tok1)).toBe("LEFT_COMMENT_DELIM")
+   expect(lexer.show_token(tok2)).toBe("COMMENT_CHUNK")
+   expect(lexer.token_body(tok2)).toBe(comment)
+   expect(lexer.show_token(tok3)).toBe("RIGHT_COMMENT_DELIM")
 })
 
 test('lexes a blockwise comment across multiple lines', ()=> {
@@ -108,10 +124,14 @@ test('lexes a blockwise comment across multiple lines', ()=> {
        , comment = `
        * This is a block-wise comment
        `
+       , tok1 = lexer.next(buf)
+       , tok2 = lexer.next(buf)
+       , tok3 = lexer.next(buf)
 
-   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(comment))
-   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+   expect(lexer.show_token(tok1)).toBe("LEFT_COMMENT_DELIM")
+   expect(lexer.show_token(tok2)).toBe("COMMENT_CHUNK")
+   expect(lexer.token_body(tok2)).toBe(comment)
+   expect(lexer.show_token(tok3)).toBe("RIGHT_COMMENT_DELIM")
 })
 
 test('lexes a blockwise comment after another token', ()=> {
@@ -119,12 +139,15 @@ test('lexes a blockwise comment after another token', ()=> {
       ( /* This is a block-wise comment */ )
    `)
        , comment = " This is a block-wise comment "
+       , _    = lexer.next(buf) // Discard one token
+       , tok1 = lexer.next(buf)
+       , tok2 = lexer.next(buf)
+       , tok3 = lexer.next(buf)
 
-   lexer.next(buf) // Discard one token
-
-   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(comment))
-   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+   expect(lexer.show_token(tok1)).toBe("LEFT_COMMENT_DELIM")
+   expect(lexer.show_token(tok2)).toBe("COMMENT_CHUNK")
+   expect(lexer.token_body(tok2)).toBe(comment)
+   expect(lexer.show_token(tok3)).toBe("RIGHT_COMMENT_DELIM")
 })
 
 test('lexes other tokens after a blockwise comment', ()=> {
@@ -135,7 +158,7 @@ test('lexes other tokens after a blockwise comment', ()=> {
    // Discard four tokens
    lexer.next(buf); lexer.next(buf); lexer.next(buf); lexer.next(buf);
 
-   expect(lexer.next(buf)).toBe(tokens.rIGHT_PAREN)
+   expect(lexer.show_token(lexer.next(buf))).toBe("RIGHT_PAREN")
 })
 
 test('lexes nested blockwise comments', ()=> {
@@ -149,21 +172,35 @@ test('lexes nested blockwise comments', ()=> {
 
    lexer.next(buf) // Discard one token
 
-   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(first))
+   expect(lexer.show_token(lexer.next(buf))).toBe("LEFT_COMMENT_DELIM")
 
-   expect(lexer.next(buf)).toBe(tokens.lEFT_COMMENT_DELIM)
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(second))
-   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+   const tok1 = lexer.next(buf)
+   expect(lexer.show_token(tok1)).toBe("COMMENT_CHUNK")
+   expect(lexer.token_body(tok1)).toBe(first)
 
-   expect(lexer.next(buf)).toEqual(tokens.cOMMENT_CHUNK(third))
-   expect(lexer.next(buf)).toBe(tokens.rIGHT_COMMENT_DELIM)
+   expect(lexer.show_token(lexer.next(buf))).toBe("LEFT_COMMENT_DELIM")
+
+   const tok2 = lexer.next(buf)
+   expect(lexer.show_token(tok2)).toBe("COMMENT_CHUNK")
+   expect(lexer.token_body(tok2)).toBe(second)
+
+   expect(lexer.show_token(lexer.next(buf))).toBe("RIGHT_COMMENT_DELIM")
+
+   const tok3 = lexer.next(buf)
+   expect(lexer.show_token(tok3)).toBe("COMMENT_CHUNK")
+   expect(lexer.token_body(tok3)).toBe(third)
+
+   expect(lexer.show_token(lexer.next(buf))).toBe("RIGHT_COMMENT_DELIM")
 })
 
 test('lexes a non-ASCII identifier', ()=> {
    const buf = of_string("foo·bar")
        , tok = lexer.next(buf)
-   expect(tok).toEqual(tokens.iDENTIFIER("foo·bar"))
+
+   expect(lexer.show_token(tok)).toEqual("IDENTIFIER")
+   const body = lexer.token_body(tok)
+
+   expect(fromFakeUTF8String(body)).toEqual("foo·bar")
 })
 
 // Yes, I used Google Translate. Don't h8.

@@ -13,6 +13,10 @@ val buffer_of_string : string -> buffer
 (* {2 Accessors } *)
 (* FIXME: Isn't there a better way to design this API inside BuckleScript? *)
 val token : token -> Tokens.token
+val compare_token : Tokens.token -> Tokens.token -> bool
+val show_token : Tokens.token -> string
+val token_body : Tokens.token -> string option
+
 val start_lnum : token -> int
 val start_cnum : token -> int
 val end_lnum : token -> int
