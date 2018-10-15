@@ -199,6 +199,26 @@ describe('Lexer', () => {
 
       expect(lexer.show_token(lexer.next(buf))).toBe('RIGHT_COMMENT_DELIM')
    })
+
+   it('lexes medial separators', () => {
+      const buf = of_string('hello-world'),
+         tok = lexer.next(buf)
+
+      expect(lexer.show_token(tok)).toEqual('IDENTIFIER')
+      expect(lexer.token_body(tok)).toEqual('hello-world')
+   })
+
+   it('will not include a medial separator at the end of an identifier', () => {
+      const buf = of_string('hello-'),
+         tok1 = lexer.next(buf)
+
+      expect(lexer.show_token(tok1)).toEqual('IDENTIFIER')
+      expect(lexer.token_body(tok1)).toEqual('hello')
+
+      expect(() => {
+         lexer.next(buf)
+      }).toThrowErrorMatchingInlineSnapshot()
+   })
 })
 
 describe('Lexer (objective interface)', () => {
