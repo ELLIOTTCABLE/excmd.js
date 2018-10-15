@@ -38,6 +38,21 @@
   },
   "jest": {
     "verbose": true,
-    "collectCoverage": true
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "lib/**/*.{js,jsx}",
+      "!lib/bs/**",
+      "!**/node_modules/**",
+      "!**/_opam/**"
+   ],
+   "testEnvironment": "node",
+   "testMatch": [
+      "**/__tests__/**/*.js?(x)",
+      "**/?(*.)+(spec|test).js?(x)",
+      "!lib/bs/**",
+      "!**/node_modules/**",
+      "!**/_opam/**"
+   ]
   }
 }
