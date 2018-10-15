@@ -9,6 +9,7 @@
     "build": "npm run build:ml && npm run build:js",
     "prepare": "make clean && make",
     "clean": "make clean",
+    "format": "prettier --ignore-path .gitignore --write '**/*.js'",
     "test": "jest"
   },
   "repository": {
