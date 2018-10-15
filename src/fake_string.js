@@ -50,3 +50,15 @@ export function toFakeUTF8String(js_string) {
 export function fromFakeUTF8String(fake_string) {
    return new textDecoder("utf-8").decode(fake_string)
 }
+
+// BuckleScript, at least as of `4.0.6`, uses JavaScript primitive `String`s as, basically, uint
+// char-arrays. At the boundaries of BuckleScript-compiled code, we need to massage those back into
+// valid JavaScript UCS-2 strings.
+export function fixBrokenBuckleScriptUTF8String(broken_string) {
+   debugger;
+   const result = new Uint8Array(broken_string.length)
+   for (var i = 0; i < broken_string.length; i++) {
+      result[i] = broken_string.charCodeAt(i)
+   }
+   return fromFakeUTF8String(result)
+}

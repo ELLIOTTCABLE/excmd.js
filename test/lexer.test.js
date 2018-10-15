@@ -195,16 +195,6 @@ describe('Lexer', ()=> {
 
       expect(lexer.show_token(lexer.next(buf))).toBe("RIGHT_COMMENT_DELIM")
    })
-
-   it('lexes a non-ASCII identifier', ()=> {
-      const buf = of_string("foo·bar")
-          , tok = lexer.next(buf)
-
-      expect(lexer.show_token(tok)).toEqual("IDENTIFIER")
-      const body = lexer.token_body(tok)
-
-      expect(fromFakeUTF8String(body)).toEqual("foo·bar")
-   })
 })
 
 describe('Lexer (objective interface)', ()=> {
@@ -216,10 +206,26 @@ describe('Lexer (objective interface)', ()=> {
    })
 
    it('provides a symbolic token ID', ()=> {
-      debugger;
       const buf = LexBuffer.of_string('')
           , tok = buf.next()
 
       expect(tok.id).toBe(Symbol.for("EOF"))
+   })
+
+   it('exposes the body of a simple identifier', ()=> {
+      const buf = LexBuffer.of_string("hello")
+          , tok = buf.next()
+
+      expect(tok.id).toBe(Symbol.for("IDENTIFIER"))
+      expect(tok.body).toEqual("hello")
+   })
+
+
+   it('round-trips a non-ASCII identifier', ()=> {
+      const buf = LexBuffer.of_string("foo·bar")
+          , tok = buf.next()
+
+      expect(tok.id).toBe(Symbol.for("IDENTIFIER"))
+      expect(tok.body).toEqual("foo·bar")
    })
 })

@@ -1,4 +1,4 @@
-import { toFakeUTF8String, fromFakeUTF8String } from '../src/fake_string'
+import { toFakeUTF8String, fromFakeUTF8String, fixBrokenBuckleScriptUTF8String } from '../src/fake_string'
 import $ from './lexer.bs'
 
 // Used to ensure that nothing else can invoke these classes' constructors directly
@@ -52,7 +52,9 @@ export class Token {
    get end_line(){      return $.end_lnum(this.tok) }
    get end_idx(){       return $.end_cnum(this.tok) }
 
-   get body(){ return          $.token_body(this._raw) }
+   get body(){
+      return fixBrokenBuckleScriptUTF8String($.token_body(this._raw))
+   }
 
    compare(other){  return $.compare(this.tok, other.tok) }
 }
