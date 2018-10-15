@@ -57,6 +57,8 @@ let show_token tok =
    match tok with
    | COLON -> "COLON"
    | PIPE -> "PIPE"
+   | SEMICOLON -> "SEMICOLON"
+   | COUNT _ -> "COUNT"
    | RIGHT_PAREN -> "RIGHT_PAREN"
    | RIGHT_COMMENT_DELIM -> "RIGHT_COMMENT_DELIM"
    | LEFT_PAREN -> "LEFT_PAREN"
@@ -71,6 +73,7 @@ let show_token tok =
 let compare_token a b =
    if a = b then true
    else match (a, b) with
+   | (COUNT _, COUNT _)
    | (IDENTIFIER _, IDENTIFIER _)
    | (SHORT_FLAGS _, SHORT_FLAGS _)
    | (LONG_FLAG _, LONG_FLAG _)
@@ -80,6 +83,7 @@ let compare_token a b =
 
 let token_body tok =
    match tok with
+   | COUNT s
    | IDENTIFIER s
    | SHORT_FLAGS s
    | LONG_FLAG s
@@ -110,7 +114,14 @@ let newline =        [%sedlex.regexp? "\r\n" | newline_char ]
 let space_char =     [%sedlex.regexp? white_space ]
 let space =          [%sedlex.regexp? Sub (space_char, newline_char) | newline ]
 
-let digit =          [%sedlex.regexp? '0'..'9' ]
+let zero =           [%sedlex.regexp? '0' ]
+let nonzero =        [%sedlex.regexp? '1'..'9' ]
+
+let digit =          [%sedlex.regexp? zero | nonzero]
+let count =          [%sedlex.regexp?
+     zero
+   | (nonzero, Star digit)
+]
 
 (* FIXME: Add U+200C/D? *)
 let start_char =     [%sedlex.regexp? Sub (xid_start, digit) ]
@@ -202,10 +213,13 @@ and main buf =
      LEFT_COMMENT_DELIM |> locate buf
    | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
 
-   | identifier -> IDENTIFIER (utf8 buf) |> locate buf
-
    | ':' -> COLON |> locate buf
    | '|' -> PIPE |> locate buf
+   | ';' -> SEMICOLON |> locate buf
+
+   | count -> COUNT (utf8 buf) |> locate buf
+
+   | identifier -> IDENTIFIER (utf8 buf) |> locate buf
 
    | "--", identifier ->
       let whole = utf8 buf in

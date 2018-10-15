@@ -242,6 +242,21 @@ describe('Lexer', () => {
       expect(lexer.show_token(tok3)).toBe('COLON')
    })
 
+   it('lexes semicolons', () => {
+      const buf = of_string(';'),
+         tok = lexer.next(buf)
+
+      expect(lexer.show_token(tok)).toBe('SEMICOLON')
+   })
+
+   it('lexes a count', () => {
+      const buf = of_string('12345'),
+         tok = lexer.next(buf)
+
+      expect(lexer.show_token(tok)).toBe('COUNT')
+      expect(lexer.token_body(tok)).toEqual('12345')
+   })
+
    it('lexes a long flag', () => {
       const buf = of_string('--hello'),
          tok = lexer.next(buf)
