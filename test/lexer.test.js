@@ -230,6 +230,49 @@ describe('Lexer', () => {
       expect(lexer.show_token(tok2)).toBe('PIPE')
       expect(lexer.show_token(tok3)).toBe('IDENTIFIER')
    })
+
+   it('lexes colons', () => {
+      const buf = of_string(':::'),
+         tok1 = lexer.next(buf),
+         tok2 = lexer.next(buf),
+         tok3 = lexer.next(buf)
+
+      expect(lexer.show_token(tok1)).toBe('COLON')
+      expect(lexer.show_token(tok2)).toBe('COLON')
+      expect(lexer.show_token(tok3)).toBe('COLON')
+   })
+
+   it('lexes a long flag', () => {
+      const buf = of_string('--hello'),
+         tok = lexer.next(buf)
+
+      expect(lexer.show_token(tok)).toBe('LONG_FLAG')
+      expect(lexer.token_body(tok)).toEqual('hello')
+   })
+
+   it('lexes a ‘long’ flag of a single character', () => {
+      const buf = of_string('--h'),
+         tok = lexer.next(buf)
+
+      expect(lexer.show_token(tok)).toBe('LONG_FLAG')
+      expect(lexer.token_body(tok)).toEqual('h')
+   })
+
+   it('lexes a single short flag', () => {
+      const buf = of_string('-h'),
+         tok = lexer.next(buf)
+
+      expect(lexer.show_token(tok)).toBe('SHORT_FLAGS')
+      expect(lexer.token_body(tok)).toEqual('h')
+   })
+
+   it('lexes multiple concatenated short flags', () => {
+      const buf = of_string('-hElLo'),
+         tok = lexer.next(buf)
+
+      expect(lexer.show_token(tok)).toBe('SHORT_FLAGS')
+      expect(lexer.token_body(tok)).toEqual('hElLo')
+   })
 })
 
 describe('Lexer (objective interface)', () => {

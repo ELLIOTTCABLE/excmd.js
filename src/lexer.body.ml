@@ -55,12 +55,15 @@ let end_cnum (tok : token) =
 (* FIXME: I really need ppx_deriving or something to DRY this up. Sigh, bsb. *)
 let show_token tok =
    match tok with
+   | COLON -> "COLON"
    | PIPE -> "PIPE"
    | RIGHT_PAREN -> "RIGHT_PAREN"
    | RIGHT_COMMENT_DELIM -> "RIGHT_COMMENT_DELIM"
    | LEFT_PAREN -> "LEFT_PAREN"
    | LEFT_COMMENT_DELIM -> "LEFT_COMMENT_DELIM"
    | IDENTIFIER _ -> "IDENTIFIER"
+   | SHORT_FLAGS _ -> "SHORT_FLAGS"
+   | LONG_FLAG _ -> "LONG_FLAG"
    | EOF -> "EOF"
    | COMMENT_LINE _ -> "COMMENT_LINE"
    | COMMENT_CHUNK _ -> "COMMENT_CHUNK"
@@ -69,6 +72,8 @@ let compare_token a b =
    if a = b then true
    else match (a, b) with
    | (IDENTIFIER _, IDENTIFIER _)
+   | (SHORT_FLAGS _, SHORT_FLAGS _)
+   | (LONG_FLAG _, LONG_FLAG _)
    | (COMMENT_LINE _, COMMENT_LINE _)
    | (COMMENT_CHUNK _, COMMENT_CHUNK _) -> true
    | _ -> false
@@ -76,6 +81,8 @@ let compare_token a b =
 let token_body tok =
    match tok with
    | IDENTIFIER s
+   | SHORT_FLAGS s
+   | LONG_FLAG s
    | COMMENT_LINE s
    | COMMENT_CHUNK s -> Some s
    | _ -> None
@@ -197,7 +204,18 @@ and main buf =
 
    | identifier -> IDENTIFIER (utf8 buf) |> locate buf
 
+   | ':' -> COLON |> locate buf
    | '|' -> PIPE |> locate buf
+
+   | "--", identifier ->
+      let whole = utf8 buf in
+      let flag = String.sub whole 2 (String.length whole - 2) in
+      LONG_FLAG flag |> locate buf
+
+   | "-", identifier ->
+      let whole = utf8 buf in
+      let flags = String.sub whole 1 (String.length whole - 1) in
+      SHORT_FLAGS flags |> locate buf
 
    | '(' -> LEFT_PAREN |> locate buf
    | ')' -> RIGHT_PAREN |> locate buf
