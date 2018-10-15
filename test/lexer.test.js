@@ -219,6 +219,17 @@ describe('Lexer', () => {
          lexer.next(buf)
       }).toThrowError("unexpected character in expression: 'U+002D'")
    })
+
+   it('lexes a pipe', () => {
+      const buf = of_string('foo | bar'),
+         tok1 = lexer.next(buf),
+         tok2 = lexer.next(buf),
+         tok3 = lexer.next(buf)
+
+      expect(lexer.show_token(tok1)).toBe('IDENTIFIER')
+      expect(lexer.show_token(tok2)).toBe('PIPE')
+      expect(lexer.show_token(tok3)).toBe('IDENTIFIER')
+   })
 })
 
 describe('Lexer (objective interface)', () => {

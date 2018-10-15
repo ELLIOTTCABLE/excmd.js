@@ -55,6 +55,7 @@ let end_cnum (tok : token) =
 (* FIXME: I really need ppx_deriving or something to DRY this up. Sigh, bsb. *)
 let show_token tok =
    match tok with
+   | PIPE -> "PIPE"
    | RIGHT_PAREN -> "RIGHT_PAREN"
    | RIGHT_COMMENT_DELIM -> "RIGHT_COMMENT_DELIM"
    | LEFT_PAREN -> "LEFT_PAREN"
@@ -117,8 +118,6 @@ let identifier =     [%sedlex.regexp?
    start_char, Star continue_char,
    Star (medial_char, Plus continue_char)
 ]
-
-let pipe =           [%sedlex.regexp? '|' ]
 
 
 (* {2 Lexer body } *)
@@ -197,6 +196,8 @@ and main buf =
    | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
 
    | identifier -> IDENTIFIER (utf8 buf) |> locate buf
+
+   | '|' -> PIPE |> locate buf
 
    | '(' -> LEFT_PAREN |> locate buf
    | ')' -> RIGHT_PAREN |> locate buf

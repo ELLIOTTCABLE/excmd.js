@@ -8,15 +8,6 @@ import $ from './lexer.bs'
 // Used to ensure that nothing else can invoke these classes' constructors directly
 const INTERNAL = Symbol()
 
-const RIGHT_PAREN = Symbol.for('RIGHT_PAREN'),
-   RIGHT_COMMENT_DELIM = Symbol.for('RIGHT_COMMENT_DELIM'),
-   LEFT_PAREN = Symbol.for('LEFT_PAREN'),
-   LEFT_COMMENT_DELIM = Symbol.for('LEFT_COMMENT_DELIM'),
-   IDENTIFIER = Symbol.for('IDENTIFIER'),
-   EOF = Symbol.for('EOF'),
-   COMMENT_LINE = Symbol.for('COMMENT_LINE'),
-   COMMENT_CHUNK = Symbol.for('COMMENT_CHUNK')
-
 export class LexBuffer {
    constructor(is_internal, buf) {
       if (is_internal !== INTERNAL)

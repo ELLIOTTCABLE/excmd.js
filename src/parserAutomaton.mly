@@ -1,5 +1,6 @@
 (* {2 Tokens } *)
 %token EOF
+%token PIPE
 %token LEFT_PAREN RIGHT_PAREN
 %token LEFT_COMMENT_DELIM RIGHT_COMMENT_DELIM
 %token <string> COMMENT_CHUNK
