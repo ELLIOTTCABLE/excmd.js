@@ -1,5 +1,6 @@
 import lexer from '../src/lexer.bs'
 import tokens from '../src/tokens.bs'
+import { LexBuffer, Token } from '../src/interface'
 import { toFakeUTF8String, fromFakeUTF8String } from '../src/fake_string'
 
 let of_string = function(js_string) {
@@ -203,5 +204,22 @@ describe('Lexer', ()=> {
       const body = lexer.token_body(tok)
 
       expect(fromFakeUTF8String(body)).toEqual("foo·bar")
+   })
+})
+
+describe('Lexer (objective interface)', ()=> {
+   it('lexes an EOF', ()=> {
+      const buf = LexBuffer.of_string('')
+          , tok = buf.next()
+
+      expect(lexer.show_token(tok._raw)).toEqual("EOF")
+   })
+
+   it('provides a symbolic token ID', ()=> {
+      debugger;
+      const buf = LexBuffer.of_string('')
+          , tok = buf.next()
+
+      expect(tok.id).toBe(Symbol.for("EOF"))
    })
 })
