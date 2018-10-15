@@ -2,9 +2,11 @@
   "name": "excmd-parser",
   "version": "0.0.1",
   "description": "Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
-  "main": "index.js",
+  "main": "lib/interface.js",
   "scripts": {
-    "build": "bsb -make-world",
+    "build:ml": "bsb -make-world",
+    "build:js": "babel src --ignore '*.bs.js' --copy-files --out-dir lib",
+    "build": "npm run build:ml && npm run build:js",
     "prepare": "make clean && make",
     "clean": "make clean",
     "test": "jest"
@@ -25,7 +27,11 @@
     "fast-text-encoding": "^1.0.0"
   },
   "devDependencies": {
-    "babel-preset-env": "^1.7.0",
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.6.0",
     "jest": "^23.5.0",
     "ppx-sedlex": "^1.99.4-pre.8"
   },

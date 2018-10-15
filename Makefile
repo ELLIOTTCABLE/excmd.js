@@ -20,4 +20,5 @@ clean:
 	rm -f src/uAX31.ml
 	rm -f pkg/ucd.nounihan.grouped.*
 	rm -rf _build/
+	rm -rf lib/
 	./node_modules/.bin/bsb -clean-world

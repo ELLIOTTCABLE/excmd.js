@@ -19,17 +19,19 @@ Here's a quick, up-to-date bootstrapping process for ~fall 2018:
     sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
     opam switch create ./ --deps-only --locked
 
-Thereafter, when returning to the project, and before running `build` or any other OCaml-dependant
-commands, you have to remember to run:
+    # Finally, install JavaScript dependencies, BuckleScript, and kick off the initial build
+    npm install
+
+Thereafter, when returning to the project, and before running `npm run build` or any other OCaml-
+dependant commands, you have to remember to run:
 
     # After i.e. `cd ~/Code/excmd-parser`
     eval $(opam env --switch=. --set-switch)
 
-On to building! Ninja handles most of the build, orchestrated by `bsb`. For incremental builds,
-while hacking, you can simply invoke that directly:
+Finally, after all of the above, you can let Ninja handle most of the build, orchestrated by `bsb`.
+For further incremental builds, while hacking, you can simply invoke that with:
 
-    # A simple alias to `bsb -make-world`
-    npm build
+    npm run build
 
 But the first time you clone the repository, you may need to ...
 

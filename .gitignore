@@ -1,6 +1,14 @@
+lib/
+
+# Arcane-ass custom build-system for Unicode categories
+# =====================================================
+src/uAX31.ml
+src/lexer.ml
+
+
 # BuckleScript
 # ============
-lib/bs/
+#lib/bs/
 *.bs.js
 
 *.cmt
@@ -11,12 +19,6 @@ lib/bs/
 src/tokens.ml*
 src/parserAutomaton.ml
 src/parserAutomaton.mli
-
-
-# Arcane-ass custom build-system for Unicode categories
-# =====================================================
-src/uAX31.ml
-src/lexer.ml
 
 
 # OCaml
