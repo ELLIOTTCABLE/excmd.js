@@ -217,7 +217,7 @@ describe('Lexer', () => {
 
       expect(() => {
          lexer.next(buf)
-      }).toThrowErrorMatchingInlineSnapshot()
+      }).toThrowError("unexpected character in expression: 'U+002D'")
    })
 })
 
