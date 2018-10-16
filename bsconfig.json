@@ -7,6 +7,7 @@
       "generators": [
          { "name": "prepend-uax31", "edge": ["lexer.ml", ":", "uAX31.ml", "lexer.body.ml"] },
          { "name": "menhir-tokens", "edge": ["tokens.ml", "tokens.mli", ":", "parserAutomaton.mly", "tokens.tail.ml", "tokens.tail.mli"] },
+         { "name": "menhir-lib", "edge": ["menhirLib.ml", "menhirLib.mli", ":", "parserAutomaton.mly"] },
          { "name": "menhir", "edge": ["parserAutomaton.ml", ":", "parserAutomaton.mly", "tokens.ml"] }
       ]
     }
@@ -22,6 +23,10 @@
       {
          "name": "menhir-tokens",
          "command": "menhir --only-tokens $src_root_dir/src/parserAutomaton.mly --base $src_root_dir/src/tokens && tail -n +2 $src_root_dir/src/tokens.tail.ml >> $src_root_dir/src/tokens.ml && tail -n +2 $src_root_dir/src/tokens.tail.mli >> $src_root_dir/src/tokens.mli"
+      },
+      {
+         "name": "menhir-lib",
+         "command": "cp \"$$(menhir --suggest-menhirLib)\"/*.ml* $src_root_dir/src/"
       },
       {
          "name": "prepend-uax31",

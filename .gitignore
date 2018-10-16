@@ -20,6 +20,8 @@ src/tokens.ml*
 src/parserAutomaton.ml
 src/parserAutomaton.mli
 
+src/menhirLib.ml*
+
 
 # OCaml
 # =====
