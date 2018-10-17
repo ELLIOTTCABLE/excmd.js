@@ -8,6 +8,8 @@ exception LexError of (Lexing.position * string)
 exception ParseError of token
 
 (* {2 Constructors } *)
+val sedlex_of_buffer : buffer -> Sedlexing.lexbuf
+val buffer_of_sedlex : Sedlexing.lexbuf -> buffer
 val buffer_of_string : string -> buffer
 
 (* {2 Accessors } *)

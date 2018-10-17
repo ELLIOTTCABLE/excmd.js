@@ -13,20 +13,27 @@
 (* %token <int> NUM10 *)
 (* %token <string> STREL *)
 
-%start <AST.t> program
+%start <AST.t> script
+%start <AST.statement> statement
 
 %%
 (* {2 Rules } *)
 
-program:
-  | it = list(expression); EOF { it }
-  ;
+script:
+ | it = separated_list(break, statement); break { it }
+ ;
 
-expression:
-   | LEFT_PAREN; it = identifier; RIGHT_PAREN { (it : AST.statement) }
-   ;
+statement:
+ | COLON*; count = COUNT?; cmd = command { AST.make_statement count cmd }
+ ;
 
-identifier:
-  | it = IDENTIFIER { it }
+command:
+ | it = IDENTIFIER { it }
+ ;
+
+break:
+ | SEMICOLON
+ | EOF { }
+ ;
 
 %%
