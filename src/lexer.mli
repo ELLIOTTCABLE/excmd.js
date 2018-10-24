@@ -31,5 +31,5 @@ val next : buffer -> Tokens.token
 val gen_loc : buffer -> token gen
 val gen : buffer -> Tokens.token gen
 
-val tokens_loc : buffer -> token list
-val tokens : buffer -> Tokens.token list
+val tokens_loc : buffer -> token array
+val tokens : buffer -> Tokens.token array

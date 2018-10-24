@@ -320,4 +320,28 @@ describe('Lexer (objective interface)', () => {
       expect(tok.id).toBe(Symbol.for('IDENTIFIER'))
       expect(tok.body).toEqual('foo·bar')
    })
+
+   it('generates an Array of identifiers upon request', () => {
+      debugger;
+      const buf = LexBuffer.of_string('foo | bar'),
+         tokens = buf.rest()
+
+      expect(tokens).toBeInstanceOf(Array)
+      expect(tokens.length).toBe(3)
+      expect(tokens[0].id).toBe(Symbol.for('IDENTIFIER'))
+      expect(tokens[1].id).toBe(Symbol.for('PIPE'))
+      expect(tokens[2].id).toBe(Symbol.for('IDENTIFIER'))
+   })
+
+   it('round-trips multiple non-ASCII identifiers', () => {
+      const buf = LexBuffer.of_string('foo·bar | baz·widget'),
+         tokens = buf.rest()
+
+      expect(tokens.length).toBe(3)
+      expect(tokens[0].id).toBe(Symbol.for('IDENTIFIER'))
+      expect(tokens[0].body).toEqual('foo·bar')
+      expect(tokens[1].id).toBe(Symbol.for('PIPE'))
+      expect(tokens[2].id).toBe(Symbol.for('IDENTIFIER'))
+      expect(tokens[2].body).toEqual('baz·widget')
+   })
 })

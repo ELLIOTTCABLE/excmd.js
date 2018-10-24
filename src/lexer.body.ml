@@ -262,7 +262,7 @@ let gen buf =
       | EOF, _, _ -> None
       | tok, _, _ -> Some tok
 
-let tokens_loc buf = gen_loc buf |> Gen.to_list
-let tokens buf = gen buf |> Gen.to_list
+let tokens_loc buf = gen_loc buf |> Gen.to_list |> Array.of_list
+let tokens buf = gen buf |> Gen.to_list |> Array.of_list
 
 let mode buf = buf.mode

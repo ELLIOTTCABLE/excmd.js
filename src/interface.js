@@ -23,20 +23,24 @@ export class LexBuffer {
    }
 
    next() {
-      const tok = $.next_loc(this.buf)
-      return new Token(INTERNAL, tok)
+      const loc_tok = $.next_loc(this.buf)
+      return new Token(INTERNAL, loc_tok)
+   }
+
+   rest() {
+      return $.tokens_loc(this.buf).map(loc_tok => new Token(INTERNAL, loc_tok))
    }
 }
 
 export class Token {
-   constructor(is_internal, tok) {
+   constructor(is_internal, loc_tok) {
       if (is_internal !== INTERNAL) throw new Error('`Token` cannot be constructed')
 
-      this.tok = tok
+      this.loc_tok = loc_tok
    }
 
    get _raw() {
-      return $.token(this.tok)
+      return $.token(this.loc_tok)
    }
 
    get id() {
@@ -44,16 +48,16 @@ export class Token {
    }
 
    get start_line() {
-      return $.start_lnum(this.tok)
+      return $.start_lnum(this.loc_tok)
    }
    get start_idx() {
-      return $.start_cnum(this.tok)
+      return $.start_cnum(this.loc_tok)
    }
    get end_line() {
-      return $.end_lnum(this.tok)
+      return $.end_lnum(this.loc_tok)
    }
    get end_idx() {
-      return $.end_cnum(this.tok)
+      return $.end_cnum(this.loc_tok)
    }
 
    get body() {
@@ -61,6 +65,6 @@ export class Token {
    }
 
    compare(other) {
-      return $.compare(this.tok, other.tok)
+      return $.compare_token(this._raw, other._raw)
    }
 }
