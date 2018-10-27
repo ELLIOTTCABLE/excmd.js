@@ -43,6 +43,16 @@ need to rebuild them:
 
     make
 
+## Usage from OCaml
+If you're hacking on this (or writing something other than JavaScript), it's useful to know that the
+project has a hybrid build-system, and can be built from the OCaml side (via Dune) *or* the
+JavaScript side (via BuckleScript.)
+
+Handily, Dune supports dynamically building an OCaml interactive toplevel with any/all OCaml modules
+included:
+
+    dune utop src
+
 Notes:
 ======
 I'm going to be broadly following Unicode 11's [UAX #31 “Unicode Identifier And Pattern

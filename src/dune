@@ -1,0 +1,6 @@
+(library
+ (name        excmd_parser)
+ (public_name excmd-parser)
+ (libraries sedlex)
+ (preprocess (pps ppx_deriving.std sedlex.ppx))
+ (flags (:standard -w -32-37)))
