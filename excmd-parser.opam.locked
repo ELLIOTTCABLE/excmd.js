@@ -33,6 +33,7 @@ depends: [
   "ppx_tools_versioned" {= "5.2"}
   "lambda-term" {= "1.13"}
   "xmlm" {= "1.3.0"}
+  "menhir" {= "20181006"}
   "ppx_deriving" {= "4.1.5"}
   "sedlex" {= "1.99.4"}
   "uchar" {= "0.0.2"}
