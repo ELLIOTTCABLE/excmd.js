@@ -17,7 +17,7 @@ OCaml development-environment, matching the version of BuckleScript's fork of OC
 Here's a quick, up-to-date bootstrapping process for ~fall 2018:
 
     sh <(curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
-    opam switch create ./ --deps-only --locked
+    opam switch create ./ --deps-only --locked --ignore-constraints-on=ocaml
 
     # Finally, install JavaScript dependencies, BuckleScript, and kick off the initial build
     npm install

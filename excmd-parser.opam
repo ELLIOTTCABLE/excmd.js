@@ -1,15 +1,21 @@
 opam-version: "2.0"
-name: "excmd-parser-pkg-tools"
+name: "excmd-parser"
 version: "~dev"
 maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
 authors: "ELLIOTTCABLE <ocaml@ell.io>"
 build: [ [make] ]
 depends: [
+   "ocaml" {= "4.02.3"}
+
    "uchar" {>= "0.0.2" & < "0.1.0"}
    "gen" {>= "0.4" & < "0.5"}
 
+   "sedlex" {>= "1.99.4" & < "1.100.0"}
+   "ppx_tools" {= "5.0+4.02.0"}
+
    "menhir" {build & >= "20181006"}
    "uucd" {build & >= "11.0.0"}
+   "dune" {build & >= "1.4.0"}
 ]
 url {
   src: "file:///Users/ec/Sync/Code/excmd-parser/pkg"

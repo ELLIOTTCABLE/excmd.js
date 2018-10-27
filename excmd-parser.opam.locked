@@ -1,0 +1,32 @@
+opam-version: "2.0"
+name: "excmd-parser"
+version: "~dev"
+maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
+authors: "ELLIOTTCABLE <ocaml@ell.io>"
+build: [ [make] ]
+depends: [
+  "base-bigarray" {= "base"}
+  "base-threads" {= "base"}
+  "base-unix" {= "base"}
+  "ocaml-base-compiler" {= "4.02.3"}
+  "base-ocamlbuild" {= "base"}
+  "ocaml" {= "4.02.3"}
+  "dune" {= "1.1.1"}
+  "jbuilder" {= "transition"}
+  "conf-m4" {= "1"}
+  "result" {= "1.3"}
+  "ocamlbuild" {= "0"}
+  "ocamlfind" {= "1.8.0"}
+  "ocaml-migrate-parsetree" {= "1.1.0"}
+  "topkg" {= "0.9.1"}
+  "gen" {= "0.4"}
+  "ppx_tools_versioned" {= "5.2"}
+  "xmlm" {= "1.3.0"}
+  "ppx_tools" {= "5.0+4.02.0"}
+  "sedlex" {= "1.99.4"}
+  "uchar" {= "0.0.2"}
+  "uucd" {= "11.0.0"}
+]
+url {
+  src: "file:///Users/ec/Sync/Code/excmd-parser/pkg"
+}
