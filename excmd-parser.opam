@@ -14,6 +14,7 @@ depends: [
    "ppx_tools" {= "5.0+4.02.0"}
 
    "ppx_deriving" {>= "4.1.5" & < "4.2.0"}
+   "ppx_deriving_yojson" {>= "3.1" & < "4.0"}
 
    "menhir" {build & >= "20181006"}
    "uucd" {build & >= "11.0.0"}

@@ -19,27 +19,36 @@ depends: [
   "result" {= "1.3"}
   "cppo" {= "1.6.5"}
   "topkg" {= "0.9.1"}
+  "conf-which" {= "1"}
+  "easy-format" {= "1.3.1"}
   "lwt" {= "4.1.0"}
   "react" {= "1.2.1"}
   "base-bytes" {= "base"}
   "camomile" {= "1.0.1"}
+  "cppo_ocamlbuild" {= "1.6.0"}
+  "ppx_tools" {= "5.0+4.02.0"}
+  "biniou" {= "1.2.0"}
   "ocaml-migrate-parsetree" {= "1.1.0"}
   "lwt_log" {= "1.1.0"}
   "lwt_react" {= "1.1.1"}
   "zed" {= "1.6"}
-  "cppo_ocamlbuild" {= "1.6.0"}
-  "ppx_tools" {= "5.0+4.02.0"}
+  "ppx_deriving" {= "4.1.5"}
+  "yojson" {= "1.4.1"}
   "gen" {= "0.4"}
   "ppx_tools_versioned" {= "5.2"}
+  "uchar" {= "0.0.2"}
   "lambda-term" {= "1.13"}
   "xmlm" {= "1.3.0"}
   "menhir" {= "20181006"}
-  "ppx_deriving" {= "4.1.5"}
+  "ppx_deriving_yojson" {= "3.1"}
   "sedlex" {= "1.99.4"}
-  "uchar" {= "0.0.2"}
   "utop" {= "2.2.0"}
   "uucd" {= "11.0.0"}
 ]
 url {
   src: "file:///Users/ec/Sync/Code/excmd-parser/pkg"
 }
+pin-depends: [
+  "sedlex.1.99.4"
+  "git+https://github.com/ocaml-community/sedlex#add-4.02.3-support"
+]
