@@ -20,11 +20,11 @@
 (* {2 Rules } *)
 
 script:
- | it = separated_list(break, statement); break { it }
+ | it = separated_list(break, statement); break { { statements = it } }
  ;
 
 statement:
- | COLON*; count = COUNT?; cmd = command { AST.make_statement count cmd }
+ | COLON*; count = COUNT?; cmd = command { AST.make_statement ~count ~cmd }
  ;
 
 command:
