@@ -18,6 +18,7 @@ pkg/ucd.nounihan.grouped.zip:
 .PHONY: clean
 clean:
 	rm -f src/uAX31.ml
+	rm -f src/aST.ml
 	rm -f src/menhirLib.ml*
 	rm -f pkg/ucd.nounihan.grouped.*
 	rm -rf _build/

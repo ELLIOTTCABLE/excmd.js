@@ -16,6 +16,8 @@ src/lexer.ml
 
 # Menhir
 # ======
+src/aST.ml
+
 src/tokens.ml*
 src/parserAutomaton.ml
 src/parserAutomaton.mli

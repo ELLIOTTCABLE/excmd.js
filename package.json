@@ -4,9 +4,9 @@
   "description": "Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
   "main": "lib/interface.js",
   "scripts": {
-    "build:ml": "bsb -make-world",
+    "build:bs": "bsb -make-world",
     "build:js": "babel src --ignore '*.bs.js' --copy-files --out-dir lib",
-    "build": "npm run build:ml && npm run build:js",
+    "build": "npm run build:bs && npm run build:js",
     "prepare": "make clean && make",
     "clean": "make clean",
     "format": "prettier --ignore-path .gitignore --write '**/*.js'",
