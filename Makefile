@@ -1,9 +1,18 @@
 .PHONY: all
-all: build
+all: build-bs build-ml
 
-.PHONY: build
-build: src/uAX31.ml src/parserAutomaton.mly
+.PHONY: build-bs
+build-bs: src/uAX31.ml src/parserAutomaton.mly
 	./node_modules/.bin/bsb -make-world
+
+.PHONY: build-ml
+build-ml: src/uAX31.ml src/parserAutomaton.mly
+	# This is a horrible hack. We run the BuckleScript build first, since the Menhir
+	# configuration is already laid out in bsconfig.json; but remove the copied AST
+	# implementation so Dune can copy-over the one with OCaml-specific annotations.
+	./node_modules/.bin/bsb -make-world
+	rm -f src/aST.ml
+	dune build
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
 	dune exec pkg/generate_uchar_ranges.exe $< > $@

@@ -1,6 +1,12 @@
 (library
  (name        excmd_parser)
  (public_name excmd-parser)
- (libraries sedlex)
- (preprocess (pps ppx_deriving.std sedlex.ppx))
- (flags (:standard -w -32-37)))
+ (libraries ppx_deriving_yojson.runtime sedlex)
+ (preprocess (pps ppx_deriving_yojson sedlex.ppx))
+ (flags (:standard -w -K)))
+
+(rule
+ (mode standard)
+ (deps aST.ocaml.ml)
+ (targets aST.ml)
+ (action  (copy %{deps} %{targets})))
