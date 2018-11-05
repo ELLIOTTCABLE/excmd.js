@@ -21,4 +21,7 @@ let parse_string s p =
 (* parse (Lexer.buffer_of_file file) p *)
 
 let script buf = parse buf ParserAutomaton.script
+let script_in_string s = parse_string s ParserAutomaton.script
+
 let statement buf = parse buf ParserAutomaton.statement
+let statement_in_string s = parse_string s ParserAutomaton.statement

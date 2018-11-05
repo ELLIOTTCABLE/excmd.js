@@ -1,0 +1,9 @@
+(executables
+ (names parser_test)
+ (libraries excmd-parser ppx_deriving_yojson.runtime)
+ (preprocess (pps ppx_deriving_yojson))
+ (flags (:standard -w -K)))
+
+(alias
+ (name runtest)
+ (action (run ./parser_test.exe)))
