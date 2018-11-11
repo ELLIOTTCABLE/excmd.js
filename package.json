@@ -46,14 +46,14 @@
       "!lib/bs/**",
       "!**/node_modules/**",
       "!**/_opam/**"
-   ],
-   "testEnvironment": "node",
-   "testMatch": [
+    ],
+    "testEnvironment": "node",
+    "testMatch": [
       "**/__tests__/**/*.js?(x)",
       "**/?(*.)+(spec|test).js?(x)",
       "!lib/bs/**",
       "!**/node_modules/**",
       "!**/_opam/**"
-   ]
+    ]
   }
 }
