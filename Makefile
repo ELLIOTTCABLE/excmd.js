@@ -32,6 +32,7 @@ clean-all: clean
 clean:
 	rm -f src/aST.ml
 	rm -f src/menhirLib.ml*
+	rm -f src/parserAutomaton.ml src/parserAutomaton.mli
 	rm -rf _build/
 	rm -rf lib/
 	./node_modules/.bin/bsb -clean-world
