@@ -2,7 +2,6 @@ lib/
 
 # Arcane-ass custom build-system for Unicode categories
 # =====================================================
-src/uAX31.ml
 src/lexer.ml
 
 

@@ -1,5 +1,5 @@
 .PHONY: all
-all: build-bs build-ml
+all: build-ml
 
 .PHONY: build-bs
 build-bs: src/uAX31.ml src/parserAutomaton.mly
@@ -23,13 +23,15 @@ pkg/ucd.nounihan.grouped.xml: pkg/ucd.nounihan.grouped.zip
 pkg/ucd.nounihan.grouped.zip:
 	curl http://www.unicode.org/Public/11.0.0/ucdxml/ucd.nounihan.grouped.zip -o $@
 
+.PHONY: clean-all
+clean-all: clean
+	rm -f src/uAX31.ml
+	rm -f pkg/ucd.nounihan.grouped.*
 
 .PHONY: clean
 clean:
-	rm -f src/uAX31.ml
 	rm -f src/aST.ml
 	rm -f src/menhirLib.ml*
-	rm -f pkg/ucd.nounihan.grouped.*
 	rm -rf _build/
 	rm -rf lib/
 	./node_modules/.bin/bsb -clean-world

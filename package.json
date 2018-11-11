@@ -7,7 +7,7 @@
     "build:bs": "bsb -make-world",
     "build:js": "babel src --ignore '*.bs.js' --copy-files --out-dir lib",
     "build": "npm run build:bs && npm run build:js",
-    "prepare": "make clean && make",
+    "prepare": "npm run clean && npm run build:bs && npm run build:js",
     "clean": "make clean",
     "format": "prettier --ignore-path .gitignore --write '**/*.js'",
     "test": "npm run build:ml && jest"
