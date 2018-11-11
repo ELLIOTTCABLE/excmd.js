@@ -20,7 +20,7 @@
 (* {2 Rules } *)
 
 script:
- | it = separated_list(break, statement); break { { statements = it } }
+ | it = optterm_list(break, statement); EOF { { statements = it } }
  ;
 
 statement:
@@ -32,8 +32,7 @@ command:
  ;
 
 break:
- | SEMICOLON
- | EOF { }
+ | SEMICOLON { }
  ;
 
 %%
