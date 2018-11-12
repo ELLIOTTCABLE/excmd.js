@@ -53,6 +53,20 @@ included:
 
     dune utop src
 
+For my own expediency when iterating (sry not sry), the actual *parser* tests (as opposed to tests
+for the JavaScript interface, the lexing, or the string-handling minutiae) are also written in
+native OCaml, and evaluated by Dune:
+
+    dune runtest
+    # After making changes, and verifying that the output is as-expected,
+    dune promote
+
+Finally, the test-executable can interrogate arbitrary input, dumping the result in the same
+JSON-format as the tests use:
+
+    dune exec test/parser_test.exe statement "hello"
+    dune exec test/parser_test.exe script "hello; there; friend"
+
 Notes:
 ======
 I'm going to be broadly following Unicode 11's [UAX #31 “Unicode Identifier And Pattern

@@ -1,0 +1,28 @@
+## Simple, single command:
+Parser.statement "test"
+{ "count": 1, "cmd": "test" }
+
+## Single command, with count:
+Parser.statement "2test"
+{ "count": 2, "cmd": "test" }
+
+## Statements separated by semicolons:
+Parser.script "test; 2test; 3test"
+{
+  "statements": [
+    { "count": 1, "cmd": "test" },
+    { "count": 2, "cmd": "test" },
+    { "count": 3, "cmd": "test" }
+  ]
+}
+
+## Newlines after statements:
+Parser.script "test;\n   2test;\n   3test"
+{
+  "statements": [
+    { "count": 1, "cmd": "test" },
+    { "count": 2, "cmd": "test" },
+    { "count": 3, "cmd": "test" }
+  ]
+}
+

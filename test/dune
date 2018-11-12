@@ -4,6 +4,9 @@
  (preprocess (pps ppx_deriving_yojson))
  (flags (:standard -w -K)))
 
+(rule
+ (with-stdout-to parser_test.output (run ./parser_test.exe)))
+
 (alias
  (name runtest)
- (action (run ./parser_test.exe)))
+ (action (diff parser_test.expected parser_test.output)))
