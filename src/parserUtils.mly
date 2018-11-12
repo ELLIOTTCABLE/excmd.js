@@ -11,5 +11,5 @@
 
 %public optterm_nonempty_list(sep, X):
  | x = X; sep? { [x] }
- | x = X; sep; xs = separated_nonempty_list(sep, X) { x :: xs }
+ | x = X; sep; xs = optterm_nonempty_list(sep, X) { x :: xs }
  ;
