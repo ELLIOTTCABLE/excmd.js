@@ -24,7 +24,7 @@ script:
  ;
 
 statement:
- | COLON*; count = COUNT?; cmd = command { AST.make_statement ~count ~cmd }
+ | COLON*; count = COUNT?; cmd = command { AST.make_statement ?count ~cmd }
  ;
 
 command:

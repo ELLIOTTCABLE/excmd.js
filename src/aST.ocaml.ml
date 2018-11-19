@@ -8,7 +8,7 @@ type t = {
 } [@@deriving to_yojson]
 
 
-let make_statement ~count ~cmd =
+let make_statement ?count ~cmd =
    {
       count = (match count with | Some c -> int_of_string c | None -> 1);
       cmd = cmd;
