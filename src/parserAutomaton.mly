@@ -20,7 +20,7 @@
 (* {2 Rules } *)
 
 script:
- | it = optterm_list(break, statement); EOF { { statements = it } }
+ | xs = optterm_list(break, statement); EOF { {statements = xs} }
  ;
 
 statement:
@@ -28,7 +28,7 @@ statement:
  ;
 
 command:
- | it = IDENTIFIER { it }
+ | x = IDENTIFIER { x }
  ;
 
 break:
