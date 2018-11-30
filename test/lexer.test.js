@@ -288,6 +288,17 @@ describe('Lexer', () => {
       expect(lexer.show_token(tok)).toBe('SHORT_FLAGS')
       expect(lexer.token_body(tok)).toEqual('hElLo')
    })
+
+   it('lexes a long flag with an explicit payload', () => {
+      const buf = of_string('--hello=world'),
+         tok1 = lexer.next(buf),
+         tok2 = lexer.next(buf),
+         tok3 = lexer.next(buf)
+
+      expect(lexer.show_token(tok1)).toBe('LONG_FLAG')
+      expect(lexer.show_token(tok2)).toBe('EQUALS')
+      expect(lexer.show_token(tok3)).toBe('IDENTIFIER')
+   })
 })
 
 describe('Lexer (objective interface)', () => {

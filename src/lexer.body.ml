@@ -57,6 +57,7 @@ let show_token tok =
    match tok with
    | COLON -> "COLON"
    | PIPE -> "PIPE"
+   | EQUALS -> "EQUALS"
    | SEMICOLON -> "SEMICOLON"
    | COUNT _ -> "COUNT"
    | RIGHT_PAREN -> "RIGHT_PAREN"
@@ -215,6 +216,7 @@ and main buf =
 
    | ':' -> COLON |> locate buf
    | '|' -> PIPE |> locate buf
+   | '=' -> EQUALS |> locate buf
    | ';' -> SEMICOLON |> locate buf
 
    | count -> COUNT (utf8 buf) |> locate buf
