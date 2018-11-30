@@ -10,7 +10,7 @@
     "prepare": "npm run clean && npm run build:bs && npm run build:js",
     "clean": "make clean",
     "format": "prettier --ignore-path .gitignore --write '**/*.js'",
-    "test": "npm run build:ml && jest"
+    "test": "npm run build:bs && jest"
   },
   "repository": {
     "type": "git",
