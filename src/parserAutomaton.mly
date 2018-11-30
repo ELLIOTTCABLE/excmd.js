@@ -20,15 +20,36 @@
 (* {2 Rules } *)
 
 script:
- | xs = optterm_list(break, statement); EOF { {statements = xs} }
+ | xs = optterm_list(break, unterminated_statement); EOF { {statements = xs} }
  ;
 
 statement:
- | COLON*; count = COUNT?; cmd = command { AST.make_statement ?count ~cmd }
+ | x = unterminated_statement; break?; EOF { x }
+ ;
+
+unterminated_statement:
+ | COLON*; count = COUNT?; cmd = command; args = arguments
+ { AST.make_statement ?count ~cmd ~args }
  ;
 
 command:
  | x = IDENTIFIER { x }
+ ;
+
+arguments:
+ | { [] }
+ | xs = nonempty_arguments { xs }
+ ;
+
+nonempty_arguments:
+ | x = IDENTIFIER { [AST.Positional x] }
+ | x = LONG_FLAG  { [AST.Flag {name = x; payload = AST.Unresolved}] }
+ | xs = short_flags { xs }
+ ;
+
+short_flags:
+ | xs = explode(SHORT_FLAGS)
+ { List.map (fun x -> AST.Flag {name = x; payload = AST.Unresolved}) xs }
  ;
 
 break:

@@ -1,6 +1,23 @@
+type 'a unresolved =
+ | Unresolved
+ | Resolved of 'a
+ | Absent
+[@@deriving to_yojson]
+
+type flag = {
+   name: string;
+   payload: string unresolved;
+} [@@deriving to_yojson]
+
+type arg =
+ | Positional of string
+ | Flag of flag
+[@@deriving to_yojson]
+
 type statement = {
    count: int;
    cmd: string;
+   args: arg list;
 } [@@deriving to_yojson]
 
 type t = {
@@ -8,10 +25,11 @@ type t = {
 } [@@deriving to_yojson]
 
 
-let make_statement ?count ~cmd =
+let make_statement ?count ~cmd ~args =
    {
       count = (match count with | Some c -> int_of_string c | None -> 1);
       cmd = cmd;
+      args = args;
    }
 
 let pp ast =

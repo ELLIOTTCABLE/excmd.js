@@ -19,6 +19,13 @@ let tests () =
    stmt "Single command, with count"
    "2test";
 
+   (* Basic statements, with parameters *)
+   stmt "Single command, with single positional parameter"
+   "test foo";
+
+   stmt "Single command, count, and single positional parameter"
+   "2test foo";
+
    (* Simple multi-statement scripts *)
    scrpt "Statements separated by semicolons"
    "test; 2test; 3test";

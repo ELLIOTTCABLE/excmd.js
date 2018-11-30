@@ -1,18 +1,26 @@
 ## Simple, single command:
 Parser.statement "test"
-{ "count": 1, "cmd": "test" }
+{ "count": 1, "cmd": "test", "args": [] }
 
 ## Single command, with count:
 Parser.statement "2test"
-{ "count": 2, "cmd": "test" }
+{ "count": 2, "cmd": "test", "args": [] }
+
+## Single command, with single positional parameter:
+Parser.statement "test foo"
+{ "count": 1, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
+
+## Single command, count, and single positional parameter:
+Parser.statement "2test foo"
+{ "count": 2, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
 
 ## Statements separated by semicolons:
 Parser.script "test; 2test; 3test"
 {
   "statements": [
-    { "count": 1, "cmd": "test" },
-    { "count": 2, "cmd": "test" },
-    { "count": 3, "cmd": "test" }
+    { "count": 1, "cmd": "test", "args": [] },
+    { "count": 2, "cmd": "test", "args": [] },
+    { "count": 3, "cmd": "test", "args": [] }
   ]
 }
 
@@ -20,9 +28,9 @@ Parser.script "test; 2test; 3test"
 Parser.script "test;\n   2test;\n   3test"
 {
   "statements": [
-    { "count": 1, "cmd": "test" },
-    { "count": 2, "cmd": "test" },
-    { "count": 3, "cmd": "test" }
+    { "count": 1, "cmd": "test", "args": [] },
+    { "count": 2, "cmd": "test", "args": [] },
+    { "count": 3, "cmd": "test", "args": [] }
   ]
 }
 
