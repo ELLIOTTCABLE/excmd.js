@@ -30,6 +30,25 @@ Parser.statement "2test foo bar"
   "args": [ [ "Positional", "foo" ], [ "Positional", "bar" ] ]
 }
 
+## Single command, with single boolean flag:
+Parser.statement "test --foo"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ] ]
+}
+
+## Single command, with single possibly-parameterized flag:
+Parser.statement "test --foo bar"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "bar" ]
+  ]
+}
+
 ## Statements separated by semicolons:
 Parser.script "test; 2test; 3test"
 {
@@ -40,8 +59,90 @@ Parser.script "test; 2test; 3test"
   ]
 }
 
+## Statements separated by semicolons, with a trailing semicolon:
+Parser.script "test; 2test; 3test;"
+{
+  "statements": [
+    { "count": 1, "cmd": "test", "args": [] },
+    { "count": 2, "cmd": "test", "args": [] },
+    { "count": 3, "cmd": "test", "args": [] }
+  ]
+}
+
+## Statements, with arguments, separated by semicolons:
+Parser.script "test --foo bar; 2test --foo bar; 3test --foo bar"
+{
+  "statements": [
+    {
+      "count": 1,
+      "cmd": "test",
+      "args": [
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+        [ "Positional", "bar" ]
+      ]
+    },
+    {
+      "count": 2,
+      "cmd": "test",
+      "args": [
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+        [ "Positional", "bar" ]
+      ]
+    },
+    {
+      "count": 3,
+      "cmd": "test",
+      "args": [
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+        [ "Positional", "bar" ]
+      ]
+    }
+  ]
+}
+
+## Statements, with arguments, separated by semicolons, with a trailing semicolon:
+Parser.script "test --foo bar; 2test --foo bar; 3test --foo bar;"
+{
+  "statements": [
+    {
+      "count": 1,
+      "cmd": "test",
+      "args": [
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+        [ "Positional", "bar" ]
+      ]
+    },
+    {
+      "count": 2,
+      "cmd": "test",
+      "args": [
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+        [ "Positional", "bar" ]
+      ]
+    },
+    {
+      "count": 3,
+      "cmd": "test",
+      "args": [
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+        [ "Positional", "bar" ]
+      ]
+    }
+  ]
+}
+
 ## Newlines after statements:
 Parser.script "test;\n   2test;\n   3test"
+{
+  "statements": [
+    { "count": 1, "cmd": "test", "args": [] },
+    { "count": 2, "cmd": "test", "args": [] },
+    { "count": 3, "cmd": "test", "args": [] }
+  ]
+}
+
+## Newlines after statements, with a trailing newline:
+Parser.script "test;\n   2test;\n   3test;\n   "
 {
   "statements": [
     { "count": 1, "cmd": "test", "args": [] },
