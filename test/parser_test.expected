@@ -49,6 +49,14 @@ Parser.statement "test --foo bar"
   ]
 }
 
+## Single command, with single explicitly-parameterized flag:
+Parser.statement "test --foo=bar"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Flag", { "name": "foo", "payload": [ "Resolved", "bar" ] } ] ]
+}
+
 ## Statements separated by semicolons:
 Parser.script "test; 2test; 3test"
 {
@@ -70,7 +78,7 @@ Parser.script "test; 2test; 3test;"
 }
 
 ## Statements, with arguments, separated by semicolons:
-Parser.script "test --foo bar; 2test --foo bar; 3test --foo bar"
+Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar"
 {
   "statements": [
     {
@@ -85,8 +93,7 @@ Parser.script "test --foo bar; 2test --foo bar; 3test --foo bar"
       "count": 2,
       "cmd": "test",
       "args": [
-        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-        [ "Positional", "bar" ]
+        [ "Flag", { "name": "foo", "payload": [ "Resolved", "bar" ] } ]
       ]
     },
     {
@@ -101,7 +108,7 @@ Parser.script "test --foo bar; 2test --foo bar; 3test --foo bar"
 }
 
 ## Statements, with arguments, separated by semicolons, with a trailing semicolon:
-Parser.script "test --foo bar; 2test --foo bar; 3test --foo bar;"
+Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar;"
 {
   "statements": [
     {
@@ -116,8 +123,7 @@ Parser.script "test --foo bar; 2test --foo bar; 3test --foo bar;"
       "count": 2,
       "cmd": "test",
       "args": [
-        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-        [ "Positional", "bar" ]
+        [ "Flag", { "name": "foo", "payload": [ "Resolved", "bar" ] } ]
       ]
     },
     {

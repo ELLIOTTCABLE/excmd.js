@@ -38,6 +38,9 @@ let tests () =
    stmt "Single command, with single possibly-parameterized flag"
    "test --foo bar";
 
+   stmt "Single command, with single explicitly-parameterized flag"
+   "test --foo=bar";
+
    (* Simple multi-statement scripts *)
    scrpt "Statements separated by semicolons"
    "test; 2test; 3test";
@@ -46,10 +49,10 @@ let tests () =
    "test; 2test; 3test;";
 
    scrpt "Statements, with arguments, separated by semicolons"
-   "test --foo bar; 2test --foo bar; 3test --foo bar";
+   "test --foo bar; 2test --foo=bar; 3test --foo bar";
 
    scrpt "Statements, with arguments, separated by semicolons, with a trailing semicolon"
-   "test --foo bar; 2test --foo bar; 3test --foo bar;";
+   "test --foo bar; 2test --foo=bar; 3test --foo bar;";
 
    scrpt "Newlines after statements"
    "test;
