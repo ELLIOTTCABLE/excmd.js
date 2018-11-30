@@ -45,6 +45,10 @@ nonempty_arguments:
  | x = IDENTIFIER { [AST.Positional x] }
  | x = LONG_FLAG  { [AST.Flag {name = x; payload = AST.Unresolved}] }
  | xs = short_flags { xs }
+
+ | x = IDENTIFIER; xs = nonempty_arguments { (AST.Positional x) :: xs }
+ | x = LONG_FLAG;  xs = nonempty_arguments { (AST.Flag {name = x; payload = AST.Unresolved}) :: xs }
+ | xs = short_flags; ys = nonempty_arguments { xs @ ys }
  ;
 
 short_flags:

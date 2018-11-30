@@ -14,6 +14,22 @@ Parser.statement "test foo"
 Parser.statement "2test foo"
 { "count": 2, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
 
+## Single command, with multiple positional parameters:
+Parser.statement "test foo bar"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Positional", "foo" ], [ "Positional", "bar" ] ]
+}
+
+## Single command, count, and multiple positional parameters:
+Parser.statement "2test foo bar"
+{
+  "count": 2,
+  "cmd": "test",
+  "args": [ [ "Positional", "foo" ], [ "Positional", "bar" ] ]
+}
+
 ## Statements separated by semicolons:
 Parser.script "test; 2test; 3test"
 {
