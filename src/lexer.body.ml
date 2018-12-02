@@ -3,7 +3,7 @@
 open Tokens
 open Sedlexing
 
-type mode = Main | BlockComment of int | String
+type mode = Main | Immediate | BlockComment of int | String
 type buffer = {
    sedlex: Sedlexing.lexbuf;
    mutable mode: mode
@@ -142,11 +142,11 @@ let identifier =     [%sedlex.regexp?
 (* {2 Lexer body } *)
 
 (* Swallow and discard whitespace; produces no tokens. *)
-let rec swallow_atmosphere buf =
+let rec swallow_atmosphere ?(saw_whitespace=false) buf =
    let s = buf.sedlex in
    match%sedlex s with
-   | Plus space -> swallow_atmosphere buf
-   | _ -> ()
+   | Plus space -> swallow_atmosphere ~saw_whitespace:true buf
+   | _ -> saw_whitespace
 
 (* Produces a single line of comment, wholesale, as a token. *)
 and comment buf =
@@ -198,9 +198,8 @@ and continuing_block_comment buf start acc =
    | eof -> lexfail buf "Reached end-of-file without finding a matching block-comment end-delimiter"
    | _ -> unreachable "continuing_block_comment"
 
-and main buf =
-   (* Js.log "token (mode: Main)"; *)
-   swallow_atmosphere buf;
+and immediate ?(saw_whitespace=false) buf =
+   (* Js.log "token (mode: Immediate)"; *)
    let s = buf.sedlex in
    match%sedlex s with
    | eof -> EOF |> locate buf
@@ -216,7 +215,6 @@ and main buf =
 
    | ':' -> COLON |> locate buf
    | '|' -> PIPE |> locate buf
-   | '=' -> EQUALS |> locate buf
    | ';' -> SEMICOLON |> locate buf
 
    | count -> COUNT (utf8 buf) |> locate buf
@@ -233,6 +231,13 @@ and main buf =
       let flags = String.sub whole 1 (String.length whole - 1) in
       SHORT_FLAGS flags |> locate buf
 
+   | '=' ->
+      if saw_whitespace then
+         lexfail buf "Unexpected whitespace before '='; try attaching explicit parameters directly after their flag"
+      else
+      buf.mode <- Immediate;
+      EQUALS |> locate buf
+
    | '(' -> LEFT_PAREN |> locate buf
    | ')' -> RIGHT_PAREN |> locate buf
 
@@ -241,11 +246,16 @@ and main buf =
      | Some c -> illegal buf c
      | None -> unreachable "main"
 
+and main buf =
+   let saw_whitespace = swallow_atmosphere buf in
+   immediate ~saw_whitespace buf
+
 
 (** Return the next token, with location information. *)
 let next_loc buf =
    match buf.mode with
    | Main -> main buf
+   | Immediate -> immediate buf
    | BlockComment depth -> block_comment depth buf
    | String -> failwith "NYI"
 

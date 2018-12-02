@@ -296,8 +296,29 @@ describe('Lexer', () => {
          tok3 = lexer.next(buf)
 
       expect(lexer.show_token(tok1)).toBe('LONG_FLAG')
+      expect(lexer.token_body(tok1)).toEqual('hello')
       expect(lexer.show_token(tok2)).toBe('EQUALS')
       expect(lexer.show_token(tok3)).toBe('IDENTIFIER')
+      expect(lexer.token_body(tok3)).toEqual('world')
+   })
+
+   it('disallows an explicit payload with spacing (before)', () => {
+      const buf = of_string('--hello =world')
+
+      lexer.next(buf) // Discard a token
+
+      expect(()=> lexer.next(buf)).toThrowError('Unexpected whitespace')
+   })
+
+   // FIXME: This error-message isn't consistent with the previous one. Clean that up.
+   it('disallows an explicit payload with spacing (after)', () => {
+      const buf = of_string('--hello= world')
+
+      // Discard two tokens
+      lexer.next(buf)
+      lexer.next(buf)
+
+      expect(()=> lexer.next(buf)).toThrowError()
    })
 })
 
