@@ -9,11 +9,11 @@ type buffer = {
    mutable mode: mode
 }
 
-type token = Tokens.token * Lexing.position * Lexing.position
+type 'a located = 'a * Lexing.position * Lexing.position
 type 'a gen = unit -> 'a option
 
-exception LexError of (Lexing.position * string)
-exception ParseError of token
+exception LexError of Lexing.position * string
+exception ParseError of token located
 
 let sedlex_of_buffer buf = buf.sedlex
 let buffer_of_sedlex sedlex = { sedlex = sedlex; mode = Main }
@@ -24,31 +24,31 @@ let buffer_of_string str =
    buffer_of_sedlex (Sedlexing.Utf8.from_string str)
 
 (* {2 Helpers } *)
-let locate buf token =
+let locate buf tok =
    let start, curr = lexing_positions buf.sedlex in
-   token, start, curr
+   tok, start, curr
 
 let utf8 buf = Sedlexing.Utf8.lexeme buf.sedlex
 
 
 (* {2 Accessors } *)
-let token (tok : token) =
+let token (tok : token located) =
    let (tok, _loc, _end) = tok in
    tok
 
-let start_lnum (tok : token) =
+let start_lnum (tok : token located) =
    let (_tok, loc, _end) = tok in
    loc.pos_lnum
 
-let start_cnum (tok : token) =
+let start_cnum (tok : token located) =
    let (_tok, loc, _end) = tok in
    loc.pos_cnum - loc.pos_bol
 
-let end_lnum (tok : token) =
+let end_lnum (tok : token located) =
    let (_tok, _start, loc) = tok in
    loc.pos_lnum
 
-let end_cnum (tok : token) =
+let end_cnum (tok : token located) =
    let (_tok, _start, loc) = tok in
    loc.pos_cnum - loc.pos_bol
 

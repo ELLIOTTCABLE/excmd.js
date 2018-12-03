@@ -3,7 +3,7 @@ open Tokens
 (* menhir interface *)
 (* type ('token, 'a) parser = ('token, 'a) MenhirLib.Convert.traditional *)
 
-exception ParseError of (token * Lexing.position * Lexing.position)
+exception ParseError of Tokens.token Lexer.located
 
 
 let parse buf p =
