@@ -16,24 +16,34 @@
 %start <AST.t> script
 %start <AST.statement> statement
 
+%{ open AST %}
+
 %%
 (* {2 Rules } *)
 
 script:
- | xs = optterm_list(break, unterminated_statement); EOF { {statements = xs} }
+ | xs = optterm_list(break, located_statement); EOF { {statements = xs} }
  ;
 
 statement:
  | x = unterminated_statement; break?; EOF { x }
  ;
 
+located_statement:
+ | x = unterminated_statement { x |> node $loc }
+ ;
+
 unterminated_statement:
- | COLON*; count = COUNT?; cmd = command; args = arguments
+ | COLON*; count = count?; cmd = bareword; args = arguments
  { AST.make_statement ?count ~cmd ~args }
  ;
 
-command:
- | x = IDENTIFIER { x }
+count:
+ | count = COUNT { count |> node $loc }
+ ;
+
+bareword:
+ | x = IDENTIFIER { x |> node $loc }
  ;
 
 arguments:
@@ -42,24 +52,26 @@ arguments:
  ;
 
 nonempty_arguments:
- | x = IDENTIFIER { [AST.Positional x] }
+ | x = IDENTIFIER { [AST.Positional x |> node $loc] }
  | x = long_flag  { [x] }
  | xs = short_flags  { xs }
 
- | x = IDENTIFIER; xs = nonempty_arguments { (AST.Positional x) :: xs }
+ | x = IDENTIFIER; xs = nonempty_arguments { (AST.Positional x |> node $loc) :: xs }
  | x = long_flag;  xs = nonempty_arguments { x :: xs }
  | xs = short_flags; ys = nonempty_arguments { xs @ ys }
  ;
 
 long_flag:
- | name = LONG_FLAG  { AST.Flag {name; payload = AST.Unresolved} }
- | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
- { AST.Flag {name; payload = AST.Resolved payload} }
+ | name = LONG_FLAG
+ { AST.Flag {name = name |> node $loc(name); payload = AST.Unresolved} |> node $loc }
+
+ | name = LONG_FLAG; EQUALS; payload = bareword
+ { AST.Flag {name = name |> node $loc(name); payload = AST.Resolved payload} |> node $loc }
  ;
 
 short_flags:
- | xs = explode(SHORT_FLAGS)
- { List.map (fun x -> AST.Flag {name = x; payload = AST.Unresolved}) xs }
+ | flags = explode(SHORT_FLAGS)
+ { AST.make_short_flags ~flags ~loc:$loc }
  ;
 
 break:

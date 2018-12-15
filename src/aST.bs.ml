@@ -1,36 +1,61 @@
-type 'a unresolved =
+open Lexer
+
+type _ node =
+ | Comment : string located -> string located node
+ | Node : 'a located -> 'a located node
+
+type 'a possibly =
  | Unresolved
  | Resolved of 'a
  | Absent
-[@@bs.deriving jsConverter]
 
 type flag = {
-   name: string;
-   payload: string unresolved;
+   name: string located node;
+   payload: string located node possibly;
 } [@@bs.deriving jsConverter]
 
 type arg =
  | Positional of string
  | Flag of flag
- [@@bs.deriving jsConverter]
 
 type statement = {
-   count: int;
-   cmd: string;
-   args: arg list;
+   count: int located node option;
+   cmd: string located node;
+   args: arg located node list;
 } [@@bs.deriving jsConverter]
 
 type t = {
-   statements: statement list;
+   statements: statement located node list;
 } [@@bs.deriving jsConverter]
+
+let node loc x =
+   let start, eend = loc in
+   Node (x, start, eend)
 
 
 let make_statement ?count ~cmd ~args =
-   {
-      count = (match count with | Some c -> int_of_string c | None -> 1);
+   let count' = match count with
+   | Some Node (c, start, eend) -> Some (Node (int_of_string c, start, eend))
+   | None -> None
+   in {
+      count = count';
       cmd = cmd;
       args = args;
    }
+
+(* Increment `loc`'s character- and line-offsets by `n` characters, assuming that the increment
+ * doesn't result in the offset moving past a newline. *)
+let incr loc n = let open Lexing in { loc with pos_cnum = loc.pos_cnum + n }
+
+let make_short_flags ~flags ~loc =
+   let (start, eend) = loc in
+   let to_flag i x =
+      let start' = incr start i and end' = incr start (i + 1) in
+      Flag {
+         name = x |> node (start', end');
+         payload = if end' = eend then Unresolved else Absent;
+      } |> node (start', end')
+   in List.mapi to_flag flags
 
 let pp ast =
    let obj = tToJs ast in
