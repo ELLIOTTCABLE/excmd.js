@@ -354,7 +354,6 @@ describe('Lexer (objective interface)', () => {
    })
 
    it('generates an Array of identifiers upon request', () => {
-      debugger;
       const buf = LexBuffer.of_string('foo | bar'),
          tokens = buf.rest()
 
