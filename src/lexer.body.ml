@@ -127,7 +127,16 @@ let count =          [%sedlex.regexp?
 (* FIXME: Add U+200C/D? *)
 let start_char =     [%sedlex.regexp? Sub (xid_start, digit) ]
 let continue_char =  [%sedlex.regexp? xid_continue ]
-let medial_char =    [%sedlex.regexp? Chars "-·." ]
+let medial_char =    [%sedlex.regexp?
+   0x002D (* '-' HYPHEN-MINUS *)
+ | 0x002E (* '.' FULL STOP *)
+ | 0x00B7 (* '·' MIDDLE DOT *)
+ | 0x058A (* '֊' ARMENIAN HYPHEN *)
+ | 0x05F4 (* '״' HEBREW PUNCTUATION GERSHAYIM *)
+ | 0x0F0B (* '་' TIBETAN MARK INTERSYLLABIC TSHEG *)
+ | 0x2027 (* '‧' HYPHENATION POINT *)
+ | 0x30FB (* '・' KATAKANA MIDDLE DOT *)
+]
 
 (* UAX31-D1:
  *
