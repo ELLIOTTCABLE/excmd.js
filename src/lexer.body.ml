@@ -200,6 +200,7 @@ and continuing_block_comment buf start acc =
 
 and immediate ?(saw_whitespace=false) buf =
    (* Js.log "token (mode: Immediate)"; *)
+   buf.mode <- Main;
    let s = buf.sedlex in
    match%sedlex s with
    | eof -> EOF |> locate buf
