@@ -5,7 +5,6 @@ maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
 authors: "ELLIOTTCABLE <ocaml@ell.io>"
 build: [ [make] ]
 depends: [
-  "base-bigarray" {= "base"}
   "base-bytes" {= "base"}
   "base-ocamlbuild" {= "base"}
   "base-threads" {= "base"}
@@ -50,5 +49,9 @@ url {
   src: "file:///Users/ec/Sync/Code/excmd-parser/pkg"
 }
 pin-depends: [
-  "sedlex.1.99.4" "git+https://github.com/ocaml-community/sedlex.git"
+  ["sedlex.1.99.4" "git+https://github.com/ocaml-community/sedlex.git"]
+  [
+    "ppx_deriving.4.2.1"
+    "https://github.com/ocaml-ppx/ppx_deriving/archive/v4.2.1.tar.gz"
+  ]
 ]
