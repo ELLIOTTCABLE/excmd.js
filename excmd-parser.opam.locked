@@ -30,6 +30,7 @@ depends: [
   "lwt_log" {= "1.1.0"}
   "lwt_react" {= "1.1.1"}
   "menhir" {= "20181006"}
+  "merlin" {= "3.2.2"}
   "ocaml" {= "4.02.3"}
   "ocaml-base-compiler" {= "4.02.3"}
   "ocaml-migrate-parsetree" {= "1.1.0"}
