@@ -38,6 +38,17 @@ Parser.statement "test --foo"
   "args": [ [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ] ]
 }
 
+## Single command, with multiple boolean flags:
+Parser.statement "test --foo --bar"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+    [ "Flag", { "name": "bar", "payload": [ "Unresolved" ] } ]
+  ]
+}
+
 ## Single command, with single possibly-parameterized flag:
 Parser.statement "test --foo bar"
 {
@@ -49,12 +60,61 @@ Parser.statement "test --foo bar"
   ]
 }
 
+## Single command with single possibly-parameterized flag followed by a positional parameter:
+Parser.statement "test --foo bar baz"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "bar" ],
+    [ "Positional", "baz" ]
+  ]
+}
+
+## Single command with two possibly-parameterized flags:
+Parser.statement "test --foo bar --baz widget"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "bar" ],
+    [ "Flag", { "name": "baz", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "widget" ]
+  ]
+}
+
 ## Single command, with single explicitly-parameterized flag:
 Parser.statement "test --foo=bar"
 {
   "count": 1,
   "cmd": "test",
   "args": [ [ "Flag", { "name": "foo", "payload": [ "Resolved", "bar" ] } ] ]
+}
+
+## Single command with single explicitly-parameterized flag followed by a positional parameter:
+Parser.statement "test --foo=bar baz"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo", "payload": [ "Resolved", "bar" ] } ],
+    [ "Positional", "baz" ]
+  ]
+}
+
+## Single command with mixed flags and parameters:
+Parser.statement "test --foo bar --baz=widget qux"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "bar" ],
+    [ "Flag", { "name": "baz", "payload": [ "Resolved", "widget" ] } ],
+    [ "Positional", "qux" ]
+  ]
 }
 
 ## Statements separated by semicolons:

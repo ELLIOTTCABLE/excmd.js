@@ -35,11 +35,26 @@ let tests () =
    stmt "Single command, with single boolean flag"
    "test --foo";
 
+   stmt "Single command, with multiple boolean flags"
+   "test --foo --bar";
+
    stmt "Single command, with single possibly-parameterized flag"
    "test --foo bar";
 
+   stmt "Single command with single possibly-parameterized flag followed by a positional parameter"
+   "test --foo bar baz";
+
+   stmt "Single command with two possibly-parameterized flags"
+   "test --foo bar --baz widget";
+
    stmt "Single command, with single explicitly-parameterized flag"
    "test --foo=bar";
+
+   stmt "Single command with single explicitly-parameterized flag followed by a positional parameter"
+   "test --foo=bar baz";
+
+   stmt "Single command with mixed flags and parameters"
+   "test --foo bar --baz=widget qux";
 
    (* Simple multi-statement scripts *)
    scrpt "Statements separated by semicolons"
