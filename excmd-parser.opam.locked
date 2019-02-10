@@ -5,21 +5,27 @@ maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
 authors: "ELLIOTTCABLE <ocaml@ell.io>"
 build: [ [make] ]
 depends: [
+  "astring" {= "0.8.3"}
   "base-bytes" {= "base"}
   "base-ocamlbuild" {= "base"}
   "base-threads" {= "base"}
   "base-unix" {= "base"}
   "biniou" {= "1.2.0"}
+  "bos" {= "0.2.0"}
   "camomile" {= "1.0.1"}
+  "cmdliner" {= "1.0.2"}
   "conf-m4" {= "1"}
   "conf-which" {= "1"}
   "cppo" {= "1.6.5"}
   "cppo_ocamlbuild" {= "1.6.0"}
   "dune" {= "1.4.0"}
   "easy-format" {= "1.3.1"}
+  "fmt" {= "0.8.5"}
+  "fpath" {= "0.7.2"}
   "gen" {= "0.4"}
   "jbuilder" {= "transition"}
   "lambda-term" {= "1.13"}
+  "logs" {= "0.6.2"}
   "lwt" {= "4.1.0"}
   "lwt_log" {= "1.1.0"}
   "lwt_react" {= "1.1.1"}
@@ -29,18 +35,24 @@ depends: [
   "ocaml-migrate-parsetree" {= "1.1.0"}
   "ocamlbuild" {= "0"}
   "ocamlfind" {= "1.8.0"}
+  "odoc" {= "1.3.0"}
   "ppx_derivers" {= "1.0"}
   "ppx_deriving" {= "4.2.1"}
   "ppx_deriving_yojson" {= "3.1"}
   "ppx_tools" {= "5.0+4.02.0"}
   "ppx_tools_versioned" {= "5.2"}
+  "re" {= "1.8.0"}
   "react" {= "1.2.1"}
   "result" {= "1.3"}
+  "rresult" {= "0.6.0"}
   "sedlex" {= "1.99.4"}
+  "seq" {= "0.1"}
   "topkg" {= "0.9.1"}
+  "tyxml" {= "4.3.0"}
   "uchar" {= "0.0.2"}
   "utop" {= "2.2.0"}
   "uucd" {= "11.0.0"}
+  "uutf" {= "1.0.1"}
   "xmlm" {= "1.3.0"}
   "yojson" {= "1.4.1"}
   "zed" {= "1.6"}
