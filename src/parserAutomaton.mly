@@ -16,6 +16,8 @@
 %start <AST.t> script
 %start <AST.statement> statement
 
+%{ open AST %}
+
 %%
 (* {2 Rules } *)
 
@@ -29,7 +31,7 @@ statement:
 
 unterminated_statement:
  | COLON*; count = COUNT?; cmd = command; args = arguments
- { AST.make_statement ?count ~cmd ~args }
+ { make_statement ?count ~cmd ~args }
  ;
 
 command:
@@ -42,24 +44,53 @@ arguments:
  ;
 
 nonempty_arguments:
- | x = IDENTIFIER { [AST.Positional x] }
- | x = long_flag  { [x] }
- | xs = short_flags  { xs }
+ | xs = positional_and_arguments { xs }
+ | xs = flag_and_arguments { xs }
+ ;
 
- | x = IDENTIFIER; xs = nonempty_arguments { (AST.Positional x) :: xs }
- | x = long_flag;  xs = nonempty_arguments { x :: xs }
+positional_and_arguments:
+ | x = IDENTIFIER { [Positional x] }
+ | x = IDENTIFIER; xs = nonempty_arguments { (Positional x) :: xs }
+ ;
+
+(* Still broken short_flags. *)
+flag_and_arguments:
+ | x = last_long_flag  { [x] }
+ | xs = last_short_flags  { xs }
+
+ | x = long_flag_before_positional; xs = positional_and_arguments { x :: xs }
+ | x = long_flag_before_flag; xs = flag_and_arguments { x :: xs }
+
  | xs = short_flags; ys = nonempty_arguments { xs @ ys }
  ;
 
-long_flag:
- | name = LONG_FLAG  { AST.Flag {name; payload = AST.Unresolved} }
+long_flag_before_flag:
+ | name = LONG_FLAG  { Flag {name; payload = Absent} }
  | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
- { AST.Flag {name; payload = AST.Resolved payload} }
+ { Flag {name; payload = Resolved payload} }
  ;
 
+long_flag_before_positional:
+ | name = LONG_FLAG  { Flag {name; payload = Unresolved} }
+ | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
+ { Flag {name; payload = Resolved payload} }
+ ;
+
+last_long_flag:
+ | name = LONG_FLAG  { Flag {name; payload = Absent} }
+ | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
+ { Flag {name; payload = Resolved payload} }
+ ;
+
+(* FIXME: NYI. This will mark *all* short-flags as unresolved. Boomsplode. *)
 short_flags:
  | xs = explode(SHORT_FLAGS)
- { List.map (fun x -> AST.Flag {name = x; payload = AST.Unresolved}) xs }
+ { List.map (fun x -> Flag {name = x; payload = Unresolved}) xs }
+ ;
+
+last_short_flags:
+ | xs = explode(SHORT_FLAGS)
+ { List.map (fun x -> Flag {name = x; payload = Absent}) xs }
  ;
 
 break:

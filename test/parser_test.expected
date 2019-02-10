@@ -35,7 +35,7 @@ Parser.statement "test --foo"
 {
   "count": 1,
   "cmd": "test",
-  "args": [ [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ] ]
+  "args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
 }
 
 ## Single command, with multiple boolean flags:
@@ -44,8 +44,8 @@ Parser.statement "test --foo --bar"
   "count": 1,
   "cmd": "test",
   "args": [
-    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-    [ "Flag", { "name": "bar", "payload": [ "Unresolved" ] } ]
+    [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "bar", "payload": [ "Absent" ] } ]
   ]
 }
 
