@@ -2,12 +2,12 @@ open Excmd_parser
 
 let scrpt desc str =
    Printf.printf "## %s:\nParser.script %S\n" desc str;
-   AST.pp (Parser.script_in_string str);
+   AST.pp (Parser.script_of_string str);
    Printf.printf "\n\n"
 
 let stmt desc str =
    Printf.printf "## %s:\nParser.statement %S\n" desc str;
-   AST.pp_statement (Parser.statement_in_string str);
+   AST.pp_statement (Parser.statement_of_string str);
    Printf.printf "\n\n"
 
 
@@ -73,8 +73,8 @@ let () =
    | [| _ |] -> tests ()
 
    (* Interactive usage *)
-   | [| _; "script"; str |] -> AST.pp (Parser.script_in_string str)
-   | [| _; "statement"; str |] -> AST.pp_statement (Parser.statement_in_string str)
+   | [| _; "script"; str |] -> AST.pp (Parser.script_of_string str)
+   | [| _; "statement"; str |] -> AST.pp_statement (Parser.statement_of_string str)
    | [| _; _; _ |] -> raise (Invalid_argument
       "First argument must be a valid non-terminal (e.g. 'script' or 'statement')")
 

@@ -1,10 +1,12 @@
 open Tokens
 
 (* menhir interface *)
-(* type ('token, 'a) parser = ('token, 'a) MenhirLib.Convert.traditional *)
+type 'a t = (token, 'a) MenhirLib.Convert.traditional
 
 exception ParseError of Tokens.token Lexer.located
 
+let script_automaton = ParserAutomaton.script
+let statement_automaton = ParserAutomaton.statement
 
 let parse buf p =
   let last_token = ref Lexing.(EOF, dummy_pos, dummy_pos) in
@@ -20,8 +22,8 @@ let parse_string s p =
 (* let parse_file ~file p = *)
 (* parse (Lexer.buffer_of_file file) p *)
 
-let script buf = parse buf ParserAutomaton.script
-let script_in_string s = parse_string s ParserAutomaton.script
+let script buf = parse buf script_automaton
+let script_of_string str = parse_string str script_automaton
 
-let statement buf = parse buf ParserAutomaton.statement
-let statement_in_string s = parse_string s ParserAutomaton.statement
+let statement buf = parse buf script_automaton
+let statement_of_string str = parse_string str statement_automaton
