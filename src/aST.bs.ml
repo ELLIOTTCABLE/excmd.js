@@ -6,7 +6,7 @@ type 'a unresolved =
 
 type flag = {
    name: string;
-   payload: string unresolved;
+   mutable payload: string unresolved;
 } [@@bs.deriving jsConverter]
 
 type arg =
@@ -17,7 +17,7 @@ type arg =
 type statement = {
    count: int;
    cmd: string;
-   args: arg list;
+   mutable args: arg list;
 } [@@bs.deriving jsConverter]
 
 type t = {

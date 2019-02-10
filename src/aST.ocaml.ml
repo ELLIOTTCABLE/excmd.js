@@ -6,7 +6,7 @@ type 'a unresolved =
 
 type flag = {
    name: string;
-   payload: string unresolved;
+   mutable payload: string unresolved;
 } [@@deriving to_yojson]
 
 type arg =
@@ -17,7 +17,7 @@ type arg =
 type statement = {
    count: int;
    cmd: string;
-   args: arg list;
+   mutable args: arg list;
 } [@@deriving to_yojson]
 
 type t = {
