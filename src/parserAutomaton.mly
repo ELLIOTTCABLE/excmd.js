@@ -22,7 +22,7 @@
 (* {2 Rules } *)
 
 script:
- | xs = optterm_list(break, unterminated_statement); EOF { {statements = xs} }
+ | xs = optterm_list(break, unterminated_statement); EOF { {statements = Array.of_list xs} }
  ;
 
 statement:

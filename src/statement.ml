@@ -19,7 +19,8 @@ let mem key st =
    | Positional _ -> false
    | Flag f -> f.name == key
    in
-   List.exists is_key st.args
+   (* FIXME: This is slow, but Array.exists isn't available until OCaml 4.03, and I am lazy. *)
+   List.exists is_key (Array.to_list st.args)
 
 let resolve_flags st =
    let consuming_flag = ref None in
@@ -41,7 +42,8 @@ let resolve_flags st =
             true
          | Absent | Resolved _ -> true
    in
-   st.args <- List.filter iterator st.args
+   (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am lazy. *)
+   st.args <- Array.of_list (List.filter iterator (Array.to_list st.args))
 
 let iter f st =
    resolve_flags st;
@@ -53,7 +55,7 @@ let iter f st =
       | Resolved value -> f flag.name (Some value)
       | Unresolved -> failwith "Unreachable"
    in
-   List.iter iterator st.args
+   Array.iter iterator st.args
 
 let positionals st =
    let filter = function
@@ -68,4 +70,5 @@ let positionals st =
    | Positional str -> str
    | Flag _ -> failwith "Unreachable"
    in
-   List.filter filter st.args |> List.map map
+   (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am lazy. *)
+   List.filter filter (Array.to_list st.args) |> List.map map |> Array.of_list

@@ -17,11 +17,11 @@ type arg =
 type statement = {
    count: int;
    cmd: string;
-   mutable args: arg list;
+   mutable args: arg array;
 } [@@bs.deriving jsConverter]
 
 type t = {
-   statements: statement list;
+   statements: statement array;
 } [@@bs.deriving jsConverter]
 
 
@@ -29,7 +29,7 @@ let make_statement ?count ~cmd ~args =
    {
       count = (match count with | Some c -> int_of_string c | None -> 1);
       cmd = cmd;
-      args = args;
+      args = Array.of_list args;
    }
 
 let pp ast =

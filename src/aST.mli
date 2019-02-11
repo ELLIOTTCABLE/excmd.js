@@ -15,11 +15,11 @@ type arg =
 type statement = {
    count: int;
    cmd: string;
-   mutable args: arg list;
+   mutable args: arg array;
 }
 
 type t = {
-   statements: statement list;
+   statements: statement array;
 }
 
 

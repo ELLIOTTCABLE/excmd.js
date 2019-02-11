@@ -53,8 +53,8 @@ val mem : string -> t -> bool
 
 (** {2 Resolvers (mutative getters) } *)
 
-val positionals : t -> string list
-(** [positionals stmt] returns a [list] of positional (non-flag) arguments in [stmt].
+val positionals : t -> string array
+(** [positionals stmt] returns a [array] of positional (non-flag) arguments in [stmt].
   *
   * This {{!reso} fully resolves} [stmt] — any ambiguous words will be consumed as positional
   * arguments, becoming unavailable as flag-values. *)
