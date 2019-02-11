@@ -5,9 +5,47 @@ import {
 } from '../src/fake_string'
 
 import $Lexer from './lexer.bs'
+import $Parser from './parser.bs'
+import $Statement from './statement.bs'
 
 // Used to ensure that nothing else can invoke these classes' constructors directly
 const INTERNAL = Symbol()
+
+export const Parser = {
+   script: function(lexbuf) {
+      const $scpt = $Parser.script(lexbuf.$buf)
+      return new Script(INTERNAL, $scpt)
+   }
+}
+
+export class Script {
+   constructor(is_internal, $scpt) {
+      if (is_internal !== INTERNAL)
+         throw new Error('`Script` can only be constructed by `Excmd.parse()` and friends.')
+
+      this.$scpt = $scpt }
+
+   get statements() {
+      this.$scpt.statements.map($stmt => new Statement(INTERNAL, $stmt))
+   }
+}
+
+export class Statement {
+   constructor(is_internal, $stmt) {
+      if (is_internal !== INTERNAL)
+         throw new Error('`Statement` can only be constructed by `Excmd.parse()` and friends.')
+
+      this.$stmt = $stmt
+   }
+
+   get command(){
+      this.$stmt.command
+   }
+
+   get count(){
+      this.$stmt.count
+   }
+}
 
 export class LexBuffer {
    constructor(is_internal, $buf) {
