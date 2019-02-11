@@ -64,16 +64,14 @@ flag_and_arguments:
  | xs = short_flags; ys = nonempty_arguments { xs @ ys }
  ;
 
-long_flag_before_flag:
- | name = LONG_FLAG  { Flag {name; payload = Absent} }
- | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
- { Flag {name; payload = Resolved payload} }
- ;
-
 long_flag_before_positional:
  | name = LONG_FLAG  { Flag {name; payload = Unresolved} }
  | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
  { Flag {name; payload = Resolved payload} }
+ ;
+
+long_flag_before_flag:
+ | x = last_long_flag { x }
  ;
 
 last_long_flag:
