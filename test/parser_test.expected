@@ -49,6 +49,38 @@ Parser.statement "test --foo --bar"
   ]
 }
 
+## Single command, with single boolean short-flag:
+Parser.statement "test -f"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Flag", { "name": "f", "payload": [ "Absent" ] } ] ]
+}
+
+## Single command, with multiple, concatenated boolean short-flags:
+Parser.statement "test -foo"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "f", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ]
+  ]
+}
+
+## Single command, with multiple, separated boolean short-flags:
+Parser.statement "test -f -o -o"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "f", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ]
+  ]
+}
+
 ## Single command, with single possibly-parameterized flag:
 Parser.statement "test --foo bar"
 {
@@ -56,6 +88,17 @@ Parser.statement "test --foo bar"
   "cmd": "test",
   "args": [
     [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "bar" ]
+  ]
+}
+
+## Single command, with single possibly-parameterized short-flag:
+Parser.statement "test -f bar"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "f", "payload": [ "Unresolved" ] } ],
     [ "Positional", "bar" ]
   ]
 }
@@ -105,7 +148,7 @@ Parser.statement "test --foo=bar baz"
 }
 
 ## Single command with mixed flags and parameters:
-Parser.statement "test --foo bar --baz=widget qux"
+Parser.statement "test --foo bar --baz=widget qux -qu ux"
 {
   "count": 1,
   "cmd": "test",
@@ -113,7 +156,10 @@ Parser.statement "test --foo bar --baz=widget qux"
     [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
     [ "Positional", "bar" ],
     [ "Flag", { "name": "baz", "payload": [ "Resolved", "widget" ] } ],
-    [ "Positional", "qux" ]
+    [ "Positional", "qux" ],
+    [ "Flag", { "name": "q", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "u", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "ux" ]
   ]
 }
 
