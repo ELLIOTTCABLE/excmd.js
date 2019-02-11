@@ -7,11 +7,12 @@
 %public %inline explode(X):
  | x = X
  {
-    let last = (String.length x) - 1 in
-    let rec explode str = match str with
-    | "" -> []
-    | str -> String.make 1 (String.get str 0) :: explode (String.sub str 1 last)
-    in explode x
+   let rec explode str =
+      let last = (String.length str) - 1 in
+      match str with
+      | "" -> []
+      | str -> String.make 1 (String.get str 0) :: explode (String.sub str 1 last)
+   in explode x
  }
  ;
 
