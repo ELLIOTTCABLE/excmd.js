@@ -53,7 +53,6 @@ positional_and_arguments:
  | x = IDENTIFIER; xs = nonempty_arguments { (Positional x) :: xs }
  ;
 
-(* Still broken short_flags. *)
 flag_and_arguments:
  | x = last_long_flag  { [x] }
  | xs = last_short_flags  { xs }
@@ -61,7 +60,8 @@ flag_and_arguments:
  | x = long_flag_before_positional; xs = positional_and_arguments { x :: xs }
  | x = long_flag_before_flag; xs = flag_and_arguments { x :: xs }
 
- | xs = short_flags; ys = nonempty_arguments { xs @ ys }
+ | xs = short_flags_before_positional; ys = positional_and_arguments { xs @ ys }
+ | xs = short_flags_before_flag; ys = flag_and_arguments { xs @ ys }
  ;
 
 long_flag_before_positional:
@@ -80,10 +80,22 @@ last_long_flag:
  { Flag {name; payload = Resolved payload} }
  ;
 
-(* FIXME: NYI. This will mark *all* short-flags as unresolved. Boomsplode. *)
-short_flags:
+
+short_flags_before_positional:
  | xs = explode(SHORT_FLAGS)
- { List.map (fun x -> Flag {name = x; payload = Unresolved}) xs }
+ {
+   let len = List.length xs in
+   xs |> List.mapi (fun i x ->
+      Flag {
+         name = x;
+         payload = if i == (len - 1) then Unresolved else Absent
+      }
+   )
+ }
+ ;
+
+short_flags_before_flag:
+ | xs = last_short_flags { xs }
  ;
 
 last_short_flags:
