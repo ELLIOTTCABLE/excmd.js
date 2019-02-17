@@ -21,7 +21,7 @@ describe('JavaScript interface', () => {
             expect(statement).toBeInstanceOf(Statement)
          })
       })
-   })
+   }) // Parser.script()
 
    describe('Script (objective wrapper)', () => {
       describe('#statements', () => {
@@ -39,7 +39,7 @@ describe('JavaScript interface', () => {
             expect(script.statements).toHaveLength(2)
          })
       })
-   })
+   }) // Script
 
    describe('Statement (objective wrapper)', () => {
       describe('#statements', () => {
@@ -57,5 +57,21 @@ describe('JavaScript interface', () => {
             expect(script.statements).toHaveLength(2)
          })
       })
-   })
+
+      describe('Simple accessors', () => {
+         it('#count', () => {
+            const buf = LexBuffer.of_string("2test"),
+               stmt = Parser.statement(buf)
+
+            expect(stmt.count).toBe(2)
+         })
+
+         it('#command', () => {
+            const buf = LexBuffer.of_string("2test"),
+               stmt = Parser.statement(buf)
+
+            expect(stmt.command).toBe("test")
+         })
+      })
+   }) // Statement
 })

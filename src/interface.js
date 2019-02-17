@@ -47,12 +47,12 @@ export class Statement {
       this.$stmt = $stmt
    }
 
-   get command(){
-      this.$stmt.command
+   get count(){
+      return $Statement.count(this.$stmt)
    }
 
-   get count(){
-      this.$stmt.count
+   get command(){
+      return $Statement.command(this.$stmt)
    }
 }
 
