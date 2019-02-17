@@ -11,12 +11,24 @@ describe('JavaScript interface', () => {
 
             expect(script).toBeInstanceOf(Script)
          })
+
+         it('can be invoked as #script_of_string', () => {
+            const script = Parser.script_of_string("test")
+
+            expect(script).toBeInstanceOf(Script)
+         })
       })
 
       describe('#statement entry-point', () => {
          it('returns an instance of the Statement interface', () => {
             const buf = LexBuffer.of_string("test"),
                statement = Parser.statement(buf)
+
+            expect(statement).toBeInstanceOf(Statement)
+         })
+
+         it('can be invoked as #statement_of_string', () => {
+            const statement = Parser.statement_of_string("test")
 
             expect(statement).toBeInstanceOf(Statement)
          })
@@ -71,6 +83,16 @@ describe('JavaScript interface', () => {
                stmt = Parser.statement(buf)
 
             expect(stmt.command).toBe("test")
+         })
+      })
+
+      describe('Argument-list processing', () => {
+         it('#has_flag checks for presence or absences of a flag', () => {
+            const buf = LexBuffer.of_string("foo --bar"),
+               stmt = Parser.statement(buf)
+
+            expect(stmt.has_flag('bar')).toBe(true)
+            expect(stmt.has_flag('widget')).toBe(false)
          })
       })
    }) // Statement

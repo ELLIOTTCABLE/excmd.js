@@ -11,16 +11,33 @@ import $Statement from './statement.bs'
 // Used to ensure that nothing else can invoke these classes' constructors directly
 const INTERNAL = Symbol()
 
-export const Parser = {
-   script: function(lexbuf) {
-      const $scpt = $Parser.script(lexbuf.$buf)
-      return new Script(INTERNAL, $scpt)
-   },
+function script(lexbuf) {
+   console.assert(lexbuf instanceof LexBuffer)
+   const $scpt = $Parser.script(lexbuf.$buf)
+   return new Script(INTERNAL, $scpt)
+}
 
-   statement: function(lexbuf) {
-      const $stmt = $Parser.statement(lexbuf.$buf)
-      return new Statement(INTERNAL, $stmt)
-   }
+function script_of_string(str) {
+   const lexbuf = LexBuffer.of_string(str)
+   return script(lexbuf)
+}
+
+function statement(lexbuf) {
+   console.assert(lexbuf instanceof LexBuffer)
+   const $stmt = $Parser.statement(lexbuf.$buf)
+   return new Statement(INTERNAL, $stmt)
+}
+
+function statement_of_string(str) {
+   const lexbuf = LexBuffer.of_string(str)
+   return statement(lexbuf)
+}
+
+export const Parser = {
+   script,
+   script_of_string,
+   statement,
+   statement_of_string,
 }
 
 // Wrapper for `AST.t`.
@@ -47,12 +64,17 @@ export class Statement {
       this.$stmt = $stmt
    }
 
-   get count(){
+   get count() {
       return $Statement.count(this.$stmt)
    }
 
-   get command(){
+   get command() {
       return $Statement.command(this.$stmt)
+   }
+
+   has_flag(flag) {
+      console.assert(typeof flag === 'string')
+      return $Statement.mem(flag, this.$stmt)
    }
 }
 
@@ -65,6 +87,7 @@ export class LexBuffer {
    }
 
    static of_string(string) {
+      console.assert(typeof string === 'string')
       const utf8 = toFakeUTF8String(string),
          $buf = $Lexer.buffer_of_string(utf8)
       return new LexBuffer(INTERNAL, $buf)
@@ -113,6 +136,7 @@ export class Token {
    }
 
    compare(other) {
+      console.assert(other instanceof Token)
       return $Lexer.compare_token(this.$raw, other.$raw)
    }
 }
