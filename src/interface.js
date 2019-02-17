@@ -17,8 +17,8 @@ function script(lexbuf) {
    return new Script(INTERNAL, $scpt)
 }
 
-function script_of_string(str) {
-   const lexbuf = LexBuffer.of_string(str)
+function scriptOfString(str) {
+   const lexbuf = LexBuffer.ofString(str)
    return script(lexbuf)
 }
 
@@ -28,22 +28,22 @@ function statement(lexbuf) {
    return new Statement(INTERNAL, $stmt)
 }
 
-function statement_of_string(str) {
-   const lexbuf = LexBuffer.of_string(str)
+function statementOfString(str) {
+   const lexbuf = LexBuffer.ofString(str)
    return statement(lexbuf)
 }
 
 export const Parser = {
    script,
-   script_of_string,
+   scriptOfString,
    statement,
-   statement_of_string,
+   statementOfString,
 }
 
 // Wrapper for `AST.t`.
 export class Script {
-   constructor(is_internal, $scpt) {
-      if (is_internal !== INTERNAL)
+   constructor(isInternal, $scpt) {
+      if (isInternal !== INTERNAL)
          throw new Error('`Script` can only be constructed by `Excmd.parse()` and friends.')
 
       this.$scpt = $scpt
@@ -57,8 +57,8 @@ export class Script {
 
 // Wrapper for `Statement.t`.
 export class Statement {
-   constructor(is_internal, $stmt) {
-      if (is_internal !== INTERNAL)
+   constructor(isInternal, $stmt) {
+      if (isInternal !== INTERNAL)
          throw new Error('`Statement` can only be constructed by `Excmd.parse()` and friends.')
 
       this.$stmt = $stmt
@@ -72,21 +72,21 @@ export class Statement {
       return $Statement.command(this.$stmt)
    }
 
-   has_flag(flag) {
+   hasFlag(flag) {
       console.assert(typeof flag === 'string')
       return $Statement.mem(flag, this.$stmt)
    }
 }
 
 export class LexBuffer {
-   constructor(is_internal, $buf) {
-      if (is_internal !== INTERNAL)
-         throw new Error('`Buffer` must be constructed with `LexBuffer.of_string()` et al.')
+   constructor(isInternal, $buf) {
+      if (isInternal !== INTERNAL)
+         throw new Error('`Buffer` must be constructed with `LexBuffer.ofString()` et al.')
 
       this.$buf = $buf
    }
 
-   static of_string(string) {
+   static ofString(string) {
       console.assert(typeof string === 'string')
       const utf8 = toFakeUTF8String(string),
          $buf = $Lexer.buffer_of_string(utf8)
@@ -94,41 +94,41 @@ export class LexBuffer {
    }
 
    next() {
-      const $loc_tok = $Lexer.next_loc(this.$buf)
-      return new Token(INTERNAL, $loc_tok)
+      const $locTok = $Lexer.next_loc(this.$buf)
+      return new Token(INTERNAL, $locTok)
    }
 
    rest() {
-      return $Lexer.tokens_loc(this.$buf).map($loc_tok => new Token(INTERNAL, $loc_tok))
+      return $Lexer.tokens_loc(this.$buf).map($locTok => new Token(INTERNAL, $locTok))
    }
 }
 
 export class Token {
-   constructor(is_internal, $loc_tok) {
-      if (is_internal !== INTERNAL) throw new Error('`Token` cannot be constructed')
+   constructor(isInternal, $locTok) {
+      if (isInternal !== INTERNAL) throw new Error('`Token` cannot be constructed')
 
-      this.$loc_tok = $loc_tok
+      this.$locTok = $locTok
    }
 
    get $raw() {
-      return $Lexer.token(this.$loc_tok)
+      return $Lexer.token(this.$locTok)
    }
 
    get id() {
       return Symbol.for($Lexer.show_token(this.$raw))
    }
 
-   get start_line() {
-      return $Lexer.start_lnum(this.$loc_tok)
+   get startLine() {
+      return $Lexer.start_lnum(this.$locTok)
    }
-   get start_idx() {
-      return $Lexer.start_cnum(this.$loc_tok)
+   get startIdx() {
+      return $Lexer.start_cnum(this.$locTok)
    }
-   get end_line() {
-      return $Lexer.end_lnum(this.$loc_tok)
+   get endLine() {
+      return $Lexer.end_lnum(this.$locTok)
    }
-   get end_idx() {
-      return $Lexer.end_cnum(this.$loc_tok)
+   get endIdx() {
+      return $Lexer.end_cnum(this.$locTok)
    }
 
    get body() {
