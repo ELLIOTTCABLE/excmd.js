@@ -78,6 +78,8 @@ val hydrate : t -> AST.statement
   * components of a [statement] in reasonable ways. You must not devolve one into a raw {!AST} node,
   * modify it unsafely, and then expect to continue to use the functions in this module. *)
 
+val from_script : AST.t-> t array
+
 (**/**)
 
 val dehydrate : AST.statement -> t

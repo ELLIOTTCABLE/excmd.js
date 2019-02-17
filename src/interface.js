@@ -23,10 +23,12 @@ export class Script {
       if (is_internal !== INTERNAL)
          throw new Error('`Script` can only be constructed by `Excmd.parse()` and friends.')
 
-      this.$scpt = $scpt }
+      this.$scpt = $scpt
+      this.$statements = $Statement.from_script(this.$scpt)
+   }
 
    get statements() {
-      this.$scpt.statements.map($stmt => new Statement(INTERNAL, $stmt))
+      return this.$statements.map($stmt => new Statement(INTERNAL, $stmt))
    }
 }
 

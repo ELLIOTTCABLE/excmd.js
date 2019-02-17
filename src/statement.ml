@@ -5,6 +5,8 @@ type t = statement
 let hydrate st = st
 let dehydrate st = st
 
+let from_script scpt = scpt.statements
+
 let pp st = AST.pp_statement st
 
 let count st = st.count
