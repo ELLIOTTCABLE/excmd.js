@@ -87,6 +87,22 @@ describe('JavaScript interface', () => {
             expect(stmt.hasFlag('bar')).toBe(true)
             expect(stmt.hasFlag('widget')).toBe(false)
          })
+
+         it('#getPositionals returns an array of positional arguments', () => {
+            const stmt = Parser.statementOfString("foo --bar qux quux"),
+               positionals = stmt.getPositionals()
+
+            expect(positionals).toBeInstanceOf(Array)
+            expect(positionals).toEqual(['qux', 'quux'])
+         })
+
+         it.skip('#getPositionals prevents a subsequent getFlag from resolving the same arg', () => {
+            const stmt = Parser.statementOfString("foo --bar qux quux")
+
+            stmt.getPositionals()
+
+            expect(stmt.getFlag('bar')).not.toBe('bar')
+         })
       })
    }) // Statement
 })

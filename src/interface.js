@@ -76,6 +76,11 @@ export class Statement {
       console.assert(typeof flag === 'string')
       return $Statement.mem(flag, this.$stmt)
    }
+
+   // Intentionally not native JavaScript ‘getters’, as these cause mutation.
+   getPositionals() {
+      return $Statement.positionals(this.$stmt)
+   }
 }
 
 export class LexBuffer {
