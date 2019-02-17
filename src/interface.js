@@ -15,9 +15,15 @@ export const Parser = {
    script: function(lexbuf) {
       const $scpt = $Parser.script(lexbuf.$buf)
       return new Script(INTERNAL, $scpt)
+   },
+
+   statement: function(lexbuf) {
+      const $stmt = $Parser.statement(lexbuf.$buf)
+      return new Statement(INTERNAL, $stmt)
    }
 }
 
+// Wrapper for `AST.t`.
 export class Script {
    constructor(is_internal, $scpt) {
       if (is_internal !== INTERNAL)
@@ -32,6 +38,7 @@ export class Script {
    }
 }
 
+// Wrapper for `Statement.t`.
 export class Statement {
    constructor(is_internal, $stmt) {
       if (is_internal !== INTERNAL)
