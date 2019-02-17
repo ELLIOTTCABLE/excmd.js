@@ -90,6 +90,8 @@ belonging to the `"parserAutomaton.ml"` edge with the `"menhir-with-logging"` on
    ],
 ```
 
+... then re-build your code with `npm run prepare`.
+
 To debug OCaml implementation-code, it's useful to know that BuckleScript has a [debugging mode][]
 that vastly improves the inspector output for data-structures. One thing those docs *do not*
 mention, however, is that you only need to add `[%%debugger.chrome]` to a single ML file in the
