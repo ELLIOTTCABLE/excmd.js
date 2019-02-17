@@ -23,7 +23,11 @@
       },
       {
          "name": "menhir",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --log-automaton 1 --log-code 1 --log-grammar 1 --trace --explain"
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain"
+      },
+      {
+         "name": "menhir-with-logging",
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
       },
       {
          "name": "menhir-tokens",

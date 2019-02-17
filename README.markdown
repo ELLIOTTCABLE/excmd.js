@@ -35,7 +35,7 @@ For further incremental builds, while hacking, you can simply invoke that with:
 
 But the first time you clone the repository, you may need to ...
 
-### Build the Unicode-category regexen
+#### Build the Unicode-category regexen
 Some of the lexer is *generated* from Unicode categories. You may have to download the Unicode
 Character Database before your first build, and generate the UAX31 regexen. (These should already be
 committed to the repo, and shouldn't change except with major Unicode versions.) Nonetheless, if you
@@ -43,7 +43,7 @@ need to rebuild them:
 
     make
 
-## Usage from OCaml
+### Usage from OCaml
 If you're hacking on this (or writing something other than JavaScript), it's useful to know that the
 project has a hybrid build-system, and can be built from the OCaml side (via Dune) *or* the
 JavaScript side (via BuckleScript.)
@@ -69,6 +69,39 @@ JSON-format as the tests use:
 
 Notes:
 ======
+
+### Debugging tips
+To debug the parser, these [Menhir flags](http://gallium.inria.fr/~fpottier/menhir/manual.html#sec3)
+are particularly useful: `--log-automaton 1 --log-code 1 --log-grammar 1 --trace`. I've added those
+to an alternative `"generator"` in `bsconfig.json`; simply swap the `"name": "menhir"` generator
+belonging to the `"parserAutomaton.ml"` edge with the `"menhir-with-logging"` one:
+
+```diff
+--- i/bsconfig.json
++++ w/bsconfig.json
+@@ -9,7 +9,7 @@
+          { "name": "prepend-uax31", "edge": ["lexer.ml", ":", "uAX31.ml", "lexer.body.ml"] },
+          { "name": "menhir-tokens", "edge": ["tokens.ml", "tokens.mli", ":", "parserAutomaton.mly", "tokens.tail.ml", "tokens.tail.mli"] },
+          { "name": "menhir-lib", "edge": ["menhirLib.ml", "menhirLib.mli", ":", "parserAutomaton.mly"] },
+-         { "name": "menhir", "edge": ["parserAutomaton.ml", ":", "parserAutomaton.mly", "parserUtils.mly", "tokens.ml"] }
++         { "name": "menhir-with-logging", "edge": ["parserAutomaton.ml", ":", "parserAutomaton.mly", "parserUtils.mly", "tokens.ml"] }
+       ]
+     }
+   ],
+```
+
+To debug OCaml implementation-code, it's useful to know that BuckleScript has a [debugging mode][]
+that vastly improves the inspector output for data-structures. One thing those docs *do not*
+mention, however, is that you only need to add `[%%debugger.chrome]` to a single ML file in the
+current code-path — this is useful information when debugging a JavaScript interface like ours.
+(i.e. add the `[%%debugger.chrome]` statement to `Parser.ml`, even if you're debugging
+`interface.js` that includes `Parser.bs.js`.)
+
+   [debugging mode]: <https://bucklescript.github.io/docs/en/better-data-structures-printing-debug-mode.html>
+      "BuckleScript's documentation for enabling debugging symbols in the compiler"
+
+
+### Internationalization concerns w.r.t. lexing
 I'm going to be broadly following Unicode 11's [UAX #31 “Unicode Identifier And Pattern
 Syntax”][UAX31]; speaking formally, this implementation is planned to conform to requirements ...
 
