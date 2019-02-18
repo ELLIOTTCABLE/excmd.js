@@ -89,19 +89,37 @@ describe('JavaScript interface', () => {
          })
 
          it('#getPositionals returns an array of positional arguments', () => {
-            const stmt = Parser.statementOfString("foo --bar qux quux"),
+            const stmt = Parser.statementOfString("foo qux quux"),
                positionals = stmt.getPositionals()
 
             expect(positionals).toBeInstanceOf(Array)
             expect(positionals).toEqual(['qux', 'quux'])
          })
 
-         it.skip('#getPositionals prevents a subsequent getFlag from resolving the same arg', () => {
-            const stmt = Parser.statementOfString("foo --bar qux quux")
+         it('#getPositionals prevents a subsequent getFlag from resolving a consumed arg', () => {
+            const stmt = Parser.statementOfString("foo --bar qux quux"),
+               positionals = stmt.getPositionals(),
+               payload = stmt.getFlag('bar')
 
-            stmt.getPositionals()
+            expect(positionals).toEqual(['qux', 'quux'])
+            expect(payload).not.toBe('qux')
+         })
 
-            expect(stmt.getFlag('bar')).not.toBe('bar')
+         it('#getFlag returns a string payload for a present argument', () => {
+            const stmt = Parser.statementOfString("foo --bar=baz"),
+               payload = stmt.getFlag('bar')
+
+            expect(typeof payload).toBe('string')
+            expect(payload).toEqual('baz')
+         })
+
+         it('#getFlag prevents a subsequent getPositionals from resolving a consumed arg', () => {
+            const stmt = Parser.statementOfString("foo --bar qux quux"),
+               payload = stmt.getFlag('bar'),
+               positionals = stmt.getPositionals()
+
+            expect(payload).toBe('qux')
+            expect(positionals).not.toContain('qux')
          })
       })
    }) // Statement

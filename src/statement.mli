@@ -40,6 +40,8 @@
 type t
 (** An alias to {!AST.statement}, abstracted that mutation may be controlled. *)
 
+type flag_payload = Empty | Payload of string
+
 (** {2 Basic getters } *)
 
 val count : t -> int
@@ -47,9 +49,18 @@ val count : t -> int
 val command : t -> string
 
 val mem : string -> t -> bool
-(** [mem x stmt] returns [true] if [stmt] contains flag [x], [false] otherwise.
+(** [mem fl stmt] returns [true] if [stmt] contains flag [fl], [false] otherwise.
  *
  * Notably, this {e does not} {{!reso} resolve} any unresolved words from the parsed statement. *)
+
+val is_resolved : string -> t -> bool
+(** [is_resolved fl stmt] returns [true] if [stmt] contains flag [fl] {e and} flag [fl] is already
+ * {{!reso} resolved}; and [false] otherwise. *)
+
+val has_payload : string -> t -> bool
+(** [has_payload fl stmt] returns [true] if [stmt] contains flag [fl], flag [fl] is already
+ * {{!reso} resolved}, {e and} flag [fl] resolved to a [string] payload instead of a [bool].
+ * Returns [false] otherwise. *)
 
 (** {2 Resolvers (mutative getters) } *)
 
@@ -59,12 +70,26 @@ val positionals : t -> string array
   * This {{!reso} fully resolves} [stmt] — any ambiguous words will be consumed as positional
   * arguments, becoming unavailable as flag-values. *)
 
-val iter : (string -> string option -> unit) -> t -> unit
+val iter : (string -> flag_payload -> unit) -> t -> unit
 (** [iter f stmt] applies [f] to all flags in statement [stmt]. [f] receives the flag as its first
   * argument, and the associated, fully-{{!reso} resolved} value as the second argument.
   *
   * This {{!reso} fully resolves} [stmt] — any ambiguous words will be consumed as the values to
   * their associated flags, becoming unavailable as positional arguments. *)
+
+val flag : string -> t -> flag_payload option
+(** [flag fl stmt] can yield ...
+ *
+ * {ul
+ * {- [None], indicating flag [fl] was not present at all. }
+ * {- [Some Empty], indicating flag [fl] was present, but resolved to having no payload. }
+ * {- [Some (Payload str)], indicating flag [fl] was present and became resolved to the payload
+ *    [str]. This can involve {{!reso} resolution} of the word immediately following [fl]. }}
+ * *)
+
+val payload_to_opt : flag_payload -> string option
+(** Helper to convert a [flag_payload] to a BuckleScript-friendly [option]. *)
+
 
 (** {2 Other helpers } *)
 

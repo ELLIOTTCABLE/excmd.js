@@ -81,6 +81,29 @@ export class Statement {
    getPositionals() {
       return $Statement.positionals(this.$stmt)
    }
+
+   // FIXME: This is hella slower than it needs to be; it iterates over all the flags a bunch of
+   //        times. I know how to fix it, I'm just lazy. Let me know if this impacts you somehow?
+   getFlag(flag) {
+      console.assert(typeof flag === 'string')
+      const $flagPayloadOption = $Statement.flag(flag, this.$stmt)
+
+      if (typeof $flagPayloadOption === 'undefined') {
+         // `None`
+         return undefined
+
+      } else {
+         const $flagPayload = $Statement.payload_to_opt($flagPayloadOption)
+
+         if (typeof $flagPayload === 'undefined') {
+            // `Some Empty`
+            return undefined
+         } else {
+            // `Some (Payload str)`
+            return $flagPayload
+         }
+      }
+   }
 }
 
 export class LexBuffer {
