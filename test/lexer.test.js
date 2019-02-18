@@ -324,21 +324,21 @@ describe('Lexer', () => {
 
 describe('Lexer (objective interface)', () => {
    it('lexes an EOF', () => {
-      const buf = LexBuffer.of_string(''),
+      const buf = LexBuffer.ofString(''),
          tok = buf.next()
 
       expect(lexer.show_token(tok._raw)).toEqual('EOF')
    })
 
    it('provides a symbolic token ID', () => {
-      const buf = LexBuffer.of_string(''),
+      const buf = LexBuffer.ofString(''),
          tok = buf.next()
 
       expect(tok.id).toBe(Symbol.for('EOF'))
    })
 
    it('exposes the body of a simple identifier', () => {
-      const buf = LexBuffer.of_string('hello'),
+      const buf = LexBuffer.ofString('hello'),
          tok = buf.next()
 
       expect(tok.id).toBe(Symbol.for('IDENTIFIER'))
@@ -346,7 +346,7 @@ describe('Lexer (objective interface)', () => {
    })
 
    it('round-trips a non-ASCII identifier', () => {
-      const buf = LexBuffer.of_string('foo·bar'),
+      const buf = LexBuffer.ofString('foo·bar'),
          tok = buf.next()
 
       expect(tok.id).toBe(Symbol.for('IDENTIFIER'))
@@ -354,7 +354,7 @@ describe('Lexer (objective interface)', () => {
    })
 
    it('generates an Array of identifiers upon request', () => {
-      const buf = LexBuffer.of_string('foo | bar'),
+      const buf = LexBuffer.ofString('foo | bar'),
          tokens = buf.rest()
 
       expect(tokens).toBeInstanceOf(Array)
@@ -365,7 +365,7 @@ describe('Lexer (objective interface)', () => {
    })
 
    it('round-trips multiple non-ASCII identifiers', () => {
-      const buf = LexBuffer.of_string('foo·bar | baz·widget'),
+      const buf = LexBuffer.ofString('foo·bar | baz·widget'),
          tokens = buf.rest()
 
       expect(tokens.length).toBe(3)
