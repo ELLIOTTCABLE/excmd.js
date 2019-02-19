@@ -25,5 +25,5 @@ depends: [
    "merlin" {dev & >= "3.2.2"}
 ]
 url {
-  src: "file:///Users/ec/Sync/Code/excmd/pkg"
+  src: "https://github.com/ELLIOTTCABLE/excmd.js.git"
 }

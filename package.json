@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ELLIOTTCABLE/excmd.git"
+    "url": "git+https://github.com/ELLIOTTCABLE/excmd.js.git"
   },
   "author": "ELLIOTTCABLE <npm@ell.io>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ELLIOTTCABLE/excmd/issues"
+    "url": "https://github.com/ELLIOTTCABLE/excmd.js/issues"
   },
-  "homepage": "https://github.com/ELLIOTTCABLE/excmd#readme",
+  "homepage": "https://github.com/ELLIOTTCABLE/excmd.js#readme",
   "dependencies": {
     "bs-platform": "^4.0.6",
     "bs-sedlex": "^1.99.4-pre.8",
