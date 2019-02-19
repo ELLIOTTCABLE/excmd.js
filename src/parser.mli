@@ -3,7 +3,7 @@ type script = AST.t
 
 exception ParseError of Tokens.token Lexer.located
 
-(** {1 Parsing entry-points } *)
+(** {2 Parsing entry-points } *)
 
 val script : Lexer.buffer -> script
 (** Invoke the Excmd parser with intent to consume, and produce, an entire Excmd-[script]. *)
@@ -17,7 +17,7 @@ val statement : Lexer.buffer -> Statement.t
 val statement_of_string : string -> Statement.t
 (** Helper to invoke {!val:statement} with a [string]. *)
 
-(** {1 Menhir parser entry-points } *)
+(** {2 Menhir-generated parsing automata } *)
 
 val script_automaton : AST.t t
 (** Alias to {!val:ParserAutomaton.script}. *)
@@ -25,7 +25,7 @@ val script_automaton : AST.t t
 val statement_automaton : AST.statement t
 (** Alias to {!val:ParserAutomaton.statement}. *)
 
-(** {1 Menhir helpers } *)
+(** {2 Menhir helpers } *)
 
 val parse : Lexer.buffer -> 'a t -> 'a
 (** A simple helper for Menhir-style parsers. Applies the given parser to the given lexbuf. *)
