@@ -10,3 +10,7 @@
  (deps aST.ocaml.ml)
  (targets aST.ml)
  (action  (copy %{deps} %{targets})))
+
+(documentation
+ (package excmd)
+ (mld_files :standard))

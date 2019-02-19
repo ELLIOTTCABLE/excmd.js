@@ -1,0 +1,28 @@
+{1 Excmd.js }
+
+This is a library for parsing {{: https://github.com/tridactyl/tridactyl} Tridactyl}-style ‘ex-mode
+commands.’ These lie somewhere halfway between a {{: http://learnvimscriptthehardway.stevelosh.com/chapters/01.html} Vim excmd}
+and a shell-command; and look {{: https://github.com/tridactyl/tridactyl/blob/master/.tridactylrc} something}
+like this:
+
+FIXME: Update these examples once talking thru syntax changes with the fam.
+
+{[
+" I like wikiwand but I don't like the way it changes URLs
+bindurl wikiwand.com yy composite js document.location.href.replace("wikiwand.com/en","wikipedia.org/wiki") | clipboard yank
+
+" Make gu take you back to subreddit from comments
+bindurl reddit.com gu urlparent 4
+
+" Allow Ctrl-a to select all in the commandline
+unbind --mode=ex <C-a>
+
+" Julia docs' built in search is bad
+set searchurls.julia https://www.google.com/search?q=site:http://docs.julialang.org/en/v1.0%20
+]}
+
+{2 Usage }
+
+Get started with {!Excmd.Parser.statement_of_string}, and the functions of {!Excmd.Statement}.
+
+TODO: NYW
