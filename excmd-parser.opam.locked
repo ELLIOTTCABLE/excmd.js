@@ -1,5 +1,5 @@
 opam-version: "2.0"
-name: "excmd-parser"
+name: "excmd"
 version: "~dev"
 maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
 authors: "ELLIOTTCABLE <ocaml@ell.io>"
@@ -59,7 +59,7 @@ depends: [
   "zed" {= "1.6"}
 ]
 url {
-  src: "file:///Users/ec/Sync/Code/excmd-parser/pkg"
+  src: "file:///Users/ec/Sync/Code/excmd/pkg"
 }
 pin-depends: [
   ["sedlex.1.99.4" "git+https://github.com/ocaml-community/sedlex.git"]

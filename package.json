@@ -1,5 +1,5 @@
 {
-  "name": "excmd-parser",
+  "name": "excmd",
   "version": "0.0.1",
   "description": "Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
   "main": "lib/interface.js",
@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ELLIOTTCABLE/excmd-parser.git"
+    "url": "git+https://github.com/ELLIOTTCABLE/excmd.git"
   },
   "author": "ELLIOTTCABLE <npm@ell.io>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ELLIOTTCABLE/excmd-parser/issues"
+    "url": "https://github.com/ELLIOTTCABLE/excmd/issues"
   },
-  "homepage": "https://github.com/ELLIOTTCABLE/excmd-parser#readme",
+  "homepage": "https://github.com/ELLIOTTCABLE/excmd#readme",
   "dependencies": {
     "bs-platform": "^4.0.6",
     "bs-sedlex": "^1.99.4-pre.8",

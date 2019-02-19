@@ -1,5 +1,5 @@
-`excmd-parser`
-==============
+Excmd.js
+========
 
 **Work in progress:** Writing a replacement parser for [Tridactyl][]'s command-line and rcfiles, in
 the spirit of Vi's command-line / Vimscript / ex.
@@ -25,7 +25,7 @@ Here's a quick, up-to-date bootstrapping process for ~fall 2018:
 Thereafter, when returning to the project, and before running `npm run build` or any other OCaml-
 dependant commands, you have to remember to run:
 
-    # After i.e. `cd ~/Code/excmd-parser`
+    # After i.e. `cd ~/Code/excmd`
     eval $(opam env --switch=. --set-switch)
 
 Finally, after all of the above, you can let Ninja handle most of the build, orchestrated by `bsb`.
