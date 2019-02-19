@@ -1,10 +1,6 @@
 .PHONY: all
 all: build-ml
 
-.PHONY: build-bs
-build-bs: src/uAX31.ml src/parserAutomaton.mly
-	./node_modules/.bin/bsb -make-world
-
 .PHONY: build-ml
 build-ml: src/uAX31.ml src/parserAutomaton.mly
 	# This is a horrible hack. We run the BuckleScript build first, since the Menhir
@@ -22,6 +18,12 @@ pkg/ucd.nounihan.grouped.xml: pkg/ucd.nounihan.grouped.zip
 
 pkg/ucd.nounihan.grouped.zip:
 	curl http://www.unicode.org/Public/11.0.0/ucdxml/ucd.nounihan.grouped.zip -o $@
+
+.PHONY: build-doc
+build-doc:
+	dune build --only-packages=excmd @doc
+	-rm -r "_build/default/_doc/_html/excmd/Excmd/MenhirLib" "_build/default/_doc/_html/excmd/Excmd__"*
+	cp -Rv "_build/default/_doc/_html/" docs
 
 .PHONY: clean-all
 clean-all: clean
