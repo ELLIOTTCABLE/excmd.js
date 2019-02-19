@@ -72,16 +72,21 @@ export class Statement {
       return $Statement.command(this.$stmt)
    }
 
+   // Wrapper for `Statement.mem`
    hasFlag(flag) {
       console.assert(typeof flag === 'string')
       return $Statement.mem(flag, this.$stmt)
    }
 
-   // Intentionally not native JavaScript ‘getters’, as these cause mutation.
+   // The rest are intentionally not native JavaScript ‘getters’, as they may cause mutation.
+
+   // Wrapper for `Statement.positionals`
    getPositionals() {
       return $Statement.positionals(this.$stmt)
    }
 
+   // Wrapper for `Statement.flag`
+   //---
    // FIXME: This is hella slower than it needs to be; it iterates over all the flags a bunch of
    //        times. I know how to fix it, I'm just lazy. Let me know if this impacts you somehow?
    getFlag(flag) {
