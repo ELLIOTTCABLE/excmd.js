@@ -1,5 +1,6 @@
 (library
  (name        excmd)
+ (public_name excmd)
  (libraries ppx_deriving_yojson.runtime sedlex)
  (preprocess (pps ppx_deriving_yojson sedlex.ppx))
  (flags (:standard -w -K)))
