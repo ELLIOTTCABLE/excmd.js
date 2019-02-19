@@ -1,4 +1,4 @@
-open Excmd_parser
+open Excmd
 
 let scrpt desc str =
    Printf.printf "## %s:\nParser.script %S\n" desc str;
