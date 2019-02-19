@@ -22,7 +22,10 @@ pkg/ucd.nounihan.grouped.zip:
 .PHONY: build-doc
 build-doc:
 	dune build --only-packages=excmd @doc
-	-rm -r "_build/default/_doc/_html/excmd/Excmd/MenhirLib" "_build/default/_doc/_html/excmd/Excmd__"*
+	# FIXME: There's gotta be a better way to clean up the docs ...
+	-rm -r "_build/default/_doc/_html/excmd/Excmd/MenhirLib" \
+		"_build/default/_doc/_html/excmd/Excmd__"* \
+		"_build/default/_doc/_html/index.html"
 	cp -Rv "_build/default/_doc/_html/" docs
 
 .PHONY: clean-all
