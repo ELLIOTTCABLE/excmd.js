@@ -44,7 +44,9 @@ export const Parser = {
 export class Script {
    constructor(isInternal, $scpt) {
       if (isInternal !== INTERNAL)
-         throw new Error('`Script` can only be constructed by `Excmd.parse()` and friends.')
+         throw new Error(
+            '`Script` can only be constructed by `Excmd.parse()` and friends.',
+         )
 
       this.$scpt = $scpt
       this.$statements = $Statement.from_script(this.$scpt)
@@ -59,7 +61,9 @@ export class Script {
 export class Statement {
    constructor(isInternal, $stmt) {
       if (isInternal !== INTERNAL)
-         throw new Error('`Statement` can only be constructed by `Excmd.parse()` and friends.')
+         throw new Error(
+            '`Statement` can only be constructed by `Excmd.parse()` and friends.',
+         )
 
       this.$stmt = $stmt
    }
@@ -96,7 +100,6 @@ export class Statement {
       if (typeof $flagPayloadOption === 'undefined') {
          // `None`
          return undefined
-
       } else {
          const $flagPayload = $Statement.payload_to_opt($flagPayloadOption)
 
@@ -114,7 +117,9 @@ export class Statement {
 export class LexBuffer {
    constructor(isInternal, $buf) {
       if (isInternal !== INTERNAL)
-         throw new Error('`Buffer` must be constructed with `LexBuffer.ofString()` et al.')
+         throw new Error(
+            '`Buffer` must be constructed with `LexBuffer.ofString()` et al.',
+         )
 
       this.$buf = $buf
    }

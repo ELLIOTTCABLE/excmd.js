@@ -307,7 +307,7 @@ describe('Lexer', () => {
 
       lexer.next(buf) // Discard a token
 
-      expect(()=> lexer.next(buf)).toThrowError('Unexpected whitespace')
+      expect(() => lexer.next(buf)).toThrowError('Unexpected whitespace')
    })
 
    // FIXME: This error-message isn't consistent with the previous one. Clean that up.
@@ -318,7 +318,7 @@ describe('Lexer', () => {
       lexer.next(buf)
       lexer.next(buf)
 
-      expect(()=> lexer.next(buf)).toThrowError()
+      expect(() => lexer.next(buf)).toThrowError()
    })
 })
 
