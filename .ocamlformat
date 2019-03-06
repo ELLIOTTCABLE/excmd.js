@@ -1,0 +1,8 @@
+margin = 90
+
+cases-exp-indent = 3
+
+field-space = loose
+let-binding-spacing = sparse
+
+let-open = auto

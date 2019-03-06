@@ -41,3 +41,22 @@ clean:
 	rm -rf _build/
 	rm -rf lib/
 	./node_modules/.bin/bsb -clean-world
+
+FORMAT_MANIFEST = $(shell find . \
+	-path './_build' -prune -o -path './_opam' -prune -o -path './node_modules' -prune -o \
+	-type f \( -name '*.ml' -or -name '*.mli' \) \
+	! -name 'uAX31.ml' ! -name 'parserAutomaton.ml' ! -name 'lexer.ml' \
+	! -name '*.tail.*' ! -name 'menhirLib.ml' -print)
+
+INDEX_MANIFEST = $(shell git ls-files $(FORMAT_MANIFEST))
+
+.PHONY: format-ml
+format-ml:
+	@(command -v ocamlformat ocp-indent >/dev/null 2>&1) || ( \
+	   echo "Unfortunately, both `ocamlformat` and `ocp-indent` are required to reformat ML." && \
+	   echo "Worse, neither of these can be successfully installed on a BuckleScript-" && \
+	   echo "compatible version of OCaml. You'll have to install these manually, and globally," && \
+	   echo "if you want to auto-reformat ML." && exit 1 \
+	)
+	ocamlformat --ocp-indent-config --ocp-indent-compat --wrap-comments --inplace $(INDEX_MANIFEST)
+	ocp-indent --inplace $(INDEX_MANIFEST)

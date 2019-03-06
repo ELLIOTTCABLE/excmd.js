@@ -12,7 +12,9 @@
     "prepare": "npm run clean && npm run build:bs && npm run build:js",
     "clean": "make clean",
     "clean:all": "make clean-all",
-    "format": "prettier --ignore-path .gitignore --write '**/*.js'",
+    "format:js": "prettier --ignore-path .gitignore --write '**/*.js'",
+    "format:ml": "make format-ml",
+    "format": "npm run format:js && npm run format:ml",
     "test": "npm run build:bs && jest"
   },
   "repository": {
