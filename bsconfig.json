@@ -23,11 +23,11 @@
       },
       {
          "name": "menhir",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain"
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --table --lalr"
       },
       {
          "name": "menhir-with-logging",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --table --lalr --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
       },
       {
          "name": "menhir-tokens",
@@ -54,7 +54,8 @@
   "suffix": ".bs.js",
   "bsc-flags": [
     "-bs-super-errors",
-    "-bs-no-version-header"
+    "-bs-no-version-header",
+    "-w -9"
   ],
   "refmt": 3
 }

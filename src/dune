@@ -3,7 +3,9 @@
  (public_name excmd)
  (libraries ppx_deriving_yojson.runtime sedlex)
  (preprocess (pps ppx_deriving_yojson sedlex.ppx))
- (flags (:standard -w -K)))
+
+ ; Disable fatal-level warnings from the compiled output
+ (flags (:standard -w -K-9)))
 
 (rule
  (mode standard)
