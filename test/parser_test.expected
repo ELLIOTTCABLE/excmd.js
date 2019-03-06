@@ -1,20 +1,22 @@
-## Simple, single command:
+
+
+### Simple, single command:
 Parser.statement "test"
 { "count": 1, "cmd": "test", "args": [] }
 
-## Single command, with count:
+### Single command, with count:
 Parser.statement "2test"
 { "count": 2, "cmd": "test", "args": [] }
 
-## Single command, with single positional parameter:
+### Single command, with single positional parameter:
 Parser.statement "test foo"
 { "count": 1, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
 
-## Single command, count, and single positional parameter:
+### Single command, count, and single positional parameter:
 Parser.statement "2test foo"
 { "count": 2, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
 
-## Single command, with multiple positional parameters:
+### Single command, with multiple positional parameters:
 Parser.statement "test foo bar"
 {
   "count": 1,
@@ -22,7 +24,7 @@ Parser.statement "test foo bar"
   "args": [ [ "Positional", "foo" ], [ "Positional", "bar" ] ]
 }
 
-## Single command, count, and multiple positional parameters:
+### Single command, count, and multiple positional parameters:
 Parser.statement "2test foo bar"
 {
   "count": 2,
@@ -30,7 +32,7 @@ Parser.statement "2test foo bar"
   "args": [ [ "Positional", "foo" ], [ "Positional", "bar" ] ]
 }
 
-## Single command, with single boolean flag:
+### Single command, with single boolean flag:
 Parser.statement "test --foo"
 {
   "count": 1,
@@ -38,7 +40,7 @@ Parser.statement "test --foo"
   "args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
 }
 
-## Single command, with multiple boolean flags:
+### Single command, with multiple boolean flags:
 Parser.statement "test --foo --bar"
 {
   "count": 1,
@@ -49,7 +51,7 @@ Parser.statement "test --foo --bar"
   ]
 }
 
-## Single command, with single boolean short-flag:
+### Single command, with single boolean short-flag:
 Parser.statement "test -f"
 {
   "count": 1,
@@ -57,7 +59,7 @@ Parser.statement "test -f"
   "args": [ [ "Flag", { "name": "f", "payload": [ "Absent" ] } ] ]
 }
 
-## Single command, with multiple, concatenated boolean short-flags:
+### Single command, with multiple, concatenated boolean short-flags:
 Parser.statement "test -foo"
 {
   "count": 1,
@@ -69,7 +71,7 @@ Parser.statement "test -foo"
   ]
 }
 
-## Single command, with multiple, separated boolean short-flags:
+### Single command, with multiple, separated boolean short-flags:
 Parser.statement "test -f -o -o"
 {
   "count": 1,
@@ -81,7 +83,7 @@ Parser.statement "test -f -o -o"
   ]
 }
 
-## Single command, with single possibly-parameterized flag:
+### Single command, with single possibly-parameterized flag:
 Parser.statement "test --foo bar"
 {
   "count": 1,
@@ -92,7 +94,7 @@ Parser.statement "test --foo bar"
   ]
 }
 
-## Single command, with single possibly-parameterized short-flag:
+### Single command, with single possibly-parameterized short-flag:
 Parser.statement "test -f bar"
 {
   "count": 1,
@@ -103,7 +105,7 @@ Parser.statement "test -f bar"
   ]
 }
 
-## Single command with single possibly-parameterized flag followed by a positional parameter:
+### Single command with single possibly-parameterized flag followed by a positional parameter:
 Parser.statement "test --foo bar baz"
 {
   "count": 1,
@@ -115,7 +117,7 @@ Parser.statement "test --foo bar baz"
   ]
 }
 
-## Single command with two possibly-parameterized flags:
+### Single command with two possibly-parameterized flags:
 Parser.statement "test --foo bar --baz widget"
 {
   "count": 1,
@@ -128,7 +130,7 @@ Parser.statement "test --foo bar --baz widget"
   ]
 }
 
-## Single command, with single explicitly-parameterized flag:
+### Single command, with single explicitly-parameterized flag:
 Parser.statement "test --foo=bar"
 {
   "count": 1,
@@ -136,7 +138,7 @@ Parser.statement "test --foo=bar"
   "args": [ [ "Flag", { "name": "foo", "payload": [ "Resolved", "bar" ] } ] ]
 }
 
-## Single command with single explicitly-parameterized flag followed by a positional parameter:
+### Single command with single explicitly-parameterized flag followed by a positional parameter:
 Parser.statement "test --foo=bar baz"
 {
   "count": 1,
@@ -147,7 +149,7 @@ Parser.statement "test --foo=bar baz"
   ]
 }
 
-## Single command with mixed flags and parameters:
+### Single command with mixed flags and parameters:
 Parser.statement "test --foo bar --baz=widget qux -qu ux"
 {
   "count": 1,
@@ -163,7 +165,7 @@ Parser.statement "test --foo bar --baz=widget qux -qu ux"
   ]
 }
 
-## Statements separated by semicolons:
+### Statements separated by semicolons:
 Parser.script "test; 2test; 3test"
 {
   "statements": [
@@ -173,7 +175,7 @@ Parser.script "test; 2test; 3test"
   ]
 }
 
-## Statements separated by semicolons, with a trailing semicolon:
+### Statements separated by semicolons, with a trailing semicolon:
 Parser.script "test; 2test; 3test;"
 {
   "statements": [
@@ -183,7 +185,7 @@ Parser.script "test; 2test; 3test;"
   ]
 }
 
-## Statements, with arguments, separated by semicolons:
+### Statements, with arguments, separated by semicolons:
 Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar"
 {
   "statements": [
@@ -213,7 +215,7 @@ Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar"
   ]
 }
 
-## Statements, with arguments, separated by semicolons, with a trailing semicolon:
+### Statements, with arguments, separated by semicolons, with a trailing semicolon:
 Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar;"
 {
   "statements": [
@@ -243,7 +245,7 @@ Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar;"
   ]
 }
 
-## Newlines after statements:
+### Newlines after statements:
 Parser.script "test;\n   2test;\n   3test"
 {
   "statements": [
@@ -253,7 +255,7 @@ Parser.script "test;\n   2test;\n   3test"
   ]
 }
 
-## Newlines after statements, with a trailing newline:
+### Newlines after statements, with a trailing newline:
 Parser.script "test;\n   2test;\n   3test;\n   "
 {
   "statements": [
@@ -263,3 +265,12 @@ Parser.script "test;\n   2test;\n   3test;\n   "
   ]
 }
 
+### An acceptable statement, incrementally:
+Incremental.statement "hello --where=world"
+{
+  "count": 1,
+  "cmd": "hello",
+  "args": [
+    [ "Flag", { "name": "where", "payload": [ "Resolved", "world" ] } ]
+  ]
+}

@@ -1,15 +1,19 @@
 open Excmd
 
 let scrpt desc str =
-   Printf.printf "## %s:\nParser.script %S\n" desc str ;
-   AST.pp (Parser.script_of_string str) ;
-   Printf.printf "\n\n"
+   Printf.printf "\n\n### %s:\nParser.script %S\n" desc str ;
+   AST.pp (Parser.script_of_string str)
 
 
 let stmt desc str =
-   Printf.printf "## %s:\nParser.statement %S\n" desc str ;
-   Statement.pp (Parser.statement_of_string str) ;
-   Printf.printf "\n\n"
+   Printf.printf "\n\n### %s:\nParser.statement %S\n" desc str ;
+   Statement.pp (Parser.statement_of_string str)
+
+
+let incr_stmt desc str =
+   Printf.printf "\n\n### %s:\nIncremental.statement %S\n" desc str ;
+   let pp stmt = Statement.dehydrate stmt |> Statement.pp in
+   (pp, Incremental.statement_of_string str)
 
 
 let tests () =
@@ -51,7 +55,14 @@ let tests () =
       "test --foo bar; 2test --foo=bar; 3test --foo bar;" ;
    scrpt "Newlines after statements" "test;\n   2test;\n   3test" ;
    scrpt "Newlines after statements, with a trailing newline"
-      "test;\n   2test;\n   3test;\n   "
+      "test;\n   2test;\n   3test;\n   " ;
+   (* Incremental API *)
+   let pp, entrypoint =
+      incr_stmt "An acceptable statement, incrementally" "hello --where=world"
+   in
+   let accept statement = pp statement in
+   let fail _last_good _failing = failwith "parsing should have succeeded" in
+   Incremental.continue ~accept ~fail entrypoint
 
 
 let () =

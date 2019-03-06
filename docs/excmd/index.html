@@ -1,2 +1,12 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"><head><title>index (excmd.index)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div class="content"><header><nav><a href="../index.html">Up</a> – <a href="../index.html">excmd</a> &#x00BB; index</nav></header><p>(** Test *)</p></div></body></html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>index (excmd.index)</title><link rel="stylesheet" href="../odoc.css"/><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div class="content"><header><nav><a href="../index.html">Up</a> – <a href="../index.html">excmd</a> &#x00BB; index</nav></header><h1 id="excmd.js"><a href="#excmd.js" class="anchor"></a>Excmd.js</h1><p>This is a library for parsing <a href="https://github.com/tridactyl/tridactyl">Tridactyl</a>-style ‘ex-mode commands.’ These lie somewhere halfway between a <a href="http://learnvimscriptthehardway.stevelosh.com/chapters/01.html">Vim excmd</a> and a shell-command; and look <a href="https://github.com/tridactyl/tridactyl/blob/master/.tridactylrc">something</a> like this:</p><p>FIXME: Update these examples once talking thru syntax changes with the fam.</p><pre><code class="ml">&quot; I like wikiwand but I don't like the way it changes URLs
+bindurl wikiwand.com yy composite js document.location.href.replace(&quot;wikiwand.com/en&quot;,&quot;wikipedia.org/wiki&quot;) | clipboard yank
+
+&quot; Make gu take you back to subreddit from comments
+bindurl reddit.com gu urlparent 4
+
+&quot; Allow Ctrl-a to select all in the commandline
+unbind --mode=ex &lt;C-a&gt;
+
+&quot; Julia docs' built in search is bad
+set searchurls.julia https://www.google.com/search?q=site:http://docs.julialang.org/en/v1.0%20</code></pre><h2 id="usage"><a href="#usage" class="anchor"></a>Usage</h2><p>Get started with <a href="Excmd/Parser/index.html#val-statement_of_string"><code>Excmd.Parser.statement_of_string</code></a>, and the functions of <a href="Excmd/Statement/index.html"><code>Excmd.Statement</code></a>.</p><p>TODO: NYW</p></div></body></html>
