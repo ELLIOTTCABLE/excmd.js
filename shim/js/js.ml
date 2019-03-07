@@ -3,7 +3,7 @@ let no_native name =
 
 
 module Json = struct
-   let stringifyAny _val = no_native "Json.stringifyAny"
+   let stringifyAny _val = no_native "Js.Json.stringifyAny"
 end
 
 let log _val = no_native "Js.log"

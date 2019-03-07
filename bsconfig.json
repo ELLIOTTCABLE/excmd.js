@@ -10,6 +10,9 @@
          { "name": "menhir-lib", "edge": ["menhirLib.ml", "menhirLib.mli", ":", "parserAutomaton.mly"] },
          { "name": "menhir", "edge": ["parserAutomaton.ml", ":", "parserAutomaton.mly", "parserUtils.mly", "tokens.ml"] }
       ]
+    },
+    {
+      "dir": "shim/native"
     }
   ],
   "ppx-flags": [
