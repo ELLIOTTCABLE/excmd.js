@@ -3,11 +3,9 @@ all: build-ml
 
 .PHONY: build-ml
 build-ml: src/uAX31.ml src/parserAutomaton.mly
-	# This is a horrible hack. We run the BuckleScript build first, since the Menhir
-	# configuration is already laid out in bsconfig.json; but remove the copied AST
-	# implementation so Dune can copy-over the one with OCaml-specific annotations.
+	# This is a horrible hack. We run the BuckleScript build first, since the Menhir configuration is
+	# already laid out in bsconfig.json.
 	./node_modules/.bin/bsb -make-world
-	rm -f src/aST.ml
 	dune build
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
@@ -35,7 +33,6 @@ clean-all: clean
 
 .PHONY: clean
 clean:
-	rm -f src/aST.ml
 	rm -f src/menhirLib.ml*
 	rm -f src/parserAutomaton.ml src/parserAutomaton.mli
 	rm -rf _build/

@@ -1,17 +1,11 @@
 (library
  (name        excmd)
  (public_name excmd)
- (libraries ppx_deriving_yojson.runtime sedlex)
+ (libraries bs-shim ppx_deriving_yojson.runtime sedlex)
  (preprocess (pps ppx_deriving_yojson sedlex.ppx))
 
  ; Disable fatal-level warnings from the compiled output
  (flags (:standard -w -K-9)))
-
-(rule
- (mode promote-until-clean)
- (deps aST.ocaml.ml)
- (targets aST.ml)
- (action  (copy %{deps} %{targets})))
 
 (documentation
  (package excmd)

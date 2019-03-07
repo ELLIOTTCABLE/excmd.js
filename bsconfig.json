@@ -5,7 +5,6 @@
     {
       "dir": "src",
       "generators": [
-         { "name": "cp", "edge": ["aST.ml", ":", "aST.bs.ml"] },
          { "name": "prepend-uax31", "edge": ["lexer.ml", ":", "uAX31.ml", "lexer.body.ml"] },
          { "name": "menhir-tokens", "edge": ["tokens.ml", "tokens.mli", ":", "parserAutomaton.mly", "tokens.tail.ml", "tokens.tail.mli"] },
          { "name": "menhir-lib", "edge": ["menhirLib.ml", "menhirLib.mli", ":", "parserAutomaton.mly"] },
@@ -17,10 +16,6 @@
     "ppx-sedlex/ppx.js"
   ],
   "generators": [
-      {
-         "name": "cp",
-         "command": "cp ${in} ${out}"
-      },
       {
          "name": "menhir",
          "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --table --lalr"
