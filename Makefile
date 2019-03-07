@@ -5,7 +5,10 @@ all: build-ml
 build-ml: src/uAX31.ml src/parserAutomaton.mly
 	# This is a horrible hack. We run the BuckleScript build first, since the Menhir configuration is
 	# already laid out in bsconfig.json.
-	./node_modules/.bin/bsb -make-world
+	-./node_modules/.bin/bsb -make-world
+
+	# Further horrible hack, to avoid using our local, BuckleScript-friendly copy of MenhirLib
+	rm -f src/menhirLib.ml*
 	dune build
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
@@ -18,16 +21,16 @@ pkg/ucd.nounihan.grouped.zip:
 	curl http://www.unicode.org/Public/11.0.0/ucdxml/ucd.nounihan.grouped.zip -o $@
 
 .PHONY: build-doc
-build-doc:
+build-doc: src/parserAutomaton.mly
+	rm -f src/menhirLib.ml*
+
 	dune build @doc
 	# FIXME: There's gotta be a better way to clean up the docs ...
-	-rm -r "_build/default/_doc/_html/excmd/Excmd/MenhirLib" \
-		"_build/default/_doc/_html/excmd/Excmd__"* \
-		"_build/default/_doc/_html/index.html"
+	-rm -r "_build/default/_doc/_html/excmd/Excmd__"*
 	mkdir -p docs
-	cp -Rv "_build/default/_doc/_html/"*.js docs/
-	cp -Rv "_build/default/_doc/_html/"*.css docs/
-	cp -Rv "_build/default/_doc/_html/excmd" docs/
+	@cp -Rv "_build/default/_doc/_html/"*.js docs/
+	@cp -Rv "_build/default/_doc/_html/"*.css docs/
+	@cp -Rv "_build/default/_doc/_html/excmd" docs/
 
 .PHONY: clean-all
 clean-all: clean
