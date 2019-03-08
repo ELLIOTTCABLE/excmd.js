@@ -51,7 +51,6 @@ export function fromFakeUTF8String(fake_string) {
 // char-arrays. At the boundaries of BuckleScript-compiled code, we need to massage those back into
 // valid JavaScript UCS-2 strings.
 export function fixBrokenBuckleScriptUTF8String(broken_string) {
-   debugger
    const result = new Uint8Array(broken_string.length)
    for (var i = 0; i < broken_string.length; i++) {
       result[i] = broken_string.charCodeAt(i)

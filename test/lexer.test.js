@@ -327,7 +327,7 @@ describe('Lexer (objective interface)', () => {
       const buf = LexBuffer.ofString(''),
          tok = buf.next()
 
-      expect(lexer.show_token(tok._raw)).toEqual('EOF')
+      expect(lexer.show_token(lexer.token(tok.$locTok))).toEqual('EOF')
    })
 
    it('provides a symbolic token ID', () => {
