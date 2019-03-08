@@ -16,9 +16,9 @@ let of_string = function(js_string) {
 // behaviour is correctly reaching the JavaScript side.
 describe('Parser', () => {
    it('parses a single command', () => {
-      const buf = of_string('hello'),
-         $stmt = $Parser.statement(buf)
+      const $buf = of_string('hello'),
+         $stmt = $Parser.statement($buf)
 
-      expect($Statement.command($stmt)).toBe("hello")
+      expect($Statement.command($stmt)).toBe('hello')
    })
 })

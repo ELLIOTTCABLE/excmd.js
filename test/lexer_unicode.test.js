@@ -1,7 +1,4 @@
-import lexer from '../src/lexer.bs'
-import tokens from '../src/tokens.bs'
-import {LexBuffer, Token} from '../src/interface'
-import {toFakeUTF8String, fromFakeUTF8String} from '../src/fake_string'
+import {LexBuffer} from '../src/interface'
 
 describe('Lexer, Unicode support', () => {
    // Yes, I used Google Translate. Don't h8.
