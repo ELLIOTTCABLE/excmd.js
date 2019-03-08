@@ -1,6 +1,13 @@
 .PHONY: all
 all: build-ml
 
+.PHONY: test
+test: test-ml
+
+.PHONY: test-ml
+test-ml: build-ml
+	dune runtest
+
 .PHONY: build-ml
 build-ml: src/uAX31.ml src/parserAutomaton.mly
 	# This is a horrible hack. We run the BuckleScript build first, since the Menhir configuration is
