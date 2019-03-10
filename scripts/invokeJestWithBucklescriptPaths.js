@@ -1,27 +1,16 @@
 #!/usr/bin/env node
-// changes path `.ml` or `.mli` to `.bs.js`
-// ex: foo.mli -> foo.bs.js
-
-// 1/ change ext (check)
-// 2/ run `jest`
 
 const path = require('path')
 const {spawnSync} = require('child_process')
 
-// change ext
+// change ML ext
 
-const pathArr = []
-
-process.argv.forEach(val => {
-   pathArr.push(val)
-})
-
-const newPathArr = pathArr.slice(2)
+const newPathArr = process.argv.slice(2)
 
 function pathChanger(arr) {
    return arr
       .map(thePath => path.parse(thePath))
-      .filter(pathObj => pathObj['ext'] === '.ml' || pathObj['ext'] === '.mli')
+      .filter(pathObj => pathObj.ext === '.ml' || pathObj.ext === '.mli')
       .map(pathObj => {
          pathObj.ext = '.bs.js'
          delete pathObj.base
@@ -29,7 +18,7 @@ function pathChanger(arr) {
       })
 }
 
-// run jest
+// run jest with .bs.js ext
 
 const newPaths = pathChanger(newPathArr)
 
