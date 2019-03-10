@@ -169,7 +169,7 @@ let nonzero = [%sedlex.regexp? '1' .. '9']
 
 let digit = [%sedlex.regexp? zero | nonzero]
 
-let count = [%sedlex.regexp? zero | nonzero, Star digit]
+let count = [%sedlex.regexp? nonzero, Star digit]
 
 (* FIXME: Add U+200C/D? *)
 let start_char = [%sedlex.regexp? Sub (xid_start, digit)]
