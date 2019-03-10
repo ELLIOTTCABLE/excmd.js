@@ -17,6 +17,33 @@ let statement_of_string s =
    {buf; status = Incremental.statement curr}
 
 
+exception Break
+
+(* FIXME: Ugly, imperative mess. *)
+let acceptable_token cp =
+   let {status = cp; buf = _buf} = cp in
+   let len = Array.length Lexer.example_tokens in
+   let accepted_token = ref None in
+   ( try
+        for i = 0 to len do
+           let tok = Lexer.example_tokens.(i) in
+           if Interpreter.acceptable cp tok Lexing.dummy_pos then accepted_token := Some tok ;
+           ignore (raise Break)
+        done
+     with Break -> () ) ;
+   match !accepted_token with Some tok -> tok | None -> raise Not_found
+
+
+let acceptable_tokens cp =
+   let {status = cp; buf = _buf} = cp in
+   let accepted_tokens = ref [] in
+   Lexer.example_tokens
+   |> Array.iter (fun tok ->
+            if Interpreter.acceptable cp tok Lexing.dummy_pos then
+               accepted_tokens := tok :: !accepted_tokens ) ;
+   Array.of_list !accepted_tokens
+
+
 let continue ~accept ~fail cp =
    let {status = cp; buf} = cp in
    (* FIXME: This naive `last_token` won't be compatible with restarting. wat do *)

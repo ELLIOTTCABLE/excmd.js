@@ -18,3 +18,13 @@ val continue
    -> 'semantic checkpoint
    -> 'result
 (** A helper for Menhir's incremental parsers. Feeds the given ... NYD *)
+
+(** {2 Introspection } *)
+
+val acceptable_token : 'a checkpoint -> Tokens.token
+(** [acceptable_token cp], given a [cp] that is in an {!InputNeeded} state, will return a
+    single, arbitrarily chosen token that could be accepted by the parsing automaton. *)
+
+val acceptable_tokens : 'a checkpoint -> Tokens.token array
+(** [acceptable_tokens cp], given a [cp] that is in an {!InputNeeded} state, will return
+    an array of example-tokens that *could* be accepted next by the parsing automaton. *)

@@ -72,10 +72,20 @@ let tests () =
    let fail _last_good _failing = failwith "parsing should have succeeded" in
    Incremental.continue ~accept ~fail entrypoint ;
    let _pp, entrypoint =
-      incremental_statement "An failing statement, incrementally" "hello --where="
+      incremental_statement "A failing statement, incrementally" "hello --where="
    in
    let accept _statement = failwith "parsing should have failed" in
    let fail _last_good _failing = print_endline "fail-continuation invoked! cool." in
+   Incremental.continue ~accept ~fail entrypoint ;
+   let _pp, entrypoint =
+      incremental_statement "Listing of acceptable tokens during a failure"
+         "hello --where="
+   in
+   let accept _statement = failwith "parsing should have failed" in
+   let fail last_good _failing =
+      Incremental.acceptable_tokens last_good
+      |> Array.map Lexer.show_token |> Array.to_list |> String.concat "" |> print_endline
+   in
    Incremental.continue ~accept ~fail entrypoint
 
 

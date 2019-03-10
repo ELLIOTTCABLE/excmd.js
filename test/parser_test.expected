@@ -275,6 +275,11 @@ Incremental.statement "hello --where=world"
   ]
 }
 
-### An failing statement, incrementally:
+### A failing statement, incrementally:
 Incremental.statement "hello --where="
 fail-continuation invoked! cool.
+
+
+### Listing of acceptable tokens during a failure:
+Incremental.statement "hello --where="
+IDENTIFIER

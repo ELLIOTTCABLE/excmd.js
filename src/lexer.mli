@@ -20,9 +20,22 @@ val buffer_of_string : string -> buffer
 (* FIXME: Isn't there a better way to design this API inside BuckleScript? *)
 val token : Tokens.token located -> Tokens.token
 
+val example_tokens : Tokens.token array
+(** A static list of all tokens available at runtime, with arbitrary (but legal) payloads
+    when appropriate.
+
+    (Necessary for the incremental parser.) *)
+
 val compare_token : Tokens.token -> Tokens.token -> bool
 
 val show_token : Tokens.token -> string
+(** [show_token tok] will provide an arbitrary, unique string-representation of that
+    token, useful for debugging purposes. e.g. [show_token SEMICOLON] would return
+    ["SEMICOLON"].
+
+    For a more human-friendly version, see {!example_of_token}. *)
+
+val example_of_token : Tokens.token -> string
 
 val token_body : Tokens.token -> string option
 

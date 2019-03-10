@@ -56,7 +56,25 @@ let end_cnum (tok : token located) =
    loc.pos_cnum - loc.pos_bol
 
 
-(* FIXME: I really need ppx_deriving or something to DRY this up. Sigh, bsb. *)
+(* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
+let example_tokens =
+   [| COLON
+    ; PIPE
+    ; EQUALS
+    ; SEMICOLON
+    ; COUNT "123"
+    ; RIGHT_PAREN
+    ; RIGHT_COMMENT_DELIM
+    ; LEFT_PAREN
+    ; LEFT_COMMENT_DELIM
+    ; IDENTIFIER "ARBITRARY"
+    ; SHORT_FLAGS "ABC"
+    ; LONG_FLAG "ARBITRARY"
+    ; EOF
+    ; COMMENT_LINE "ARBITRARY"
+    ; COMMENT_CHUNK "ARBITRARY" |]
+
+
 let show_token tok =
    match tok with
    | COLON -> "COLON"
@@ -74,6 +92,25 @@ let show_token tok =
    | EOF -> "EOF"
    | COMMENT_LINE _ -> "COMMENT_LINE"
    | COMMENT_CHUNK _ -> "COMMENT_CHUNK"
+
+
+let example_of_token tok =
+   match tok with
+   | COLON -> ":"
+   | PIPE -> "|"
+   | EQUALS -> "="
+   | SEMICOLON -> ";"
+   | COUNT _ -> "2"
+   | RIGHT_PAREN -> ")"
+   | RIGHT_COMMENT_DELIM -> "*/"
+   | LEFT_PAREN -> "("
+   | LEFT_COMMENT_DELIM -> "/*"
+   | IDENTIFIER str -> str
+   | SHORT_FLAGS flags -> "-" ^ flags
+   | LONG_FLAG flag -> "--" ^ flag
+   | EOF -> ""
+   | COMMENT_LINE _ -> "// comment"
+   | COMMENT_CHUNK _ -> "comment body"
 
 
 let compare_token a b =
