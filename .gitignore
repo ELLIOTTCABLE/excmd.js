@@ -12,6 +12,8 @@ src/lexer.ml
 
 *.cmt
 
+.bsb.lock
+
 
 # Menhir
 # ======

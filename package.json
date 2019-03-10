@@ -7,6 +7,7 @@
     "build:doc": "make build-doc",
     "build:ml": "make build-ml",
     "build:bs": "bsb -make-world",
+    "watch:bs": "bsb -make-world -w",
     "build:js": "babel src --ignore '*.bs.js' --copy-files --out-dir lib",
     "build": "npm-run-all build:bs build:js",
     "clean": "make clean",
