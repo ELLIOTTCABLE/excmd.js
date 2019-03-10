@@ -16,6 +16,7 @@
     "test:js": "jest",
     "test:js:staged": "jest --onlyChanged",
     "test:ml": "dune runtest",
+    "promote:ml": "dune promote",
     "test": "npm-run-all build:bs --parallel 'test:*'",
     "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.js' 'test/**/*.js'",
     "format:ml": "make format-ml",
@@ -29,9 +30,15 @@
         "git add",
         "jest --bail --findRelatedTests"
       ],
-      "*.{ml,mli}": ["format-ml ; :", "git add"]
+      "*.{ml,mli}": [
+        "format-ml ; :",
+        "git add"
+      ]
     },
-    "ignore": ["docs/**/*", "package.json"]
+    "ignore": [
+      "docs/**/*",
+      "package.json"
+    ]
   },
   "husky": {
     "husky": {
