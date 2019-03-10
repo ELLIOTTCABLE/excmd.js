@@ -16,6 +16,7 @@
     "test:js:staged": "jest --onlyChanged",
     "test:ml": "dune runtest",
     "test": "npm-run-all build:bs --parallel 'test:*'",
+    "changed:ml": "./scripts/invokeJestWithBucklescriptPaths.js",
     "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.js' 'test/**/*.js'",
     "format:ml": "make format-ml",
     "format": "npm-run-all 'format:*'",
