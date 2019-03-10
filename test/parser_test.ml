@@ -1,17 +1,18 @@
+open Printf
 open Excmd
 
 let test_script desc str =
-   Printf.printf "\n\n### %s:\nParser.script %S\n" desc str ;
+   printf "\n\n### %s:\nParser.script %S\n" desc str ;
    AST.pp (Parser.script_of_string str)
 
 
 let test_statement desc str =
-   Printf.printf "\n\n### %s:\nParser.statement %S\n" desc str ;
+   printf "\n\n### %s:\nParser.statement %S\n" desc str ;
    Statement.pp (Parser.statement_of_string str)
 
 
 let incremental_statement desc str =
-   Printf.printf "\n\n### %s:\nIncremental.statement %S\n" desc str ;
+   printf "\n\n### %s:\nIncremental.statement %S\n" desc str ;
    let pp stmt = Statement.dehydrate stmt |> Statement.pp in
    (pp, Incremental.statement_of_string str)
 
@@ -69,6 +70,12 @@ let tests () =
    in
    let accept statement = pp statement in
    let fail _last_good _failing = failwith "parsing should have succeeded" in
+   Incremental.continue ~accept ~fail entrypoint ;
+   let _pp, entrypoint =
+      incremental_statement "An failing statement, incrementally" "hello --where="
+   in
+   let accept _statement = failwith "parsing should have failed" in
+   let fail _last_good _failing = print_endline "fail-continuation invoked! cool." in
    Incremental.continue ~accept ~fail entrypoint
 
 
@@ -84,10 +91,10 @@ let () =
          (Invalid_argument
              "First argument must be a valid non-terminal (e.g. 'script' or 'statement')")
    | _ ->
-      Printf.eprintf
+      eprintf
          "!! Please provide either no arguments (to run the automated tests), or exactly \
           two arguments (for\n" ;
-      Printf.eprintf
+      eprintf
          "!! interactive experimentation): a nonterminal entry-point (e.g. 'script'), and \
           a string to parse.\n" ;
       raise (Invalid_argument "Either exactly two, or zero, arguments are required")

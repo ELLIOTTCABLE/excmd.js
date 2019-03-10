@@ -274,3 +274,7 @@ Incremental.statement "hello --where=world"
     [ "Flag", { "name": "where", "payload": [ "Resolved", "world" ] } ]
   ]
 }
+
+### An failing statement, incrementally:
+Incremental.statement "hello --where="
+fail-continuation invoked! cool.
