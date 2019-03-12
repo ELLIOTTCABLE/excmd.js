@@ -1,14 +1,19 @@
 (* {2 Tokens } *)
-%token EOF
-%token COLON PIPE SEMICOLON EQUALS
-%token <string> COUNT
-%token LEFT_PAREN RIGHT_PAREN
-%token LEFT_COMMENT_DELIM RIGHT_COMMENT_DELIM
+%token COLON
 %token <string> COMMENT_CHUNK
 %token <string> COMMENT_LINE
+%token <string> COUNT
+%token EOF
+%token EQUALS
 %token <string> IDENTIFIER
-%token <string> SHORT_FLAGS
+%token LEFT_COMMENT_DELIM
+%token LEFT_PAREN
 %token <string> LONG_FLAG
+%token PIPE
+%token RIGHT_COMMENT_DELIM
+%token RIGHT_PAREN
+%token SEMICOLON
+%token <string> SHORT_FLAGS
 (* %token <bool> BOOL *)
 (* %token <int> NUM10 *)
 (* %token <string> STREL *)
