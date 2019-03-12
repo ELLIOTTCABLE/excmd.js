@@ -320,6 +320,15 @@ describe('Lexer', () => {
 
       expect(() => $Lexer.next($buf)).toThrowError()
    })
+
+   it('lexes a simple URL as its own token', () => {
+      const url = 'http://google.com',
+         $buf = of_string(url),
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('URL')
+      expect($Lexer.token_body($tok)).toEqual(url)
+   })
 })
 
 describe('Lexer (objective interface)', () => {
