@@ -15,20 +15,31 @@ exception LexError of Lexing.position * string
 
 exception ParseError of token located
 
-let sedlex_of_buffer buf = buf.sedlex
 
 let buffer_of_sedlex sedlex = {sedlex; mode = Main}
 
+let sedlex_of_buffer buf = buf.sedlex
+
 (* {2 Constructors } *)
-let buffer_of_string str = buffer_of_sedlex (Sedlexing.Utf8.from_string str)
+let buffer_of_string str = buffer_of_sedlex (Utf8.from_string str)
 
 (* {2 Helpers } *)
+let lexing_positions buf = sedlex_of_buffer buf |> lexing_positions
+
 let locate buf tok =
-   let start, curr = lexing_positions buf.sedlex in
+   let start, curr = lexing_positions buf in
    (tok, start, curr)
 
 
-let utf8 buf = Sedlexing.Utf8.lexeme buf.sedlex
+let curr buf =
+   let _start, curr = lexing_positions buf in
+   curr
+
+let start buf =
+   let start, _curr = lexing_positions buf in
+   start
+
+let utf8 buf = sedlex_of_buffer buf |> Utf8.lexeme
 
 (* {2 Accessors } *)
 let token (tok : token located) =
@@ -146,8 +157,7 @@ let token_body tok =
 
 (* {2 Errors } *)
 let lexfail buf s =
-   let _start, curr = lexing_positions buf.sedlex in
-   raise (LexError (curr, s))
+   raise (LexError ((curr buf), s))
 
 
 let illegal buf c =
@@ -206,16 +216,16 @@ let identifier =
 
 (* Swallow and discard whitespace; produces no tokens. *)
 let rec swallow_atmosphere ?(saw_whitespace = false) buf =
-   let s = buf.sedlex in
-   match%sedlex s with
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
    | Plus space -> swallow_atmosphere ~saw_whitespace:true buf
    | _ -> saw_whitespace
 
 
 (* Produces a single line of comment, wholesale, as a token. *)
 and comment buf =
-   let s = buf.sedlex in
-   match%sedlex s with
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
    | Star (Compl (newline_char | eof)) -> COMMENT_LINE (utf8 buf) |> locate buf
    | _ -> unreachable "comment"
 
@@ -223,8 +233,8 @@ and comment buf =
 (* Wow. This is a monstrosity. *)
 and block_comment depth buf =
    (* Js.log "token (mode: BlockComment)"; *)
-   let s = buf.sedlex in
-   match%sedlex s with
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
    | "*/" ->
       buf.mode <- (if depth = 1 then Main else BlockComment (depth - 1)) ;
       RIGHT_COMMENT_DELIM |> locate buf
@@ -232,26 +242,24 @@ and block_comment depth buf =
       buf.mode <- BlockComment (depth + 1) ;
       LEFT_COMMENT_DELIM |> locate buf
    | '/', Compl '*' | '*', Compl '/' | Plus (Compl ('*' | '/')) ->
-      let start, _ = sedlex_of_buffer buf |> Sedlexing.lexing_positions
-      and acc = Buffer.create 256 (* 3 lines of 80 chars = ~240 bytes *) in
+      let acc = Buffer.create 256 (* 3 lines of 80 chars = ~240 bytes *) in
       Buffer.add_string acc (utf8 buf) ;
-      continuing_block_comment buf start acc
+      continuing_block_comment buf (start buf) acc
    | eof ->
       lexfail buf
          "Reached end-of-file without finding a matching block-comment end-delimiter"
    | _ -> unreachable "block_comment"
 
 
-and continuing_block_comment buf start acc =
-   let s = buf.sedlex in
-   let _, curr = Sedlexing.lexing_positions s in
-   match%sedlex s with
+and continuing_block_comment buf orig_start acc =
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
    | "*/" | "/*" ->
-      Sedlexing.rollback s ;
-      (COMMENT_CHUNK (Buffer.contents acc), start, curr)
+      rollback slbuf ;
+      (COMMENT_CHUNK (Buffer.contents acc), orig_start, (curr buf))
    | '/', Compl '*' | '*', Compl '/' | Plus (Compl ('*' | '/')) ->
       Buffer.add_string acc (utf8 buf) ;
-      continuing_block_comment buf start acc
+      continuing_block_comment buf orig_start acc
    | eof ->
       lexfail buf
          "Reached end-of-file without finding a matching block-comment end-delimiter"
@@ -261,8 +269,8 @@ and continuing_block_comment buf start acc =
 and immediate ?(saw_whitespace = false) buf =
    (* Js.log "token (mode: Immediate)"; *)
    buf.mode <- Main ;
-   let s = buf.sedlex in
-   match%sedlex s with
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
    | eof -> EOF |> locate buf
    (* One-line comments are lexed as a single token ... *)
    | "//" -> comment buf
