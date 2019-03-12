@@ -15,6 +15,18 @@ exception LexError of Lexing.position * string
 
 exception ParseError of token located
 
+(* TLDs represented with >=1,000 domains in the Alexa top-1M. Messily extracted from
+   here: <https://www.hayksaakian.com/most-popular-tlds/>
+
+   Note that this depends on the JS-shim, so it's limited to the *common* functionality of
+   the JavaScript and OCaml regex engines. Keep it simple. *)
+let please_no_stop_dont_do_this_dear_god = Js.Re.fromString
+  "\\.a[rtuz]|b([egry]|iz)|c([achnz]|l(ub)?|om?)|d[ek]|e([su]|du)|f[ir]|g([r]|ov)|h[kru]|i([delort]|n(fo)?)|jp|k[rz]|lt|m([exy]|il)|n([loz]|et)|org|p([lt]|ro)|r[ou]|s([eku]|ite)|t[hrvw]|u[aks]|vn|xyz|za$"
+
+(* NOTE: This _must match_ the value of the Sedlex [Rep] for [possible_tld]! *)
+let max_tld_length = 4
+
+let is_tld str = Js.Re.test str please_no_stop_dont_do_this_dear_god
 
 let buffer_of_sedlex sedlex = {sedlex; mode = Main}
 
@@ -211,8 +223,68 @@ let identifier =
    [%sedlex.regexp?
          start_char, Star continue_char, Star (medial_char, Plus continue_char)]
 
+let all_identifier_char = [%sedlex.regexp? start_char | medial_char | continue_char]
+
+(* A lot of the details of this URL-parsing architecture comes from RFC3986. See also,
+   ELLIOTTCABLE/excmd.js#4. <https://tools.ietf.org/html/rfc3986> *)
+let lowercase_ascii_letter = [%sedlex.regexp? 'a' .. 'z' ]
+
+let ascii_letter = [%sedlex.regexp? 'a' .. 'z' | 'A' .. 'Z']
+
+let url_scheme_char = [%sedlex.regexp? ascii_letter | '+' | '-' | '.']
+
+(* Of note, this doesn't restrict which URL schemes we can *support*, just which we can
+   support users typing without adding quote-marks around them. *)
+let url_known_scheme =
+   [%sedlex.regexp?
+         ( "http" | "https" | "file" | "ftp" | "dat" | "gopher" | "ldap" | "mailto" | "news"
+         | "telnet" ), ':']
+
+
+let url_doubleslash_scheme = [%sedlex.regexp? (Star url_scheme_char), "://"]
+
+let url_scheme = [%sedlex.regexp? url_known_scheme | url_doubleslash_scheme]
+
+
+(* NOTE: The 'maximum' number here _must match_ the value of [max_tld_length]! *)
+let possible_tld = [%sedlex.regexp? Rep (lowercase_ascii_letter, 2 .. 4)]
+
+let url_domain_or_identifier = [%sedlex.regexp? identifier, '.', possible_tld]
+
+(* These are characters that can't be included in a URL *at all* without quotation. *)
+let urlbody_illegal_char = [%sedlex.regexp? space_char | '|']
+
+(* Characters that won't end bare URLs, as long as they're balanced. *)
+let urlbody_opening_char = [%sedlex.regexp? Chars "[("]
+
+let urlbody_closing_char = [%sedlex.regexp? Chars "])"]
+
+(* Characters allowed even in the very last position in a bare URL. *)
+let urlbody_continue_special_char = [%sedlex.regexp? Chars "-._/+"]
+let urlbody_continue_char = [%sedlex.regexp?
+
+   Sub (
+      (all_identifier_char | urlbody_continue_special_char),
+      (urlbody_illegal_char | urlbody_opening_char | urlbody_closing_char)
+   )]
+
+(* Characters that won't end bare URLs when in included in the middle, but that won't be
+   included when at the end. *)
+let urlbody_medial_special_char = [%sedlex.regexp? Chars "!#$%&*,:;=?@~"]
 
 (* {2 Lexer body } *)
+
+(* Validate incoming delimiter. As a special case, if there's no more delimiters to be
+   matched, an incoming closing delimiter returns [None]. *)
+let pop_delim buf opening closing xs =
+   match xs with
+   | [] -> None
+   | hd :: tl ->
+      if hd != opening then
+         lexfail buf
+            (String.concat "`"
+                ["Unmatched opening "; opening; ". (Did you forget a "; closing; "?)"])
+      else Some tl
 
 (* Swallow and discard whitespace; produces no tokens. *)
 let rec swallow_atmosphere ?(saw_whitespace = false) buf =
@@ -266,6 +338,48 @@ and continuing_block_comment buf orig_start acc =
    | _ -> unreachable "continuing_block_comment"
 
 
+and maybe_url buf =
+   let str = utf8 buf in
+   if not (is_tld str) then
+      IDENTIFIER str |> locate buf
+   else
+   bare_url buf
+
+
+and bare_url buf =
+   let slbuf = sedlex_of_buffer buf in
+   (* 99.5th% confidence interval for URLs is 218 chars.
+      <https://stackoverflow.com/a/31758386/31897> *)
+   let acc = Buffer.create 256 in
+   Buffer.add_string acc (utf8 buf) ;
+   url_no_delim buf (start buf) (curr buf) acc
+
+and url_no_delim buf orig_start prev_end acc =
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
+   | urlbody_opening_char ->
+      let delim = (utf8 buf) in
+      Buffer.add_string acc delim ;
+      url_inside_delims buf orig_start (curr buf) acc [delim]
+   | (Star (urlbody_continue_char, urlbody_medial_special_char)), urlbody_continue_char ->
+      Buffer.add_string acc (utf8 buf) ;
+      finish_url buf orig_start (curr buf) acc
+   (* | urlbody_illegal_char | urlbody_closing_char *)
+   | _ ->
+      rollback slbuf;
+      finish_url buf orig_start prev_end acc
+
+and url_inside_delims buf orig_start prev_end acc delims =
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
+   (* | space *)
+   | _ ->
+      rollback slbuf ;
+      finish_url buf orig_start (curr buf) acc
+
+and finish_url buf start curr acc =
+   URL (Buffer.contents acc), start, curr
+
 and immediate ?(saw_whitespace = false) buf =
    (* Js.log "token (mode: Immediate)"; *)
    buf.mode <- Main ;
@@ -283,6 +397,8 @@ and immediate ?(saw_whitespace = false) buf =
    | '|' -> PIPE |> locate buf
    | ';' -> SEMICOLON |> locate buf
    | count -> COUNT (utf8 buf) |> locate buf
+   | url_scheme -> bare_url buf
+   | url_domain_or_identifier -> maybe_url buf
    | identifier -> IDENTIFIER (utf8 buf) |> locate buf
    | "--", identifier ->
       let whole = utf8 buf in
