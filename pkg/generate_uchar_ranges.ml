@@ -3,12 +3,14 @@ let ucd_or_die inf =
       let ic = if inf = "-" then stdin else open_in inf in
       let d = Uucd.decoder (`Channel ic) in
       match Uucd.decode d with
-      | `Ok db -> db
-      | `Error e ->
+       | `Ok db -> db
+       | `Error e ->
          let (l0, c0), (l1, c1) = Uucd.decoded_range d in
          Printf.eprintf "%s:%d.%d-%d.%d: %s\n%!" inf l0 c0 l1 c1 e ;
          exit 1
-   with Sys_error e -> Printf.eprintf "%s\n%!" e ; exit 1
+   with Sys_error e ->
+      Printf.eprintf "%s\n%!" e ;
+      exit 1
 
 
 let get_exn = function Some x -> x | None -> raise (Invalid_argument "Option.get")
@@ -46,12 +48,12 @@ type entry = Single of Uchar.t | Range of (Uchar.t * Uchar.t)
 
 let collapse (entries : entry list) (cp : Uchar.t) : entry list =
    match entries with
-   | Range (a, b) :: rest ->
+    | Range (a, b) :: rest ->
       if Uchar.pred a = cp then Range (cp, b) :: rest
       else Single cp :: Range (a, b) :: rest
-   | Single b :: rest ->
+    | Single b :: rest ->
       if Uchar.pred b = cp then Range (cp, b) :: rest else Single cp :: Single b :: rest
-   | [] -> [Single cp]
+    | [] -> [Single cp]
 
 
 let dump_header () =
@@ -69,16 +71,16 @@ let dump_matchers ucd lid chars =
    Printf.printf "let %s = [%%sedlex.regexp?\n" lid ;
    List.fold_left collapse [] chars
    |> List.iter (fun entry ->
-            if !is_first then (
-               is_first := false ;
-               print_string "  " )
-            else print_string "| " ;
-            match entry with
-            | Range (a, b) ->
-               Printf.printf "0x%04X .. 0x%04X (* '%s' - '%s' *)\n" (Uchar.to_int a)
-                  (Uchar.to_int b) (name_of ucd a) (name_of ucd b)
-            | Single cp ->
-               Printf.printf "0x%04X (* '%s' *)\n" (Uchar.to_int cp) (name_of ucd cp) ) ;
+      if !is_first then (
+         is_first := false ;
+         print_string "  " )
+      else print_string "| " ;
+      match entry with
+       | Range (a, b) ->
+         Printf.printf "0x%04X .. 0x%04X (* '%s' - '%s' *)\n" (Uchar.to_int a)
+            (Uchar.to_int b) (name_of ucd a) (name_of ucd b)
+       | Single cp ->
+         Printf.printf "0x%04X (* '%s' *)\n" (Uchar.to_int cp) (name_of ucd cp) ) ;
    print_string "]\n\n"
 
 
@@ -101,8 +103,8 @@ let () =
            | Some `R -> s.right_joins <- s.curr :: s.right_joins
            | Some `L -> s.left_joins <- s.curr :: s.left_joins
            | Some `D ->
-              s.right_joins <- s.curr :: s.right_joins ;
-              s.left_joins <- s.curr :: s.left_joins
+             s.right_joins <- s.curr :: s.right_joins ;
+             s.left_joins <- s.curr :: s.left_joins
            | Some `T -> s.transparents <- s.curr :: s.transparents
            | Some _ | None -> () ) ;
          (* UAX #31-R1a, A2: http://unicode.org/reports/tr31/#A2 *)
@@ -117,15 +119,15 @@ let () =
            | `Mn, 0 -> s.nonspacings <- s.curr :: s.nonspacings
            (* General_Category = Nonspacing_Mark && Canonical_Combining_Class != Not_Reordered *)
            | `Mn, _ ->
-              s.nonspacings <- s.curr :: s.nonspacings ;
-              s.non_reordered_nonspacings <- s.curr :: s.non_reordered_nonspacings
+             s.nonspacings <- s.curr :: s.nonspacings ;
+             s.non_reordered_nonspacings <- s.curr :: s.non_reordered_nonspacings
            (* Canonical_Combining_Class = Virama *)
            | _, 9 -> s.viramas <- s.curr :: s.viramas
            | _ -> () ) ;
          (* UAX #31-R1a, B: http://unicode.org/reports/tr31/#B *)
          match get_exn (Uucd.cp_prop ucd i Uucd.indic_syllabic_category) with
-         | `Vowel_Dependent -> s.vowel_dependents <- s.curr :: s.vowel_dependents
-         | _ -> ()
+          | `Vowel_Dependent -> s.vowel_dependents <- s.curr :: s.vowel_dependents
+          | _ -> ()
       done
    with Invalid_argument _ ->
       Printf.eprintf "\n>> Total characters matching each predicate ...\n" ;

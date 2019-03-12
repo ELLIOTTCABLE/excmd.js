@@ -91,16 +91,16 @@ let tests () =
 
 let () =
    match Sys.argv with
-   (* Automated tests *)
-   | [|_|] -> tests ()
-   (* Interactive usage *)
-   | [|_; "script"; str|] -> AST.pp (Parser.script_of_string str)
-   | [|_; "statement"; str|] -> Statement.pp (Parser.statement_of_string str)
-   | [|_; _; _|] ->
+    (* Automated tests *)
+    | [|_|] -> tests ()
+    (* Interactive usage *)
+    | [|_; "script"; str|] -> AST.pp (Parser.script_of_string str)
+    | [|_; "statement"; str|] -> Statement.pp (Parser.statement_of_string str)
+    | [|_; _; _|] ->
       raise
          (Invalid_argument
              "First argument must be a valid non-terminal (e.g. 'script' or 'statement')")
-   | _ ->
+    | _ ->
       eprintf
          "!! Please provide either no arguments (to run the automated tests), or exactly \
           two arguments (for\n" ;

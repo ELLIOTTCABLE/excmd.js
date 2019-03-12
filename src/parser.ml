@@ -19,8 +19,8 @@ let parse buf p =
    in
    let parser = MenhirLib.Convert.Simplified.traditional2revised p in
    try parser next_token with
-   | Lexer.LexError (pos, s) -> raise (Lexer.LexError (pos, s))
-   | _ -> raise (ParseError !last_token)
+    | Lexer.LexError (pos, s) -> raise (Lexer.LexError (pos, s))
+    | _ -> raise (ParseError !last_token)
 
 
 let parse_string s p = parse (Lexer.buffer_of_string s) p

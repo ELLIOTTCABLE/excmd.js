@@ -59,58 +59,58 @@ let flag key st =
    let result = ref None in
    let iterator arg =
       match !result with
-      | Some _ -> true
-      | None -> (
-            match arg with
-            | Positional str -> (
-                  match !consuming_flag with
-                  | None -> true
-                  | Some fl ->
-                     fl.payload <- Resolved str ;
-                     result := Some fl ;
-                     consuming_flag := None ;
-                     false )
-            | Flag flag -> (
-                  print_endline flag.name ;
-                  if flag.name != key then true
-                  else
-                  match flag.payload with
-                  | Unresolved ->
-                     consuming_flag := Some flag ;
-                     true
-                  | Absent | Resolved _ ->
-                     result := Some flag ;
-                     true ) )
+       | Some _ -> true
+       | None -> (
+             match arg with
+              | Positional str -> (
+                    match !consuming_flag with
+                     | None -> true
+                     | Some fl ->
+                       fl.payload <- Resolved str ;
+                       result := Some fl ;
+                       consuming_flag := None ;
+                       false )
+              | Flag flag -> (
+                    print_endline flag.name ;
+                    if flag.name != key then true
+                    else
+                    match flag.payload with
+                     | Unresolved ->
+                       consuming_flag := Some flag ;
+                       true
+                     | Absent | Resolved _ ->
+                       result := Some flag ;
+                       true ) )
    in
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
    st.args <- Array.of_list (List.filter iterator (Array.to_list st.args)) ;
    match !result with
-   | None -> None
-   | Some fl -> (
-         match fl.payload with
-         | Absent -> Some Empty
-         | Resolved str -> Some (Payload str)
-         | Unresolved -> failwith "Unreachable" )
+    | None -> None
+    | Some fl -> (
+          match fl.payload with
+           | Absent -> Some Empty
+           | Resolved str -> Some (Payload str)
+           | Unresolved -> failwith "Unreachable" )
 
 
 let resolve_all_flags st =
    let consuming_flag = ref None in
    let iterator arg =
       match arg with
-      | Positional str -> (
-            match !consuming_flag with
-            | None -> true
-            | Some fl ->
-               fl.payload <- Resolved str ;
-               consuming_flag := None ;
-               false )
-      | Flag flag -> (
-            match flag.payload with
-            | Unresolved ->
-               consuming_flag := Some flag ;
-               true
-            | Absent | Resolved _ -> true )
+       | Positional str -> (
+             match !consuming_flag with
+              | None -> true
+              | Some fl ->
+                fl.payload <- Resolved str ;
+                consuming_flag := None ;
+                false )
+       | Flag flag -> (
+             match flag.payload with
+              | Unresolved ->
+                consuming_flag := Some flag ;
+                true
+              | Absent | Resolved _ -> true )
    in
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
@@ -123,9 +123,9 @@ let iter f st =
       | Positional _ -> ()
       | Flag flag -> (
             match flag.payload with
-            | Absent -> f flag.name Empty
-            | Resolved value -> f flag.name (Payload value)
-            | Unresolved -> failwith "Unreachable" )
+             | Absent -> f flag.name Empty
+             | Resolved value -> f flag.name (Payload value)
+             | Unresolved -> failwith "Unreachable" )
    in
    Array.iter iterator st.args
 
@@ -135,8 +135,8 @@ let positionals st =
       | Positional _ -> true
       | Flag flag -> (
             match flag.payload with
-            | Absent | Resolved _ -> false
-            | Unresolved ->
+             | Absent | Resolved _ -> false
+             | Unresolved ->
                flag.payload <- Absent ;
                false )
    and map = function Positional str -> str | Flag _ -> failwith "Unreachable" in

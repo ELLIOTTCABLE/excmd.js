@@ -39,8 +39,8 @@ let acceptable_tokens cp =
    let accepted_tokens = ref [] in
    Lexer.example_tokens
    |> Array.iter (fun tok ->
-            if Interpreter.acceptable cp tok Lexing.dummy_pos then
-               accepted_tokens := tok :: !accepted_tokens ) ;
+      if Interpreter.acceptable cp tok Lexing.dummy_pos then
+         accepted_tokens := tok :: !accepted_tokens ) ;
    Array.of_list !accepted_tokens
 
 
