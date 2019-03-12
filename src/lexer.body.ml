@@ -72,7 +72,8 @@ let example_tokens =
     ; RIGHT_COMMENT_DELIM
     ; RIGHT_PAREN
     ; SEMICOLON
-    ; SHORT_FLAGS "ABC" |]
+    ; SHORT_FLAGS "ABC"
+    ; URL "https://a.testing.url" |]
 
 
 let show_token tok =
@@ -92,6 +93,7 @@ let show_token tok =
    | RIGHT_PAREN -> "RIGHT_PAREN"
    | SEMICOLON -> "SEMICOLON"
    | SHORT_FLAGS _ -> "SHORT_FLAGS"
+   | URL _ -> "URL"
 
 
 let example_of_token tok =
@@ -111,6 +113,7 @@ let example_of_token tok =
    | RIGHT_PAREN -> ")"
    | SEMICOLON -> ";"
    | SHORT_FLAGS flags -> "-" ^ flags
+   | URL url -> url
 
 
 let compare_token a b =
@@ -122,7 +125,8 @@ let compare_token a b =
    |COMMENT_LINE _, COMMENT_LINE _
    |IDENTIFIER _, IDENTIFIER _
    |LONG_FLAG _, LONG_FLAG _
-   |SHORT_FLAGS _, SHORT_FLAGS _ ->
+   |SHORT_FLAGS _, SHORT_FLAGS _
+   |URL _, URL _ ->
       true
    | _ -> false
 
@@ -134,7 +138,8 @@ let token_body tok =
    |COMMENT_LINE s
    |IDENTIFIER s
    |LONG_FLAG s
-   |SHORT_FLAGS s ->
+   |SHORT_FLAGS s
+   |URL s ->
       Some s
    | _ -> None
 
