@@ -23,6 +23,7 @@ let tests () =
    test_statement "Single command, with count" "2test" ;
    (* Basic statements, with parameters *)
    test_statement "Single command, with single positional parameter" "test foo" ;
+   test_statement "Single command, with single positional URL" "test google.com/search" ;
    test_statement "Single command, count, and single positional parameter" "2test foo" ;
    test_statement "Single command, with multiple positional parameters" "test foo bar" ;
    test_statement "Single command, count, and multiple positional parameters"
@@ -38,6 +39,8 @@ let tests () =
       "test --foo bar" ;
    test_statement "Single command, with single possibly-parameterized short-flag"
       "test -f bar" ;
+   test_statement "Single command, single possibly-parameterized short-flag, and a URL"
+      "test -f google.com/search" ;
    test_statement
       "Single command with single possibly-parameterized flag followed by a positional \
        parameter"
@@ -50,6 +53,10 @@ let tests () =
       "Single command with single explicitly-parameterized flag followed by a positional \
        parameter"
       "test --foo=bar baz" ;
+   test_statement
+      "Single command, single explicitly-parameterized flag with a URL payload, followed \
+       by a positional parameter"
+      "test --foo=google.com/search baz" ;
    test_statement "Single command with mixed flags and parameters"
       "test --foo bar --baz=widget qux -qu ux" ;
    (* Simple multi-statement scripts *)
@@ -84,7 +91,7 @@ let tests () =
    let accept _statement = failwith "parsing should have failed" in
    let fail last_good _failing =
       Incremental.acceptable_tokens last_good
-      |> Array.map Lexer.show_token |> Array.to_list |> String.concat "" |> print_endline
+      |> Array.map Lexer.show_token |> Array.to_list |> String.concat ", " |> print_endline
    in
    Incremental.continue ~accept ~fail entrypoint
 

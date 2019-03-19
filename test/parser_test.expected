@@ -12,6 +12,14 @@ Parser.statement "2test"
 Parser.statement "test foo"
 { "count": 1, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
 
+### Single command, with single positional URL:
+Parser.statement "test google.com/search"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Positional", "google.com/search" ] ]
+}
+
 ### Single command, count, and single positional parameter:
 Parser.statement "2test foo"
 { "count": 2, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
@@ -105,6 +113,17 @@ Parser.statement "test -f bar"
   ]
 }
 
+### Single command, single possibly-parameterized short-flag, and a URL:
+Parser.statement "test -f google.com/search"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "f", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "google.com/search" ]
+  ]
+}
+
 ### Single command with single possibly-parameterized flag followed by a positional parameter:
 Parser.statement "test --foo bar baz"
 {
@@ -145,6 +164,20 @@ Parser.statement "test --foo=bar baz"
   "cmd": "test",
   "args": [
     [ "Flag", { "name": "foo", "payload": [ "Resolved", "bar" ] } ],
+    [ "Positional", "baz" ]
+  ]
+}
+
+### Single command, single explicitly-parameterized flag with a URL payload, followed by a positional parameter:
+Parser.statement "test --foo=google.com/search baz"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [
+      "Flag",
+      { "name": "foo", "payload": [ "Resolved", "google.com/search" ] }
+    ],
     [ "Positional", "baz" ]
   ]
 }
@@ -282,4 +315,4 @@ fail-continuation invoked! cool.
 
 ### Listing of acceptable tokens during a failure:
 Incremental.statement "hello --where="
-IDENTIFIER
+URL_START, IDENTIFIER

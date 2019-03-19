@@ -170,7 +170,7 @@ describe('Lexer', () => {
 
    it('lexes nested blockwise comments', () => {
       const $buf = of_string(
-            //  1 2   3   4   5    6        7            8 9
+            //1 2  3   4   5    6        7            8 9
             `( /* This /* is a */ block-wise comment */ )`,
          ),
          first = ' This ',
@@ -444,6 +444,22 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok1)).toEqual('github.com')
       expect($Lexer.show_token($tok2)).toBe('URL_REST')
       expect($Lexer.token_body($tok2)).toEqual('/ELLIOTTCABLE/excmd.js/')
+   })
+
+   it('lexes a long flag with a bare-URL payload', () => {
+      const $buf = of_string('--site=github.com/ELLIOTTCABLE'),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf),
+         $tok3 = $Lexer.next($buf),
+         $tok4 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('LONG_FLAG')
+      expect($Lexer.token_body($tok1)).toEqual('site')
+      expect($Lexer.show_token($tok2)).toBe('EQUALS')
+      expect($Lexer.show_token($tok3)).toBe('URL_START')
+      expect($Lexer.token_body($tok3)).toEqual('github.com')
+      expect($Lexer.show_token($tok4)).toBe('URL_REST')
+      expect($Lexer.token_body($tok4)).toEqual('/ELLIOTTCABLE')
    })
 })
 

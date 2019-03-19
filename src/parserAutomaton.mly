@@ -45,6 +45,11 @@ command:
  | x = IDENTIFIER { x }
  ;
 
+ noncommand_word:
+  | x = IDENTIFIER { x }
+  | hd = URL_START; tl = URL_REST { hd ^ tl }
+  ;
+
 arguments:
  | { [] }
  | xs = nonempty_arguments { xs }
@@ -56,8 +61,8 @@ nonempty_arguments:
  ;
 
 positional_and_arguments:
- | x = IDENTIFIER { [Positional x] }
- | x = IDENTIFIER; xs = nonempty_arguments { (Positional x) :: xs }
+ | x = noncommand_word { [Positional x] }
+ | x = noncommand_word; xs = nonempty_arguments { (Positional x) :: xs }
  ;
 
 flag_and_arguments:
@@ -73,7 +78,7 @@ flag_and_arguments:
 
 long_flag_before_positional:
  | name = LONG_FLAG  { Flag {name; payload = Unresolved} }
- | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
+ | name = LONG_FLAG; EQUALS; payload = noncommand_word
  { Flag {name; payload = Resolved payload} }
  ;
 
@@ -83,7 +88,7 @@ long_flag_before_flag:
 
 last_long_flag:
  | name = LONG_FLAG  { Flag {name; payload = Absent} }
- | name = LONG_FLAG; EQUALS; payload = IDENTIFIER
+ | name = LONG_FLAG; EQUALS; payload = noncommand_word
  { Flag {name; payload = Resolved payload} }
  ;
 
