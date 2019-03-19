@@ -321,13 +321,129 @@ describe('Lexer', () => {
       expect(() => $Lexer.next($buf)).toThrowError()
    })
 
-   it('lexes a simple URL as its own token', () => {
+   it('lexes the start of a bare URL as its own token', () => {
       const url = 'http://google.com',
          $buf = of_string(url),
          $tok = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toBe('URL')
-      expect($Lexer.token_body($tok)).toEqual(url)
+      expect($Lexer.show_token($tok)).toBe('URL_START')
+      expect($Lexer.token_body($tok)).toEqual('http://')
+   })
+
+   it('lexes the end of a bare URL as another token', () => {
+      const url = 'http://google.com',
+         $buf = of_string(url),
+         _ = $Lexer.next($buf), // Discard one URL_START
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('URL_REST')
+      expect($Lexer.token_body($tok)).toEqual('google.com')
+   })
+
+   it('lexes domains with periods as bare URLs', () => {
+      const url = 'github.com/ELLIOTTCABLE',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('github.com')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('/ELLIOTTCABLE')
+   })
+
+   it('lexes known protocols without double-slashes', () => {
+      const url = 'magnet:?xt=urn:btih:c12fe1c0...',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('magnet:')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('?xt=urn:btih:c12fe1c0...')
+   })
+
+   it('lexes unknown protocols as bare URLs as long as they have double-slashes', () => {
+      const url = 'drafts://x-callback-url/create?text=Hello%20World',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('drafts://')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('x-callback-url/create?text=Hello%20World')
+   })
+
+   it('includes *matched* delimiters within bare URLs', () => {
+      const url = 'msdn.microsoft.com/en-us/library/aa752574(VS.85).aspx',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('msdn.microsoft.com')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('/en-us/library/aa752574(VS.85).aspx')
+   })
+
+   it('excludes unmatched closing-delimiters from bare URLs', () => {
+      const url = 'github.com/ELLIOTTCABLE]',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('github.com')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('/ELLIOTTCABLE')
+   })
+
+   it('reports a lexing-error on unmatched opening-delimiters in bare URLs', () => {
+      const url = 'github.com/[ELLIOTTCABLE',
+         $buf = of_string(url),
+         _ = $Lexer.next($buf) // Discard one URL_START
+
+      expect(() => {
+         $Lexer.next($buf)
+      }).toThrowError('Unmatched opening `[`')
+   })
+
+   it('includes special characters in medial position in bare URLs', () => {
+      const url = 'github.com/ELLIOTTCABLE/excmd.js#readme',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('github.com')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('/ELLIOTTCABLE/excmd.js#readme')
+   })
+
+   it('excludes special characters in terminal position from bare URLs', () => {
+      const url = 'github.com/ELLIOTTCABLE/excmd.js#',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('github.com')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('/ELLIOTTCABLE/excmd.js')
+   })
+
+   it('includes a few special characters in terminal position in bare URLs', () => {
+      const url = 'github.com/ELLIOTTCABLE/excmd.js/',
+         $buf = of_string(url),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('URL_START')
+      expect($Lexer.token_body($tok1)).toEqual('github.com')
+      expect($Lexer.show_token($tok2)).toBe('URL_REST')
+      expect($Lexer.token_body($tok2)).toEqual('/ELLIOTTCABLE/excmd.js/')
    })
 })
 

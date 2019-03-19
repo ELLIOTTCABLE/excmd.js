@@ -1,3 +1,4 @@
 (library
  (name        js)
- (public_name bs-shim))
+ (public_name bs-shim)
+ (libraries str))

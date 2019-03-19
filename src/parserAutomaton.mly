@@ -14,7 +14,8 @@
 %token RIGHT_PAREN
 %token SEMICOLON
 %token <string> SHORT_FLAGS
-%token <string> URL
+%token <string> URL_REST
+%token <string> URL_START
 (* %token <bool> BOOL *)
 (* %token <int> NUM10 *)
 (* %token <string> STREL *)
