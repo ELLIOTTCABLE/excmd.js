@@ -81,17 +81,17 @@ let end_cnum (tok : token located) =
 let example_tokens =
    [| COLON
     ; COMMENT_CHUNK "ARBITRARY"
+    ; COMMENT_DELIM_CLOSE
+    ; COMMENT_DELIM_OPEN
     ; COMMENT_LINE "ARBITRARY"
     ; COUNT "123"
     ; EOF
     ; EQUALS
     ; IDENTIFIER "ARBITRARY"
-    ; LEFT_COMMENT_DELIM
-    ; LEFT_PAREN
     ; LONG_FLAG "ARBITRARY"
+    ; PAREN_CLOSE
+    ; PAREN_OPEN
     ; PIPE
-    ; RIGHT_COMMENT_DELIM
-    ; RIGHT_PAREN
     ; SEMICOLON
     ; SHORT_FLAGS "ABC"
     ; URL_REST "//www.google.com/search?q=tridactyl"
@@ -102,17 +102,17 @@ let show_token tok =
    match tok with
     | COLON -> "COLON"
     | COMMENT_CHUNK _ -> "COMMENT_CHUNK"
+    | COMMENT_DELIM_CLOSE -> "COMMENT_DELIM_CLOSE"
+    | COMMENT_DELIM_OPEN -> "COMMENT_DELIM_OPEN"
     | COMMENT_LINE _ -> "COMMENT_LINE"
     | COUNT _ -> "COUNT"
     | EOF -> "EOF"
     | EQUALS -> "EQUALS"
     | IDENTIFIER _ -> "IDENTIFIER"
-    | LEFT_COMMENT_DELIM -> "LEFT_COMMENT_DELIM"
-    | LEFT_PAREN -> "LEFT_PAREN"
     | LONG_FLAG _ -> "LONG_FLAG"
+    | PAREN_CLOSE -> "PAREN_CLOSE"
+    | PAREN_OPEN -> "PAREN_OPEN"
     | PIPE -> "PIPE"
-    | RIGHT_COMMENT_DELIM -> "RIGHT_COMMENT_DELIM"
-    | RIGHT_PAREN -> "RIGHT_PAREN"
     | SEMICOLON -> "SEMICOLON"
     | SHORT_FLAGS _ -> "SHORT_FLAGS"
     | URL_REST _ -> "URL_REST"
@@ -123,17 +123,17 @@ let example_of_token tok =
    match tok with
     | COLON -> ":"
     | COMMENT_CHUNK _ -> "comment body"
+    | COMMENT_DELIM_CLOSE -> "*/"
+    | COMMENT_DELIM_OPEN -> "/*"
     | COMMENT_LINE _ -> "// comment"
     | COUNT _ -> "2"
     | EOF -> ""
     | EQUALS -> "="
     | IDENTIFIER str -> str
-    | LEFT_COMMENT_DELIM -> "/*"
-    | LEFT_PAREN -> "("
     | LONG_FLAG flag -> "--" ^ flag
+    | PAREN_CLOSE -> ")"
+    | PAREN_OPEN -> "("
     | PIPE -> "|"
-    | RIGHT_COMMENT_DELIM -> "*/"
-    | RIGHT_PAREN -> ")"
     | SEMICOLON -> ";"
     | SHORT_FLAGS flags -> "-" ^ flags
     | URL_REST url -> url
@@ -327,10 +327,10 @@ and block_comment depth buf =
    match%sedlex slbuf with
     | "*/" ->
       buf.mode <- (if depth = 1 then Main else BlockComment (depth - 1)) ;
-      RIGHT_COMMENT_DELIM |> locate buf
+      COMMENT_DELIM_CLOSE |> locate buf
     | "/*" ->
       buf.mode <- BlockComment (depth + 1) ;
-      LEFT_COMMENT_DELIM |> locate buf
+      COMMENT_DELIM_OPEN |> locate buf
     | '/', Compl '*' | '*', Compl '/' | Plus (Compl ('*' | '/')) ->
       let acc = Buffer.create 256 (* 3 lines of 80 chars = ~240 bytes *) in
       Buffer.add_string acc (utf8 buf) ;
@@ -445,7 +445,7 @@ and immediate ?(saw_whitespace = false) buf =
     (* ... while block-comments swap into a custom lexing-mode to handle proper nesting. *)
     | "/*" ->
       buf.mode <- BlockComment 1 ;
-      LEFT_COMMENT_DELIM |> locate buf
+      COMMENT_DELIM_OPEN |> locate buf
     | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
     | ':' -> COLON |> locate buf
     | '|' -> PIPE |> locate buf
@@ -470,8 +470,8 @@ and immediate ?(saw_whitespace = false) buf =
              after their flag"
       else buf.mode <- Immediate ;
       EQUALS |> locate buf
-    | '(' -> LEFT_PAREN |> locate buf
-    | ')' -> RIGHT_PAREN |> locate buf
+    | '(' -> PAREN_OPEN |> locate buf
+    | ')' -> PAREN_CLOSE |> locate buf
     | _ -> (
           match next buf.sedlex with Some c -> illegal buf c | None -> unreachable "main" )
 

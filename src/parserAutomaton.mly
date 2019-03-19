@@ -1,17 +1,17 @@
 (* {2 Tokens } *)
 %token COLON
 %token <string> COMMENT_CHUNK
+%token COMMENT_DELIM_CLOSE
+%token COMMENT_DELIM_OPEN
 %token <string> COMMENT_LINE
 %token <string> COUNT
 %token EOF
 %token EQUALS
 %token <string> IDENTIFIER
-%token LEFT_COMMENT_DELIM
-%token LEFT_PAREN
 %token <string> LONG_FLAG
+%token PAREN_CLOSE
+%token PAREN_OPEN
 %token PIPE
-%token RIGHT_COMMENT_DELIM
-%token RIGHT_PAREN
 %token SEMICOLON
 %token <string> SHORT_FLAGS
 %token <string> URL_REST

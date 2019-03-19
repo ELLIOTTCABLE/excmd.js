@@ -38,7 +38,7 @@ describe('Lexer', () => {
          $loc = $Lexer.next_loc($buf),
          $tok = $Lexer.token($loc)
 
-      expect($Lexer.show_token($tok)).toEqual('LEFT_PAREN')
+      expect($Lexer.show_token($tok)).toEqual('PAREN_OPEN')
       expect($Lexer.start_cnum($loc)).toBe(1)
    })
 
@@ -53,7 +53,7 @@ describe('Lexer', () => {
       const $loc = $Lexer.next_loc($buf),
          $tok = $Lexer.token($loc)
 
-      expect($Lexer.show_token($tok)).toEqual('LEFT_PAREN')
+      expect($Lexer.show_token($tok)).toEqual('PAREN_OPEN')
       expect($Lexer.start_lnum($loc)).toBe(1)
    })
 
@@ -90,7 +90,7 @@ describe('Lexer', () => {
          __ = $Lexer.next($buf), // Discard another token
          $tok = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toEqual('RIGHT_PAREN')
+      expect($Lexer.show_token($tok)).toEqual('PAREN_CLOSE')
    })
 
    it('does not lex normal tokens inside a linewise comment', () => {
@@ -101,7 +101,7 @@ describe('Lexer', () => {
          __ = $Lexer.next($buf), // Discard another token
          $tok = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).not.toEqual('RIGHT_PAREN')
+      expect($Lexer.show_token($tok)).not.toEqual('PAREN_CLOSE')
    })
 
    it('lexes a blockwise comment', () => {
@@ -113,10 +113,10 @@ describe('Lexer', () => {
          $tok2 = $Lexer.next($buf),
          $tok3 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok1)).toBe('LEFT_COMMENT_DELIM')
+      expect($Lexer.show_token($tok1)).toBe('COMMENT_DELIM_OPEN')
       expect($Lexer.show_token($tok2)).toBe('COMMENT_CHUNK')
       expect($Lexer.token_body($tok2)).toBe(comment)
-      expect($Lexer.show_token($tok3)).toBe('RIGHT_COMMENT_DELIM')
+      expect($Lexer.show_token($tok3)).toBe('COMMENT_DELIM_CLOSE')
    })
 
    it('lexes a blockwise comment across multiple lines', () => {
@@ -132,10 +132,10 @@ describe('Lexer', () => {
          $tok2 = $Lexer.next($buf),
          $tok3 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok1)).toBe('LEFT_COMMENT_DELIM')
+      expect($Lexer.show_token($tok1)).toBe('COMMENT_DELIM_OPEN')
       expect($Lexer.show_token($tok2)).toBe('COMMENT_CHUNK')
       expect($Lexer.token_body($tok2)).toBe(comment)
-      expect($Lexer.show_token($tok3)).toBe('RIGHT_COMMENT_DELIM')
+      expect($Lexer.show_token($tok3)).toBe('COMMENT_DELIM_CLOSE')
    })
 
    it('lexes a blockwise comment after another token', () => {
@@ -148,10 +148,10 @@ describe('Lexer', () => {
          $tok2 = $Lexer.next($buf),
          $tok3 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok1)).toBe('LEFT_COMMENT_DELIM')
+      expect($Lexer.show_token($tok1)).toBe('COMMENT_DELIM_OPEN')
       expect($Lexer.show_token($tok2)).toBe('COMMENT_CHUNK')
       expect($Lexer.token_body($tok2)).toBe(comment)
-      expect($Lexer.show_token($tok3)).toBe('RIGHT_COMMENT_DELIM')
+      expect($Lexer.show_token($tok3)).toBe('COMMENT_DELIM_CLOSE')
    })
 
    it('lexes other tokens after a blockwise comment', () => {
@@ -165,7 +165,7 @@ describe('Lexer', () => {
       $Lexer.next($buf)
       $Lexer.next($buf)
 
-      expect($Lexer.show_token($Lexer.next($buf))).toBe('RIGHT_PAREN')
+      expect($Lexer.show_token($Lexer.next($buf))).toBe('PAREN_CLOSE')
    })
 
    it('lexes nested blockwise comments', () => {
@@ -179,25 +179,25 @@ describe('Lexer', () => {
 
       $Lexer.next($buf) // Discard one token
 
-      expect($Lexer.show_token($Lexer.next($buf))).toBe('LEFT_COMMENT_DELIM')
+      expect($Lexer.show_token($Lexer.next($buf))).toBe('COMMENT_DELIM_OPEN')
 
       const $tok1 = $Lexer.next($buf)
       expect($Lexer.show_token($tok1)).toBe('COMMENT_CHUNK')
       expect($Lexer.token_body($tok1)).toBe(first)
 
-      expect($Lexer.show_token($Lexer.next($buf))).toBe('LEFT_COMMENT_DELIM')
+      expect($Lexer.show_token($Lexer.next($buf))).toBe('COMMENT_DELIM_OPEN')
 
       const $tok2 = $Lexer.next($buf)
       expect($Lexer.show_token($tok2)).toBe('COMMENT_CHUNK')
       expect($Lexer.token_body($tok2)).toBe(second)
 
-      expect($Lexer.show_token($Lexer.next($buf))).toBe('RIGHT_COMMENT_DELIM')
+      expect($Lexer.show_token($Lexer.next($buf))).toBe('COMMENT_DELIM_CLOSE')
 
       const $tok3 = $Lexer.next($buf)
       expect($Lexer.show_token($tok3)).toBe('COMMENT_CHUNK')
       expect($Lexer.token_body($tok3)).toBe(third)
 
-      expect($Lexer.show_token($Lexer.next($buf))).toBe('RIGHT_COMMENT_DELIM')
+      expect($Lexer.show_token($Lexer.next($buf))).toBe('COMMENT_DELIM_CLOSE')
    })
 
    it('lexes medial separators', () => {
