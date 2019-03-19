@@ -32,8 +32,9 @@
         "jest --bail --findRelatedTests"
       ],
       "*.{ml,mli}": [
-        "format-ml ; :",
-        "git add"
+        "npm run format:ml ; :",
+        "git add",
+        "npm run changed:ml"
       ]
     },
     "ignore": [
