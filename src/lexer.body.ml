@@ -390,7 +390,7 @@ and url_no_delim buf orig_start prev_end acc =
     | urlbody_opening_char ->
       let delim = utf8 buf in
       Buffer.add_string acc delim ;
-      url_inside_delims buf orig_start (curr buf) acc [delim]
+      url_inside_delims buf orig_start acc [delim]
     (* These cases are identical; but Sedlex demands that the last case stand alone. |
        urlbody_illegal_char | urlbody_closing_char -> *)
     | _ ->
@@ -398,22 +398,22 @@ and url_no_delim buf orig_start prev_end acc =
       finish_url buf orig_start prev_end acc
 
 
-and url_inside_delims buf orig_start prev_end acc open_delims =
+and url_inside_delims buf orig_start acc open_delims =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
     | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char ->
       Buffer.add_string acc (utf8 buf) ;
-      url_inside_delims buf orig_start (curr buf) acc open_delims
+      url_inside_delims buf orig_start acc open_delims
     | urlbody_opening_char ->
       let delim = utf8 buf in
       Buffer.add_string acc delim ;
-      url_inside_delims buf orig_start (curr buf) acc (delim :: open_delims)
+      url_inside_delims buf orig_start acc (delim :: open_delims)
     | urlbody_closing_char -> (
           let delim = utf8 buf in
           Buffer.add_string acc delim ;
           match pop_delim buf delim open_delims with
            | [] -> url_no_delim buf orig_start (curr buf) acc
-           | remaining -> url_inside_delims buf orig_start (curr buf) acc remaining )
+           | remaining -> url_inside_delims buf orig_start acc remaining )
     (* These cases are identical; but Sedlex demands that the last case stand alone. |
        urlbody_illegal_char -> *)
     | _ ->
