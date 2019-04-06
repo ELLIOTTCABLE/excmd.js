@@ -362,14 +362,6 @@ let rec swallow_atmosphere ?(saw_whitespace = false) buf =
     | _ -> saw_whitespace
 
 
-(* Produces a single line of comment, wholesale, as a token. *)
-and comment buf =
-   let slbuf = sedlex_of_buffer buf in
-   match%sedlex slbuf with
-    | Star (Compl (newline_char | eof)) -> COMMENT (utf8 buf) |> locate buf
-    | _ -> unreachable "comment"
-
-
 (* Wow. This is a monstrosity. *)
 and comment_block depth buf =
    (* Js.log "token (mode: CommentBlock)"; *)
@@ -505,7 +497,7 @@ and immediate ?(saw_whitespace = false) buf =
    match%sedlex slbuf with
     | eof -> EOF |> locate buf
     (* One-line comments are lexed as a single token ... *)
-    | "//" -> comment buf
+    | "//", Star (Compl (newline_char | eof)) -> COMMENT (utf8 buf) |> locate buf
     (* ... while block-comments swap into a custom lexing-mode to handle proper nesting. *)
     | "/*" ->
       buf.mode <- CommentBlock 1 ;
@@ -513,9 +505,7 @@ and immediate ?(saw_whitespace = false) buf =
     | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
     | quote_balanced_open ->
       buf.mode <- QuoteBalanced 1 ;
-      let str = utf8 buf in
-      Js.log str ;
-      QUOTE_OPEN str |> locate buf
+      QUOTE_OPEN (utf8 buf) |> locate buf
     | quote_balanced_close ->
       quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
     | ':' -> COLON |> locate buf

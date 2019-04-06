@@ -61,7 +61,7 @@ describe('Lexer', () => {
       const $buf = of_string(`
          // This is a line-wise comment
       `),
-         comment = ' This is a line-wise comment',
+         comment = '// This is a line-wise comment',
          $tok = $Lexer.next($buf)
 
       expect($Lexer.show_token($tok)).toEqual('COMMENT')
@@ -73,7 +73,7 @@ describe('Lexer', () => {
          ( // This is a line-wise comment
          )
       `),
-         comment = ' This is a line-wise comment',
+         comment = '// This is a line-wise comment',
          _ = $Lexer.next($buf), // Discard one token
          $tok = $Lexer.next($buf)
 
