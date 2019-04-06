@@ -1,19 +1,18 @@
 (* {2 Tokens } *)
 %token COLON
-%token <string> COMMENT_CHUNK
-%token COMMENT_DELIM_CLOSE
-%token COMMENT_DELIM_OPEN
-%token <string> COMMENT_LINE
+%token <string> COMMENT
+%token COMMENT_CLOSE
+%token COMMENT_OPEN
 %token <string> COUNT
 %token EOF
 %token EQUALS
+%token <string> FLAGS_SHORT
+%token <string> FLAG_LONG
 %token <string> IDENTIFIER
-%token <string> LONG_FLAG
 %token PAREN_CLOSE
 %token PAREN_OPEN
 %token PIPE
 %token SEMICOLON
-%token <string> SHORT_FLAGS
 %token <string> URL_REST
 %token <string> URL_START
 (* %token <bool> BOOL *)
@@ -77,8 +76,8 @@ flag_and_arguments:
  ;
 
 long_flag_before_positional:
- | name = LONG_FLAG  { Flag {name; payload = Unresolved} }
- | name = LONG_FLAG; EQUALS; payload = noncommand_word
+ | name = FLAG_LONG  { Flag {name; payload = Unresolved} }
+ | name = FLAG_LONG; EQUALS; payload = noncommand_word
  { Flag {name; payload = Resolved payload} }
  ;
 
@@ -87,14 +86,14 @@ long_flag_before_flag:
  ;
 
 last_long_flag:
- | name = LONG_FLAG  { Flag {name; payload = Absent} }
- | name = LONG_FLAG; EQUALS; payload = noncommand_word
+ | name = FLAG_LONG  { Flag {name; payload = Absent} }
+ | name = FLAG_LONG; EQUALS; payload = noncommand_word
  { Flag {name; payload = Resolved payload} }
  ;
 
 
 short_flags_before_positional:
- | xs = explode(SHORT_FLAGS)
+ | xs = explode(FLAGS_SHORT)
  {
    let len = List.length xs in
    xs |> List.mapi (fun i x ->
@@ -111,7 +110,7 @@ short_flags_before_flag:
  ;
 
 last_short_flags:
- | xs = explode(SHORT_FLAGS)
+ | xs = explode(FLAGS_SHORT)
  { List.map (fun x -> Flag {name = x; payload = Absent}) xs }
  ;
 

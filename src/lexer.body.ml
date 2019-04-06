@@ -3,7 +3,7 @@
 open Tokens
 open Sedlexing
 
-type mode = Main | Immediate | BlockComment of int | String | BareURL
+type mode = BareURL | CommentBlock of int | Immediate | Main
 
 type buffer = {sedlex : Sedlexing.lexbuf; mutable mode : mode}
 
@@ -15,12 +15,18 @@ exception LexError of Lexing.position * string
 
 exception ParseError of token located
 
+(* {2 Constants } *)
+
 (* Note that this depends on the JS-shim, so it's limited to the *common* functionality
    of the JavaScript and OCaml regex engines. Keep it simple. *)
 let known_schemes =
    Js.Re.fromStringWithFlags ~flags:"i"
       "^(about|data?|f(eed|ile|tp)|g(eo|opher)|https?|i(nfo|rc[6s]?)|ldaps?|m(agnet|ailto)|n(ews|fs|ntp)|rsync|t(ag|elnet)|urn|view-source|wss?|xmpp|ymsgr):"
 
+
+let opening_for = [(")", "("); ("]", "[")]
+
+let closing_for = [("(", ")"); ("[", "]")]
 
 let is_known_scheme str = Js.Re.test str known_schemes
 
@@ -51,6 +57,16 @@ let start buf =
 
 let utf8 buf = sedlex_of_buffer buf |> Utf8.lexeme
 
+let lexfail buf s = raise (LexError (curr buf, s))
+
+let illegal buf c =
+   Uchar.to_int c
+   |> Printf.sprintf "unexpected character in expression: 'U+%04X'"
+   |> lexfail buf
+
+
+let unreachable str = failwith (Printf.sprintf "Unreachable: %s" str)
+
 (* {2 Accessors } *)
 let token (tok : token located) =
    let tok, _loc, _end = tok in
@@ -78,43 +94,22 @@ let end_cnum (tok : token located) =
 
 
 (* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
-let example_tokens =
-   [| COLON
-    ; COMMENT_CHUNK "ARBITRARY"
-    ; COMMENT_DELIM_CLOSE
-    ; COMMENT_DELIM_OPEN
-    ; COMMENT_LINE "ARBITRARY"
-    ; COUNT "123"
-    ; EOF
-    ; EQUALS
-    ; IDENTIFIER "ARBITRARY"
-    ; LONG_FLAG "ARBITRARY"
-    ; PAREN_CLOSE
-    ; PAREN_OPEN
-    ; PIPE
-    ; SEMICOLON
-    ; SHORT_FLAGS "ABC"
-    ; URL_REST "//www.google.com/search?q=tridactyl"
-    ; URL_START "https:" |]
-
-
 let show_token tok =
    match tok with
     | COLON -> "COLON"
-    | COMMENT_CHUNK _ -> "COMMENT_CHUNK"
-    | COMMENT_DELIM_CLOSE -> "COMMENT_DELIM_CLOSE"
-    | COMMENT_DELIM_OPEN -> "COMMENT_DELIM_OPEN"
-    | COMMENT_LINE _ -> "COMMENT_LINE"
+    | COMMENT _ -> "COMMENT"
+    | COMMENT_CLOSE -> "COMMENT_CLOSE"
+    | COMMENT_OPEN -> "COMMENT_OPEN"
     | COUNT _ -> "COUNT"
     | EOF -> "EOF"
     | EQUALS -> "EQUALS"
     | IDENTIFIER _ -> "IDENTIFIER"
-    | LONG_FLAG _ -> "LONG_FLAG"
+    | FLAG_LONG _ -> "FLAG_LONG"
     | PAREN_CLOSE -> "PAREN_CLOSE"
     | PAREN_OPEN -> "PAREN_OPEN"
     | PIPE -> "PIPE"
     | SEMICOLON -> "SEMICOLON"
-    | SHORT_FLAGS _ -> "SHORT_FLAGS"
+    | FLAGS_SHORT _ -> "FLAGS_SHORT"
     | URL_REST _ -> "URL_REST"
     | URL_START _ -> "URL_START"
 
@@ -122,22 +117,43 @@ let show_token tok =
 let example_of_token tok =
    match tok with
     | COLON -> ":"
-    | COMMENT_CHUNK _ -> "comment body"
-    | COMMENT_DELIM_CLOSE -> "*/"
-    | COMMENT_DELIM_OPEN -> "/*"
-    | COMMENT_LINE _ -> "// comment"
-    | COUNT _ -> "2"
+    | COMMENT str -> if str != "" then str else "a comment"
+    | COMMENT_CLOSE -> "*/"
+    | COMMENT_OPEN -> "/*"
+    | COUNT str -> if str != "" then str else "2"
     | EOF -> ""
     | EQUALS -> "="
-    | IDENTIFIER str -> str
-    | LONG_FLAG flag -> "--" ^ flag
+    | IDENTIFIER str -> if str != "" then str else "ident"
+    | FLAG_LONG flag -> if flag != "" then "--" ^ flag else "--flag"
     | PAREN_CLOSE -> ")"
     | PAREN_OPEN -> "("
     | PIPE -> "|"
     | SEMICOLON -> ";"
-    | SHORT_FLAGS flags -> "-" ^ flags
-    | URL_REST url -> url
-    | URL_START url -> url
+    | FLAGS_SHORT flags -> if flags != "" then "-" ^ flags else "-FlGs"
+    | URL_REST url -> if url != "" then url else "/search?q=tridactyl"
+    | URL_START url -> if url != "" then url else "google.com"
+
+
+let example_tokens =
+   (* This weird backflipping, is to avoid *even more* duplication: every possible
+      "example token" is consistently encoded only in [example_of_token]. *)
+   let ex = example_of_token in
+   [| COLON
+    ; COMMENT (COMMENT "" |> ex)
+    ; COMMENT_CLOSE
+    ; COMMENT_OPEN
+    ; COUNT (COUNT "" |> ex)
+    ; EOF
+    ; EQUALS
+    ; IDENTIFIER (IDENTIFIER "" |> ex)
+    ; FLAG_LONG (FLAG_LONG "" |> ex)
+    ; PAREN_CLOSE
+    ; PAREN_OPEN
+    ; PIPE
+    ; SEMICOLON
+    ; FLAGS_SHORT (FLAGS_SHORT "" |> ex)
+    ; URL_REST (URL_REST "" |> ex)
+    ; URL_START (URL_START "" |> ex) |]
 
 
 let compare_token a b =
@@ -145,12 +161,11 @@ let compare_token a b =
    else
    match (a, b) with
     | COUNT _, COUNT _
-    | COMMENT_CHUNK _, COMMENT_CHUNK _
-    | COMMENT_LINE _, COMMENT_LINE _
+    | COMMENT _, COMMENT _
     | IDENTIFIER _, IDENTIFIER _
-    | LONG_FLAG _, LONG_FLAG _
-    | SHORT_FLAGS _, SHORT_FLAGS _
-    | URL_REST _, URL_REST _ -> true
+    | FLAG_LONG _, FLAG_LONG _
+    | FLAGS_SHORT _, FLAGS_SHORT _
+    | URL_REST _, URL_REST _
     | URL_START _, URL_START _ -> true
     | _ -> false
 
@@ -158,26 +173,45 @@ let compare_token a b =
 let token_body tok =
    match tok with
     | COUNT s
-    | COMMENT_CHUNK s
-    | COMMENT_LINE s
+    | COMMENT s
     | IDENTIFIER s
-    | LONG_FLAG s
-    | SHORT_FLAGS s
-    | URL_REST s -> Some s
+    | FLAG_LONG s
+    | FLAGS_SHORT s
+    | URL_REST s
     | URL_START s -> Some s
     | _ -> None
 
 
-(* {2 Errors } *)
-let lexfail buf s = raise (LexError (curr buf, s))
+let url_opening_fail buf opening closing =
+   lexfail buf
+      (String.concat "`"
+          [ "Unmatched closing "
+          ; closing
+          ; " in a bare URL - delimiters must be balanced. (Did you forget a "
+          ; opening
+          ; "? If not, try enclosing the URL in quotes.)" ])
 
-let illegal buf c =
-   Uchar.to_int c
-   |> Printf.sprintf "unexpected character in expression: 'U+%04X'"
-   |> lexfail buf
+
+let url_closing_fail buf opening closing =
+   lexfail buf
+      (String.concat "`"
+          [ "Unmatched opening "
+          ; opening
+          ; " in bare URL - delimiters must be balanced. (Did you forget a "
+          ; closing
+          ; "? If not, try enclosing the URL in quotes.)" ])
 
 
-let unreachable str = failwith (Printf.sprintf "Unreachable: %s" str)
+let url_pop_delim buf closing xs =
+   let opening = List.assoc closing opening_for in
+   match xs with
+    | [] -> url_opening_fail buf opening closing
+    | hd :: tl ->
+      if hd != opening then
+         let missing_closing = List.assoc hd closing_for in
+         url_closing_fail buf hd missing_closing
+      else tl
+
 
 (* {2 Regular expressions } *)
 let newline_char = [%sedlex.regexp? '\r' | '\n']
@@ -269,41 +303,6 @@ let urlbody_continue_char =
 
 (* {2 Lexer body } *)
 
-let opening_for = [(")", "("); ("]", "[")]
-
-let closing_for = [("(", ")"); ("[", "]")]
-
-let opening_fail buf opening closing =
-   lexfail buf
-      (String.concat "`"
-          [ "Unmatched closing "
-          ; closing
-          ; " in a bare URL - delimiters must be balanced. (Did you forget a "
-          ; opening
-          ; "? If not, try enclosing the URL in quotes.)" ])
-
-
-let closing_fail buf opening closing =
-   lexfail buf
-      (String.concat "`"
-          [ "Unmatched opening "
-          ; opening
-          ; " in bare URL - delimiters must be balanced. (Did you forget a "
-          ; closing
-          ; "? If not, try enclosing the URL in quotes.)" ])
-
-
-let pop_delim buf closing xs =
-   let opening = List.assoc closing opening_for in
-   match xs with
-    | [] -> opening_fail buf opening closing
-    | hd :: tl ->
-      if hd != opening then
-         let missing_closing = List.assoc hd closing_for in
-         closing_fail buf hd missing_closing
-      else tl
-
-
 (* Swallow and discard whitespace; produces no tokens. *)
 let rec swallow_atmosphere ?(saw_whitespace = false) buf =
    let slbuf = sedlex_of_buffer buf in
@@ -316,44 +315,44 @@ let rec swallow_atmosphere ?(saw_whitespace = false) buf =
 and comment buf =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
-    | Star (Compl (newline_char | eof)) -> COMMENT_LINE (utf8 buf) |> locate buf
+    | Star (Compl (newline_char | eof)) -> COMMENT (utf8 buf) |> locate buf
     | _ -> unreachable "comment"
 
 
 (* Wow. This is a monstrosity. *)
-and block_comment depth buf =
-   (* Js.log "token (mode: BlockComment)"; *)
+and comment_block depth buf =
+   (* Js.log "token (mode: CommentBlock)"; *)
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
     | "*/" ->
-      buf.mode <- (if depth = 1 then Main else BlockComment (depth - 1)) ;
-      COMMENT_DELIM_CLOSE |> locate buf
+      buf.mode <- (if depth = 1 then Main else CommentBlock (depth - 1)) ;
+      COMMENT_CLOSE |> locate buf
     | "/*" ->
-      buf.mode <- BlockComment (depth + 1) ;
-      COMMENT_DELIM_OPEN |> locate buf
+      buf.mode <- CommentBlock (depth + 1) ;
+      COMMENT_OPEN |> locate buf
     | '/', Compl '*' | '*', Compl '/' | Plus (Compl ('*' | '/')) ->
       let acc = Buffer.create 256 (* 3 lines of 80 chars = ~240 bytes *) in
       Buffer.add_string acc (utf8 buf) ;
-      continuing_block_comment buf (start buf) acc
+      comment_block_continuing buf (start buf) acc
     | eof ->
       lexfail buf
          "Reached end-of-file without finding a matching block-comment end-delimiter"
-    | _ -> unreachable "block_comment"
+    | _ -> unreachable "comment_block"
 
 
-and continuing_block_comment buf orig_start acc =
+and comment_block_continuing buf orig_start acc =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
     | "*/" | "/*" ->
       rollback slbuf ;
-      (COMMENT_CHUNK (Buffer.contents acc), orig_start, curr buf)
+      (COMMENT (Buffer.contents acc), orig_start, curr buf)
     | '/', Compl '*' | '*', Compl '/' | Plus (Compl ('*' | '/')) ->
       Buffer.add_string acc (utf8 buf) ;
-      continuing_block_comment buf orig_start acc
+      comment_block_continuing buf orig_start acc
     | eof ->
       lexfail buf
          "Reached end-of-file without finding a matching block-comment end-delimiter"
-    | _ -> unreachable "continuing_block_comment"
+    | _ -> unreachable "comment_block_continuing"
 
 
 and known_scheme_or_identifier buf =
@@ -395,7 +394,7 @@ and url_no_delim buf orig_start prev_end acc =
        urlbody_illegal_char | urlbody_closing_char -> *)
     | _ ->
       rollback slbuf ;
-      finish_url buf orig_start prev_end acc
+      url_finish buf orig_start prev_end acc
 
 
 and url_inside_delims buf orig_start acc open_delims =
@@ -411,7 +410,7 @@ and url_inside_delims buf orig_start acc open_delims =
     | urlbody_closing_char -> (
           let delim = utf8 buf in
           Buffer.add_string acc delim ;
-          match pop_delim buf delim open_delims with
+          match url_pop_delim buf delim open_delims with
            | [] -> url_no_delim buf orig_start (curr buf) acc
            | remaining -> url_inside_delims buf orig_start acc remaining )
     (* These cases are identical; but Sedlex demands that the last case stand alone. |
@@ -419,10 +418,10 @@ and url_inside_delims buf orig_start acc open_delims =
     | _ ->
       let most_recent_opening = List.hd open_delims in
       let missing_closing = List.assoc most_recent_opening closing_for in
-      closing_fail buf most_recent_opening missing_closing
+      url_closing_fail buf most_recent_opening missing_closing
 
 
-and finish_url buf start curr acc =
+and url_finish buf start curr acc =
    buf.mode <- Main ;
    (URL_REST (Buffer.contents acc), start, curr)
 
@@ -444,8 +443,8 @@ and immediate ?(saw_whitespace = false) buf =
     | "//" -> comment buf
     (* ... while block-comments swap into a custom lexing-mode to handle proper nesting. *)
     | "/*" ->
-      buf.mode <- BlockComment 1 ;
-      COMMENT_DELIM_OPEN |> locate buf
+      buf.mode <- CommentBlock 1 ;
+      COMMENT_OPEN |> locate buf
     | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
     | ':' -> COLON |> locate buf
     | '|' -> PIPE |> locate buf
@@ -458,11 +457,11 @@ and immediate ?(saw_whitespace = false) buf =
     | "--", identifier ->
       let whole = utf8 buf in
       let flag = String.sub whole 2 (String.length whole - 2) in
-      LONG_FLAG flag |> locate buf
+      FLAG_LONG flag |> locate buf
     | "-", identifier ->
       let whole = utf8 buf in
       let flags = String.sub whole 1 (String.length whole - 1) in
-      SHORT_FLAGS flags |> locate buf
+      FLAGS_SHORT flags |> locate buf
     | '=' ->
       if saw_whitespace then
          lexfail buf
@@ -487,8 +486,7 @@ let next_loc buf =
     | Main -> main buf
     | Immediate -> immediate buf
     | BareURL -> url_rest buf
-    | BlockComment depth -> block_comment depth buf
-    | String -> failwith "NYI"
+    | CommentBlock depth -> comment_block depth buf
 
 
 (** Return *just* the next token, discarding location information. *)
