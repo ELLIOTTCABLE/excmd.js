@@ -247,10 +247,32 @@ let url_closing_fail buf opening closing =
           ; "? If not, try enclosing the URL in quotes.)" ])
 
 
+let quote_opening_fail buf opening closing =
+   lexfail buf
+      (String.concat "`"
+          ["Unmatched closing-quote "; closing; ". (Did you forget a "; opening; "?)"])
+
+
 let quote_closing_fail buf opening closing =
    lexfail buf
       (String.concat "`"
-          ["Unmatched opening-quote "; opening; ". (Did you forget a "; closing; "?"])
+          [ "Unmatched opening-quote "
+          ; opening
+          ; ". (Reached EOF without finding a matching"
+          ; closing
+          ; "; did you forget one?)" ])
+
+
+let quote_escaping_fail buf delim escape_seq =
+   lexfail buf
+      (String.concat "`"
+          [ "The escape-sequence"
+          ; escape_seq
+          ; " is not understood in "
+          ; delim
+          ; " strings. (Did you forget to escape a backslash? Try "
+          ; "\\" ^ escape_seq
+          ; " instead.)" ])
 
 
 let url_pop_delim buf closing xs =
@@ -409,6 +431,7 @@ and quote_balanced buf depth =
       QUOTE_CLOSE (utf8 buf) |> locate buf
     | Plus (Compl (quote_balanced_open | quote_balanced_close)) ->
       QUOTE (utf8 buf) |> locate buf
+    | eof -> quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
     | _ -> unreachable "quote_balanced"
 
 
@@ -507,7 +530,7 @@ and immediate ?(saw_whitespace = false) buf =
       buf.mode <- QuoteBalanced 1 ;
       QUOTE_OPEN (utf8 buf) |> locate buf
     | quote_balanced_close ->
-      quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
+      quote_opening_fail buf quote_balanced_open_char quote_balanced_close_char
     | ':' -> COLON |> locate buf
     | '|' -> PIPE |> locate buf
     | ';' -> SEMICOLON |> locate buf
