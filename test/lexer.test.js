@@ -1,7 +1,7 @@
 import $Lexer from '../src/lexer.bs'
 import $Tokens from '../src/tokens.bs'
 import {LexBuffer, Token} from '../src/interface'
-import {toFakeUTF8String, fromFakeUTF8String} from '../src/fake_string'
+import {toFakeUTF8String, fixBrokenBuckleScriptUTF8String} from '../src/fake_string'
 
 let of_string = function(js_string) {
    const utf8_arr = toFakeUTF8String(js_string)
@@ -460,6 +460,88 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok3)).toEqual('github.com')
       expect($Lexer.show_token($tok4)).toBe('URL_REST')
       expect($Lexer.token_body($tok4)).toEqual('/ELLIOTTCABLE')
+   })
+
+   it('lexes the start of a balanced string as its own token', () => {
+      const quote = '«hello there»',
+         $buf = of_string(quote),
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_OPEN')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok))).toEqual('«')
+   })
+
+   it('consumes spaces inside a balanced string', () => {
+      const quote = '«hello there»',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE')
+      expect($Lexer.token_body($tok)).toEqual('hello there')
+   })
+
+   it('ignores esaping entirely inside a balanced string', () => {
+      // Note that the JavaScript escaping here means that this string is *actually*:
+      // «hello \" there»
+      const quote = '«hello \\" there»',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE')
+      expect($Lexer.token_body($tok)).toEqual('hello \\" there')
+   })
+
+   it('lexes the end of a balanced string as its own token', () => {
+      const quote = '«hello there»',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         __ = $Lexer.next($buf), // Discard one QUOTE-body
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_CLOSE')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok))).toEqual('»')
+   })
+
+   // TODO: This should probably be done with Jest's snapshotting or something.
+   it('accepts matched pairs of quotes within balanced-quote strings', () => {
+      const quote = '«testing some «balanced «» strings»»',
+         $buf = of_string(quote),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf),
+         $tok3 = $Lexer.next($buf),
+         $tok4 = $Lexer.next($buf),
+         $tok5 = $Lexer.next($buf),
+         $tok6 = $Lexer.next($buf),
+         $tok7 = $Lexer.next($buf),
+         $tok8 = $Lexer.next($buf),
+         $tok9 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('QUOTE_OPEN')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok1))).toEqual('«')
+      expect($Lexer.show_token($tok2)).toBe('QUOTE')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok2))).toEqual(
+         'testing some ',
+      )
+      expect($Lexer.show_token($tok3)).toBe('QUOTE_OPEN')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok3))).toEqual('«')
+      expect($Lexer.show_token($tok4)).toBe('QUOTE')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok4))).toEqual(
+         'balanced ',
+      )
+      expect($Lexer.show_token($tok5)).toBe('QUOTE_OPEN')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok5))).toEqual('«')
+      expect($Lexer.show_token($tok6)).toBe('QUOTE_CLOSE')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok6))).toEqual('»')
+      expect($Lexer.show_token($tok7)).toBe('QUOTE')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok7))).toEqual(
+         ' strings',
+      )
+      expect($Lexer.show_token($tok8)).toBe('QUOTE_CLOSE')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok8))).toEqual('»')
+      expect($Lexer.show_token($tok9)).toBe('QUOTE_CLOSE')
+      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok9))).toEqual('»')
    })
 })
 

@@ -3,7 +3,14 @@
 open Tokens
 open Sedlexing
 
-type mode = BareURL | CommentBlock of int | Immediate | Main
+type mode =
+   | BareURL
+   | CommentBlock of int
+   | Immediate
+   | Main
+   | QuoteBalanced of int
+   | QuoteComplex
+   | QuoteSimple
 
 type buffer = {sedlex : Sedlexing.lexbuf; mutable mode : mode}
 
@@ -27,6 +34,29 @@ let known_schemes =
 let opening_for = [(")", "("); ("]", "[")]
 
 let closing_for = [("(", ")"); ("[", "]")]
+
+let quote_balanced_open =
+   [%sedlex.regexp? 0x00AB (* '«' LEFT-POINTING DOUBLE ANGLE QUOTATION MARK *)]
+
+
+let quote_balanced_close =
+   [%sedlex.regexp? 0x00BB (* '»' RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK *)]
+
+
+(* NOTE: These are hard-coded into the source as UTF-8 bytestrings. This is less than
+   ideal, but will have to do for now. *)
+
+let quote_balanced_open_char = "«"
+
+let quote_balanced_close_char = "»"
+
+let opening_for =
+   [(")", "("); ("]", "["); (quote_balanced_close_char, quote_balanced_open_char)]
+
+
+let closing_for =
+   [("(", ")"); ("[", "]"); (quote_balanced_open_char, quote_balanced_close_char)]
+
 
 let is_known_scheme str = Js.Re.test str known_schemes
 
@@ -108,6 +138,9 @@ let show_token tok =
     | PAREN_CLOSE -> "PAREN_CLOSE"
     | PAREN_OPEN -> "PAREN_OPEN"
     | PIPE -> "PIPE"
+    | QUOTE _ -> "QUOTE"
+    | QUOTE_CLOSE _ -> "QUOTE_CLOSE"
+    | QUOTE_OPEN _ -> "QUOTE_OPEN"
     | SEMICOLON -> "SEMICOLON"
     | FLAGS_SHORT _ -> "FLAGS_SHORT"
     | URL_REST _ -> "URL_REST"
@@ -128,6 +161,9 @@ let example_of_token tok =
     | PAREN_CLOSE -> ")"
     | PAREN_OPEN -> "("
     | PIPE -> "|"
+    | QUOTE str -> if str != "" then str else "a quote"
+    | QUOTE_CLOSE ch -> if ch != "" then ch else quote_balanced_close_char
+    | QUOTE_OPEN ch -> if ch != "" then ch else quote_balanced_open_char
     | SEMICOLON -> ";"
     | FLAGS_SHORT flags -> if flags != "" then "-" ^ flags else "-FlGs"
     | URL_REST url -> if url != "" then url else "/search?q=tridactyl"
@@ -150,6 +186,9 @@ let example_tokens =
     ; PAREN_CLOSE
     ; PAREN_OPEN
     ; PIPE
+    ; QUOTE (QUOTE "" |> ex)
+    ; QUOTE_CLOSE (QUOTE_CLOSE "" |> ex)
+    ; QUOTE_OPEN (QUOTE_OPEN "" |> ex)
     ; SEMICOLON
     ; FLAGS_SHORT (FLAGS_SHORT "" |> ex)
     ; URL_REST (URL_REST "" |> ex)
@@ -165,6 +204,9 @@ let compare_token a b =
     | IDENTIFIER _, IDENTIFIER _
     | FLAG_LONG _, FLAG_LONG _
     | FLAGS_SHORT _, FLAGS_SHORT _
+    | QUOTE _, QUOTE _
+    | QUOTE_CLOSE _, QUOTE_CLOSE _
+    | QUOTE_OPEN _, QUOTE_OPEN _
     | URL_REST _, URL_REST _
     | URL_START _, URL_START _ -> true
     | _ -> false
@@ -177,6 +219,9 @@ let token_body tok =
     | IDENTIFIER s
     | FLAG_LONG s
     | FLAGS_SHORT s
+    | QUOTE s
+    | QUOTE_CLOSE s
+    | QUOTE_OPEN s
     | URL_REST s
     | URL_START s -> Some s
     | _ -> None
@@ -200,6 +245,12 @@ let url_closing_fail buf opening closing =
           ; " in bare URL - delimiters must be balanced. (Did you forget a "
           ; closing
           ; "? If not, try enclosing the URL in quotes.)" ])
+
+
+let quote_closing_fail buf opening closing =
+   lexfail buf
+      (String.concat "`"
+          ["Unmatched opening-quote "; opening; ". (Did you forget a "; closing; "?"])
 
 
 let url_pop_delim buf closing xs =
@@ -355,6 +406,20 @@ and comment_block_continuing buf orig_start acc =
     | _ -> unreachable "comment_block_continuing"
 
 
+and quote_balanced buf depth =
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
+    | quote_balanced_open ->
+      buf.mode <- QuoteBalanced (depth + 1) ;
+      QUOTE_OPEN (utf8 buf) |> locate buf
+    | quote_balanced_close ->
+      buf.mode <- (if depth = 1 then Main else QuoteBalanced (depth + 1)) ;
+      QUOTE_CLOSE (utf8 buf) |> locate buf
+    | Plus (Compl (quote_balanced_open | quote_balanced_close)) ->
+      QUOTE (utf8 buf) |> locate buf
+    | _ -> unreachable "quote_balanced"
+
+
 and known_scheme_or_identifier buf =
    let str = utf8 buf in
    (* Js.log ("token: possibly known scheme, " ^ str); *)
@@ -446,6 +511,13 @@ and immediate ?(saw_whitespace = false) buf =
       buf.mode <- CommentBlock 1 ;
       COMMENT_OPEN |> locate buf
     | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
+    | quote_balanced_open ->
+      buf.mode <- QuoteBalanced 1 ;
+      let str = utf8 buf in
+      Js.log str ;
+      QUOTE_OPEN str |> locate buf
+    | quote_balanced_close ->
+      quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
     | ':' -> COLON |> locate buf
     | '|' -> PIPE |> locate buf
     | ';' -> SEMICOLON |> locate buf
@@ -483,10 +555,13 @@ and main buf =
 (** Return the next token, with location information. *)
 let next_loc buf =
    match buf.mode with
-    | Main -> main buf
-    | Immediate -> immediate buf
     | BareURL -> url_rest buf
     | CommentBlock depth -> comment_block depth buf
+    | Immediate -> immediate buf
+    | Main -> main buf
+    | QuoteBalanced depth -> quote_balanced buf depth
+    | QuoteComplex -> failwith "NYI"
+    | QuoteSimple -> failwith "NYI"
 
 
 (** Return *just* the next token, discarding location information. *)

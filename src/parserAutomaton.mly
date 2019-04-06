@@ -12,6 +12,9 @@
 %token PAREN_CLOSE
 %token PAREN_OPEN
 %token PIPE
+%token <string> QUOTE
+%token <string> QUOTE_CLOSE
+%token <string> QUOTE_OPEN
 %token SEMICOLON
 %token <string> URL_REST
 %token <string> URL_START
