@@ -3,14 +3,7 @@
 open Tokens
 open Sedlexing
 
-type mode =
-   | BareURL
-   | CommentBlock of int
-   | Immediate
-   | Main
-   | QuoteBalanced of int
-   | QuoteComplex
-   | QuoteSimple
+type mode = BareURL | CommentBlock of int | Immediate | Main | QuoteBalanced of int
 
 type buffer = {sedlex : Sedlexing.lexbuf; mutable mode : mode}
 
@@ -435,6 +428,35 @@ and quote_balanced buf depth =
     | _ -> unreachable "quote_balanced"
 
 
+and quote_complex buf =
+   (* The other Buffers in this file are all 256. Unlike those, I have no good reasoning
+      for choosing that number here, other than consistency. Send a pull-request with an
+      improvement. :P *)
+   let acc = Buffer.create 256 in
+   Buffer.add_string acc (utf8 buf) ;
+   quote_complex_body buf (start buf) (curr buf) acc
+
+
+and quote_complex_body buf orig_start prev_end acc : token located =
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
+    | Plus (Compl ('"' | '\\')) ->
+      Buffer.add_string acc (utf8 buf) ;
+      quote_complex_body buf orig_start (curr buf) acc
+    | '\\', '\\' ->
+      Buffer.add_string acc "\\" ;
+      quote_complex_body buf orig_start (curr buf) acc
+    | '\\', '"' ->
+      Buffer.add_string acc "\"" ;
+      quote_complex_body buf orig_start (curr buf) acc
+    | '\\', any -> quote_escaping_fail buf "\"" (utf8 buf)
+    | '"' ->
+      Buffer.add_string acc (utf8 buf) ;
+      (QUOTE (Buffer.contents acc), orig_start, prev_end)
+    | eof -> quote_closing_fail buf "\"" "\""
+    | _ -> unreachable "quote_complex_body"
+
+
 and known_scheme_or_identifier buf =
    let str = utf8 buf in
    (* Js.log ("token: possibly known scheme, " ^ str); *)
@@ -526,6 +548,7 @@ and immediate ?(saw_whitespace = false) buf =
       buf.mode <- CommentBlock 1 ;
       COMMENT_OPEN |> locate buf
     | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
+    | "\"" -> quote_complex buf
     | quote_balanced_open ->
       buf.mode <- QuoteBalanced 1 ;
       QUOTE_OPEN (utf8 buf) |> locate buf
@@ -573,8 +596,6 @@ let next_loc buf =
     | Immediate -> immediate buf
     | Main -> main buf
     | QuoteBalanced depth -> quote_balanced buf depth
-    | QuoteComplex -> failwith "NYI"
-    | QuoteSimple -> failwith "NYI"
 
 
 (** Return *just* the next token, discarding location information. *)
