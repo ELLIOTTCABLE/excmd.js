@@ -517,6 +517,46 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('"')
    })
 
+   it('supports the escape-character to escape itself', () => {
+      // Note that the JavaScript escaping here means that this string is *actually*:
+      // "hello \\"
+      const quote = '"hello \\\\""',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         __ = $Lexer.next($buf), // Discard one QUOTE_CHUNK
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_ESCAPE')
+      expect($Lexer.token_body($tok)).toEqual('\\')
+   })
+
+   it('supports the complex-string delimiter, escaped, *in* complex strings', () => {
+      // Note that the JavaScript escaping here means that this string is *actually*:
+      // "hello \" there"
+      const quote = '"hello \\" there"',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         __ = $Lexer.next($buf), // Discard one QUOTE_CHUNK
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_ESCAPE')
+      expect($Lexer.token_body($tok)).toEqual('"')
+   })
+
+   it('reserves all unknown escapes for future use by throwing an immediate error', () => {
+      // Note that the JavaScript escaping here means that this string is *actually*:
+      // "hello \q there"
+      const quote = '"hello \\q there"',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         __ = $Lexer.next($buf) // Discard one QUOTE_CHUNK
+
+      // FIXME: This should test the actual error type; but my errors are a little weird
+      // right now.
+      // expect(() => $Lexer.next($buf)).toThrowError($Lexer.LexError)
+      expect(() => $Lexer.next($buf)).toThrowError('LexError')
+   })
+
    it('lexes the start of a balanced string as its own token', () => {
       const quote = '«hello there»',
          $buf = of_string(quote),
