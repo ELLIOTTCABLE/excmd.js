@@ -462,6 +462,61 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok4)).toEqual('/ELLIOTTCABLE')
    })
 
+   it('lexes the first delimiter of a complex string', () => {
+      const quote = '"hello there"',
+         $buf = of_string(quote),
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_OPEN')
+      expect($Lexer.token_body($tok)).toEqual('"')
+   })
+
+   it('consumes spaces inside a complex string', () => {
+      const quote = '"hello there"',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_CHUNK')
+      expect($Lexer.token_body($tok)).toEqual('hello there')
+   })
+
+   it('lexes the last delimiter of a complex string', () => {
+      const quote = '"hello there"',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         __ = $Lexer.next($buf), // Discard one QUOTE_CHUNK
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_CLOSE')
+      expect($Lexer.token_body($tok)).toEqual('"')
+   })
+
+   it('produces complex strings in chunks, punctuated by escapes', () => {
+      // Note that the JavaScript escaping here means that this string is *actually*:
+      // "hello \" there"
+      const quote = '"hello \\" there"',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_CHUNK')
+      expect($Lexer.token_body($tok)).toEqual('hello ')
+   })
+
+   it('supports the complex-string delimiter, escaped, *in* complex strings', () => {
+      // Note that the JavaScript escaping here means that this string is *actually*:
+      // "hello \" there"
+      const quote = '"hello \\" there"',
+         $buf = of_string(quote),
+         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
+         __ = $Lexer.next($buf), // Discard one QUOTE_CHUNK
+         $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toBe('QUOTE_ESCAPE')
+      expect($Lexer.token_body($tok)).toEqual('"')
+   })
+
    it('lexes the start of a balanced string as its own token', () => {
       const quote = '«hello there»',
          $buf = of_string(quote),
@@ -477,7 +532,7 @@ describe('Lexer', () => {
          _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
          $tok = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toBe('QUOTE')
+      expect($Lexer.show_token($tok)).toBe('QUOTE_CHUNK')
       expect($Lexer.token_body($tok)).toEqual('hello there')
    })
 
@@ -489,7 +544,7 @@ describe('Lexer', () => {
          _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
          $tok = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toBe('QUOTE')
+      expect($Lexer.show_token($tok)).toBe('QUOTE_CHUNK')
       expect($Lexer.token_body($tok)).toEqual('hello \\" there')
    })
 
@@ -497,7 +552,7 @@ describe('Lexer', () => {
       const quote = '«hello there»',
          $buf = of_string(quote),
          _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
-         __ = $Lexer.next($buf), // Discard one QUOTE-body
+         __ = $Lexer.next($buf), // Discard one QUOTE_CHUNK
          $tok = $Lexer.next($buf)
 
       expect($Lexer.show_token($tok)).toBe('QUOTE_CLOSE')
@@ -520,13 +575,13 @@ describe('Lexer', () => {
 
       expect($Lexer.show_token($tok1)).toBe('QUOTE_OPEN')
       expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok1))).toEqual('«')
-      expect($Lexer.show_token($tok2)).toBe('QUOTE')
+      expect($Lexer.show_token($tok2)).toBe('QUOTE_CHUNK')
       expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok2))).toEqual(
          'testing some ',
       )
       expect($Lexer.show_token($tok3)).toBe('QUOTE_OPEN')
       expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok3))).toEqual('«')
-      expect($Lexer.show_token($tok4)).toBe('QUOTE')
+      expect($Lexer.show_token($tok4)).toBe('QUOTE_CHUNK')
       expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok4))).toEqual(
          'balanced ',
       )
@@ -534,7 +589,7 @@ describe('Lexer', () => {
       expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok5))).toEqual('«')
       expect($Lexer.show_token($tok6)).toBe('QUOTE_CLOSE')
       expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok6))).toEqual('»')
-      expect($Lexer.show_token($tok7)).toBe('QUOTE')
+      expect($Lexer.show_token($tok7)).toBe('QUOTE_CHUNK')
       expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok7))).toEqual(
          ' strings',
       )

@@ -12,7 +12,7 @@
 %token PAREN_CLOSE
 %token PAREN_OPEN
 %token PIPE
-%token <string> QUOTE
+%token <string> QUOTE_CHUNK
 %token <string> QUOTE_CLOSE
 %token <string> QUOTE_ESCAPE
 %token <string> QUOTE_OPEN

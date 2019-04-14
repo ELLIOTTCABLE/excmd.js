@@ -3,7 +3,13 @@
 open Tokens
 open Sedlexing
 
-type mode = BareURL | CommentBlock of int | Immediate | Main | QuoteBalanced of int
+type mode =
+   | BareURL
+   | CommentBlock of int
+   | Immediate
+   | Main
+   | QuoteBalanced of int
+   | QuoteComplex
 
 type buffer = {sedlex : Sedlexing.lexbuf; mutable mode : mode}
 
@@ -131,8 +137,9 @@ let show_token tok =
     | PAREN_CLOSE -> "PAREN_CLOSE"
     | PAREN_OPEN -> "PAREN_OPEN"
     | PIPE -> "PIPE"
-    | QUOTE _ -> "QUOTE"
+    | QUOTE_CHUNK _ -> "QUOTE_CHUNK"
     | QUOTE_CLOSE _ -> "QUOTE_CLOSE"
+    | QUOTE_ESCAPE _ -> "QUOTE_ESCAPE"
     | QUOTE_OPEN _ -> "QUOTE_OPEN"
     | SEMICOLON -> "SEMICOLON"
     | FLAGS_SHORT _ -> "FLAGS_SHORT"
@@ -154,8 +161,9 @@ let example_of_token tok =
     | PAREN_CLOSE -> ")"
     | PAREN_OPEN -> "("
     | PIPE -> "|"
-    | QUOTE str -> if str != "" then str else "a quote"
+    | QUOTE_CHUNK str -> if str != "" then str else "a quote"
     | QUOTE_CLOSE ch -> if ch != "" then ch else quote_balanced_close_char
+    | QUOTE_ESCAPE str -> if str != "" then str else "\\\\" (* That's two slashes, '\\' *)
     | QUOTE_OPEN ch -> if ch != "" then ch else quote_balanced_open_char
     | SEMICOLON -> ";"
     | FLAGS_SHORT flags -> if flags != "" then "-" ^ flags else "-FlGs"
@@ -179,8 +187,9 @@ let example_tokens =
     ; PAREN_CLOSE
     ; PAREN_OPEN
     ; PIPE
-    ; QUOTE (QUOTE "" |> ex)
+    ; QUOTE_CHUNK (QUOTE_CHUNK "" |> ex)
     ; QUOTE_CLOSE (QUOTE_CLOSE "" |> ex)
+    ; QUOTE_ESCAPE (QUOTE_ESCAPE "" |> ex)
     ; QUOTE_OPEN (QUOTE_OPEN "" |> ex)
     ; SEMICOLON
     ; FLAGS_SHORT (FLAGS_SHORT "" |> ex)
@@ -197,8 +206,9 @@ let compare_token a b =
     | IDENTIFIER _, IDENTIFIER _
     | FLAG_LONG _, FLAG_LONG _
     | FLAGS_SHORT _, FLAGS_SHORT _
-    | QUOTE _, QUOTE _
+    | QUOTE_CHUNK _, QUOTE_CHUNK _
     | QUOTE_CLOSE _, QUOTE_CLOSE _
+    | QUOTE_ESCAPE _, QUOTE_ESCAPE _
     | QUOTE_OPEN _, QUOTE_OPEN _
     | URL_REST _, URL_REST _
     | URL_START _, URL_START _ -> true
@@ -212,8 +222,9 @@ let token_body tok =
     | IDENTIFIER s
     | FLAG_LONG s
     | FLAGS_SHORT s
-    | QUOTE s
+    | QUOTE_CHUNK s
     | QUOTE_CLOSE s
+    | QUOTE_ESCAPE s
     | QUOTE_OPEN s
     | URL_REST s
     | URL_START s -> Some s
@@ -416,45 +427,32 @@ and comment_block_continuing buf orig_start acc =
 and quote_balanced buf depth =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
+    | Plus (Compl (quote_balanced_open | quote_balanced_close)) ->
+      QUOTE_CHUNK (utf8 buf) |> locate buf
     | quote_balanced_open ->
       buf.mode <- QuoteBalanced (depth + 1) ;
       QUOTE_OPEN (utf8 buf) |> locate buf
     | quote_balanced_close ->
       buf.mode <- (if depth = 1 then Main else QuoteBalanced (depth + 1)) ;
       QUOTE_CLOSE (utf8 buf) |> locate buf
-    | Plus (Compl (quote_balanced_open | quote_balanced_close)) ->
-      QUOTE (utf8 buf) |> locate buf
     | eof -> quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
     | _ -> unreachable "quote_balanced"
 
 
 and quote_complex buf =
-   (* The other Buffers in this file are all 256. Unlike those, I have no good reasoning
-      for choosing that number here, other than consistency. Send a pull-request with an
-      improvement. :P *)
-   let acc = Buffer.create 256 in
-   Buffer.add_string acc (utf8 buf) ;
-   quote_complex_body buf (start buf) (curr buf) acc
-
-
-and quote_complex_body buf orig_start prev_end acc : token located =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
-    | Plus (Compl ('"' | '\\')) ->
-      Buffer.add_string acc (utf8 buf) ;
-      quote_complex_body buf orig_start (curr buf) acc
-    | '\\', '\\' ->
-      Buffer.add_string acc "\\" ;
-      quote_complex_body buf orig_start (curr buf) acc
-    | '\\', '"' ->
-      Buffer.add_string acc "\"" ;
-      quote_complex_body buf orig_start (curr buf) acc
+    | Plus (Compl ('"' | '\\')) -> QUOTE_CHUNK (utf8 buf) |> locate buf
+    | '\\', ('\\' | '"') ->
+      let whole = utf8 buf in
+      let ch = String.sub whole 1 (String.length whole - 1) in
+      QUOTE_ESCAPE ch |> locate buf
     | '\\', any -> quote_escaping_fail buf "\"" (utf8 buf)
     | '"' ->
-      Buffer.add_string acc (utf8 buf) ;
-      (QUOTE (Buffer.contents acc), orig_start, prev_end)
+      buf.mode <- Main ;
+      QUOTE_CLOSE (utf8 buf) |> locate buf
     | eof -> quote_closing_fail buf "\"" "\""
-    | _ -> unreachable "quote_complex_body"
+    | _ -> unreachable "quote_complex"
 
 
 and known_scheme_or_identifier buf =
@@ -548,7 +546,9 @@ and immediate ?(saw_whitespace = false) buf =
       buf.mode <- CommentBlock 1 ;
       COMMENT_OPEN |> locate buf
     | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
-    | "\"" -> quote_complex buf
+    | "\"" ->
+      buf.mode <- QuoteComplex ;
+      QUOTE_OPEN (utf8 buf) |> locate buf
     | quote_balanced_open ->
       buf.mode <- QuoteBalanced 1 ;
       QUOTE_OPEN (utf8 buf) |> locate buf
@@ -596,6 +596,7 @@ let next_loc buf =
     | Immediate -> immediate buf
     | Main -> main buf
     | QuoteBalanced depth -> quote_balanced buf depth
+    | QuoteComplex -> quote_complex buf
 
 
 (** Return *just* the next token, discarding location information. *)
