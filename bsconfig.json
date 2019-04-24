@@ -42,8 +42,8 @@
   ],
   "bs-dependencies": [
     "bs-sedlex",
-    "@elliottcable/bs-uchar",
-    "@elliottcable/bs-gen"
+    "bs-uchar",
+    "bs-gen"
   ],
   "package-specs": {
     "module": "commonjs",
