@@ -26,6 +26,25 @@
 %start <AST.t> script
 %start <AST.statement> statement
 
+(* The following type declarations must be updated in accordance with the semantic actions below,
+   to satisfy the requirements of Menhir's --inspection API. *)
+%type <AST.statement> unterminated_statement
+%type <string>       command noncommand_word
+%type <AST.arg list> arguments nonempty_arguments positional_and_arguments
+                        flag_and_arguments
+%type <AST.arg>      long_flag_before_positional long_flag_before_flag last_long_flag
+%type <AST.arg list> short_flags_before_positional short_flags_before_flag
+                        last_short_flags
+%type <unit> break
+
+
+(* These type-clarifications were demanded by the Menhir CLI. Ugly, but whatever. *)
+%type <AST.statement list> optterm_nonempty_list(break, unterminated_statement)
+                              optterm_list(break, unterminated_statement)
+%type <unit option> option(break)
+%type <string option> option(COUNT)
+%type <unit list> list(COLON)
+
 %{ open AST %}
 
 %%
@@ -48,10 +67,10 @@ command:
  | x = IDENTIFIER { x }
  ;
 
- noncommand_word:
-  | x = IDENTIFIER { x }
-  | hd = URL_START; tl = URL_REST { hd ^ tl }
-  ;
+noncommand_word:
+ | x = IDENTIFIER { x }
+ | hd = URL_START; tl = URL_REST { hd ^ tl }
+ ;
 
 arguments:
  | { [] }
