@@ -46,6 +46,7 @@ clean-all: clean
 
 .PHONY: clean
 clean:
+	rm -f src/tokens.*
 	rm -f src/menhirLib.ml*
 	rm -f src/parserAutomaton.ml src/parserAutomaton.mli
 	rm -rf _build/
@@ -56,7 +57,7 @@ FORMAT_MANIFEST = $(shell find . \
 	-path './_build' -prune -o -path './_opam' -prune -o -path './node_modules' -prune -o \
 	-type f \( -name '*.ml' -or -name '*.mli' \) \
 	! -name 'uAX31.ml' ! -name 'parserAutomaton.ml' ! -name 'lexer.ml' \
-	! -name '*.tail.*' ! -name 'menhirLib.ml' -print)
+	! -name 'tokens.*' ! -name 'menhirLib.ml' -print)
 
 INDEX_MANIFEST = $(shell git ls-files $(FORMAT_MANIFEST))
 

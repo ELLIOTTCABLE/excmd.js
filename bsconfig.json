@@ -12,13 +12,20 @@
             {
                "name": "menhir-tokens",
                "edge": [
-                  "tokens.ml",
-                  "tokens.mli",
+                  "tokens.generated.mli",
+                  "tokens.generated.ml",
                   ":",
                   "parserAutomaton.mly",
-                  "tokens.tail.ml",
-                  "tokens.tail.mli"
+                  "parserUtils.mly"
                ]
+            },
+            {
+               "name": "menhir-tokens-annotate",
+               "edge": ["tokens.mli", ":", "tokens.generated.mli"]
+            },
+            {
+               "name": "menhir-tokens-annotate",
+               "edge": ["tokens.ml", ":", "tokens.generated.ml"]
             },
             {
                "name": "menhir-lib",
@@ -31,6 +38,7 @@
                   ":",
                   "parserAutomaton.mly",
                   "parserUtils.mly",
+                  "tokens.mli",
                   "tokens.ml"
                ]
             }
@@ -52,7 +60,11 @@
       },
       {
          "name": "menhir-tokens",
-         "command": "menhir --only-tokens $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --base $src_root_dir/src/tokens && tail -n +2 $src_root_dir/src/tokens.tail.ml >> $src_root_dir/src/tokens.ml && tail -n +2 $src_root_dir/src/tokens.tail.mli >> $src_root_dir/src/tokens.mli"
+         "command": "menhir --table --inspection --only-tokens $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --base $src_root_dir/src/tokens.generated"
+      },
+      {
+         "name": "menhir-tokens-annotate",
+         "command": "sed -e '/^type token =/!b' -e ':a' -e 'n' -e '/./ba' -e \"$$(printf 'i\\\\\\n[@@bs.deriving accessors]')\" ${in} > ${out}"
       },
       {
          "name": "menhir-lib",
