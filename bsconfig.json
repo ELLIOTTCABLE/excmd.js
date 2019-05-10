@@ -20,12 +20,20 @@
                ]
             },
             {
-               "name": "menhir-tokens-annotate",
+               "name": "menhir-annotate-types",
                "edge": ["tokens.mli", ":", "tokens.generated.mli"]
             },
             {
-               "name": "menhir-tokens-annotate",
+               "name": "menhir-annotate-types",
                "edge": ["tokens.ml", ":", "tokens.generated.ml"]
+            },
+            {
+               "name": "menhir-annotate-types",
+               "edge": ["parserAutomaton.mli", ":", "parserAutomaton.generated.mli"]
+            },
+            {
+               "name": "menhir-annotate-types",
+               "edge": ["parserAutomaton.ml", ":", "parserAutomaton.generated.ml"]
             },
             {
                "name": "menhir-lib",
@@ -34,7 +42,7 @@
             {
                "name": "menhir",
                "edge": [
-                  "parserAutomaton.ml",
+                  "parserAutomaton.generated.ml",
                   ":",
                   "parserAutomaton.mly",
                   "parserUtils.mly",
@@ -52,19 +60,19 @@
    "generators": [
       {
          "name": "menhir",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --table --lalr --inspection"
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton.generated --explain --table --lalr --inspection"
       },
       {
          "name": "menhir-with-logging",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --table --lalr --inspection --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton.generated --explain --table --lalr --inspection --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
       },
       {
          "name": "menhir-tokens",
          "command": "menhir --table --inspection --only-tokens $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --base $src_root_dir/src/tokens.generated"
       },
       {
-         "name": "menhir-tokens-annotate",
-         "command": "sed -e '/^type token =/!b' -e ':a' -e 'n' -e '/./ba' -e \"$$(printf 'i\\\\\\n[@@bs.deriving accessors]')\" ${in} > ${out}"
+         "name": "menhir-annotate-types",
+         "command": "$src_root_dir/scripts/annotateMenhirTypes.js ${in} ${out}"
       },
       {
          "name": "menhir-lib",
