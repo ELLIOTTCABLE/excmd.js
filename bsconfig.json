@@ -43,6 +43,7 @@
                "name": "menhir",
                "edge": [
                   "parserAutomaton.generated.ml",
+                  "parserAutomaton.generated.mli",
                   ":",
                   "parserAutomaton.mly",
                   "parserUtils.mly",
