@@ -44,19 +44,19 @@ let statement_to_yojson _ = unavailable_on `JavaScript "statement_to_yojson"
 let statement_of_yojson _ = unavailable_on `JavaScript "statement_of_yojson"
 
 type 'a unresolved = Unresolved | Resolved of 'a | Absent
-[@@bs.deriving jsConverter] [@@deriving to_yojson]
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 type flag = {name : string; mutable payload : string unresolved}
-[@@bs.deriving jsConverter] [@@deriving to_yojson]
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 type arg = Positional of string | Flag of flag
-[@@bs.deriving jsConverter] [@@deriving to_yojson]
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 type statement = {count : int; cmd : string; mutable args : arg array}
-[@@bs.deriving jsConverter] [@@deriving to_yojson]
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 type t = {statements : statement array}
-[@@bs.deriving jsConverter] [@@deriving to_yojson]
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 let make_statement ?count ~cmd ~args =
    { count = (match count with Some c -> int_of_string c | None -> 1)
