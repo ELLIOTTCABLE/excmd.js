@@ -13,10 +13,10 @@ if (null == inFile || null == outFile) {
 
 // There's probably a faster way to do all of this. I don't know what it is.
 const linesToAnnotate = [
-   /type token =/,
-   /type 'a terminal =/,
-   /type _ terminal =/,
-   /type _ nonterminal =/,
+   [
+      /type token =/,
+      '[@@bs.deriving jsConverter] [@@deriving show, to_yojson { optional = true }]',
+   ],
 ]
 
 const from = path.resolve(inFile),
@@ -24,13 +24,12 @@ const from = path.resolve(inFile),
    file = fs.readFileSync(from),
    contents = file.toString(),
    result = linesToAnnotate.reduce(
-      (acc, lineToAnnotate) =>
+      (acc, [lineMatchingRegex, annotation]) =>
          prependAfterFirstOccurence({
             input: acc,
-            matchAfter: lineToAnnotate,
+            matchAfter: lineMatchingRegex,
             prependBeforeFollowing: /^\s*$/m,
-            addition:
-               '[@@bs.deriving jsConverter] [@@deriving show, to_yojson { optional = true }]\n',
+            addition: annotation + '\n',
          }),
       contents,
    )
