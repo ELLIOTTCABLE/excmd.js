@@ -2,7 +2,7 @@ type 'a t
 
 type script = AST.t
 
-exception ParseError of Tokens.token Lexer.located
+exception ParseError of (Tokens.token Lexer.located * exn)
 
 (** {2 Parsing entry-points } *)
 

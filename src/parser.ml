@@ -5,7 +5,7 @@ type 'a t = (token, 'a) MenhirLib.Convert.traditional
 
 type script = AST.t
 
-exception ParseError of Tokens.token Lexer.located
+exception ParseError of (Tokens.token Lexer.located * exn)
 
 let script_automaton = ParserAutomaton.script
 
@@ -20,7 +20,7 @@ let parse buf p =
    let parser = MenhirLib.Convert.Simplified.traditional2revised p in
    try parser next_token with
     | Lexer.LexError (pos, s) -> raise (Lexer.LexError (pos, s))
-    | _ -> raise (ParseError !last_token)
+    | err -> raise (ParseError (!last_token, err))
 
 
 let parse_string s p = parse (Lexer.buffer_of_string s) p
