@@ -19,8 +19,6 @@ type 'a gen = unit -> 'a option
 
 exception LexError of Lexing.position * string
 
-exception ParseError of token located
-
 (* {2 Constants } *)
 
 (* Note that this depends on the JS-shim, so it's limited to the *common* functionality

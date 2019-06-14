@@ -7,8 +7,6 @@ type 'a gen = unit -> 'a option
 
 exception LexError of Lexing.position * string
 
-exception ParseError of Tokens.token located
-
 (* {2 Constructors } *)
 val sedlex_of_buffer : buffer -> Sedlexing.lexbuf
 
