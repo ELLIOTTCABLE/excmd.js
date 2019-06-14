@@ -31,7 +31,9 @@ let acceptable_token cp =
            ignore (raise Break)
         done
      with Break -> () ) ;
-   match !accepted_token with Some tok -> tok | None -> raise Not_found
+   match !accepted_token with
+    | Some tok -> tok
+    | None -> raise Not_found
 
 
 let acceptable_tokens cp =
@@ -40,7 +42,7 @@ let acceptable_tokens cp =
    Lexer.example_tokens
    |> Array.iter (fun tok ->
       if Interpreter.acceptable cp tok Lexing.dummy_pos then
-         accepted_tokens := tok :: !accepted_tokens ) ;
+         accepted_tokens := tok :: !accepted_tokens) ;
    Array.of_list !accepted_tokens
 
 

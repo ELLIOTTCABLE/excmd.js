@@ -73,7 +73,8 @@ let tests () =
       "test;\n   2test;\n   3test;\n   " ;
    (* Incremental API *)
    let pp, entrypoint =
-      incremental_statement "An acceptable statement, incrementally" "hello --where=world"
+      incremental_statement "An acceptable statement, incrementally"
+         "hello --where=world"
    in
    let accept statement = pp statement in
    let fail _last_good _failing = failwith "parsing should have succeeded" in
@@ -91,7 +92,8 @@ let tests () =
    let accept _statement = failwith "parsing should have failed" in
    let fail last_good _failing =
       Incremental.acceptable_tokens last_good
-      |> Array.map Lexer.show_token |> Array.to_list |> String.concat ", " |> print_endline
+      |> Array.map Lexer.show_token |> Array.to_list |> String.concat ", "
+      |> print_endline
    in
    Incremental.continue ~accept ~fail entrypoint
 
@@ -112,6 +114,6 @@ let () =
          "!! Please provide either no arguments (to run the automated tests), or exactly \
           two arguments (for\n" ;
       eprintf
-         "!! interactive experimentation): a nonterminal entry-point (e.g. 'script'), and \
-          a string to parse.\n" ;
+         "!! interactive experimentation): a nonterminal entry-point (e.g. 'script'), \
+          and a string to parse.\n" ;
       raise (Invalid_argument "Either exactly two, or zero, arguments are required")

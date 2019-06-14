@@ -59,7 +59,10 @@ type t = {statements : statement array}
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 let make_statement ?count ~cmd ~args =
-   { count = (match count with Some c -> int_of_string c | None -> 1)
+   { count =
+        ( match count with
+          | Some c -> int_of_string c
+          | None -> 1 )
    ; cmd
    ; args = Array.of_list args }
 

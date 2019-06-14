@@ -1,5 +1,6 @@
 let no_native name =
-   failwith (Printf.sprintf "`%s` isn't available when compiled for a native target" name)
+   failwith
+      (Printf.sprintf "`%s` isn't available when compiled for a native target" name)
 
 
 module Json = struct

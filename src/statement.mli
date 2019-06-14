@@ -4,8 +4,8 @@
     (An important aspect of the behaviour of this API is the {{!reso} resolution of
     ambiguous words} in parsed commands. See more details at the bottom of this file.) *)
 
-(** An alias to {!AST.statement}, abstracted that mutation may be controlled. *)
 type t
+(** An alias to {!AST.statement}, abstracted that mutation may be controlled. *)
 
 type flag_payload = Empty | Payload of string
 
@@ -87,8 +87,8 @@ val payload_to_opt : flag_payload -> string option
     preceding flag.
 
     Any function that accesses either the {e value} of a flag, or accesses the
-    {!positionals} at all, is going to “resolve” that word in the original source. If
-    the word was ambiguously positioned, {e that access will result in the datastructure
+    {!positionals} at all, is going to “resolve” that word in the original source. If the
+    word was ambiguously positioned, {e that access will result in the datastructure
     changing} — to prevent the word later becoming resolved in an incompatible way.
 
     For example: given the following input command as a {!Statement.t},

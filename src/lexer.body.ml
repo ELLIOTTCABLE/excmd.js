@@ -313,14 +313,22 @@ let continue_char = [%sedlex.regexp? xid_continue]
 
 let medial_char =
    [%sedlex.regexp?
-         ( 0x002D (* '-' HYPHEN-MINUS *) | 0x002E (* '.' FULL STOP *)
+         ( 0x002D
+         (* '-' HYPHEN-MINUS *)
+         | 0x002E
+         (* '.' FULL STOP *)
          | 0x00B7
-         (* '·' MIDDLE DOT *)  | 0x058A (* '֊' ARMENIAN HYPHEN *)
+         (* '·' MIDDLE DOT *)
+         | 0x058A
+         (* '֊' ARMENIAN HYPHEN *)
          | 0x05F4
          (* '״' HEBREW PUNCTUATION GERSHAYIM *)
          | 0x0F0B
-         (* '་' TIBETAN MARK INTERSYLLABIC TSHEG *)  | 0x2027 (* '‧' HYPHENATION POINT *)
-         | 0x30FB (* '・' KATAKANA MIDDLE DOT *) )]
+         (* '་' TIBETAN MARK INTERSYLLABIC TSHEG *)
+         | 0x2027
+         (* '‧' HYPHENATION POINT *)
+         | 0x30FB
+           (* '・' KATAKANA MIDDLE DOT *) )]
 
 
 (* ASCII '.' FULL STOP *is* valid in identifiiers, but triggers the URL-specific lexing-
@@ -372,7 +380,9 @@ let urlbody_continue_char =
    [%sedlex.regexp?
          Sub
          ( (all_identifier_char | urlbody_continue_special_char)
-         , ( urlbody_medial_special_char | urlbody_illegal_char | urlbody_opening_char
+         , ( urlbody_medial_special_char
+           | urlbody_illegal_char
+           | urlbody_opening_char
            | urlbody_closing_char ) )]
 
 
@@ -481,7 +491,8 @@ and url_rest buf =
 and url_no_delim buf orig_start prev_end acc =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
-    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char ->
+    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char
+       ->
       Buffer.add_string acc (utf8 buf) ;
       url_no_delim buf orig_start (curr buf) acc
     | urlbody_opening_char ->
@@ -498,7 +509,8 @@ and url_no_delim buf orig_start prev_end acc =
 and url_inside_delims buf orig_start acc open_delims =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
-    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char ->
+    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char
+       ->
       Buffer.add_string acc (utf8 buf) ;
       url_inside_delims buf orig_start acc open_delims
     | urlbody_opening_char ->
@@ -578,7 +590,9 @@ and immediate ?(saw_whitespace = false) buf =
     | '(' -> PAREN_OPEN |> locate buf
     | ')' -> PAREN_CLOSE |> locate buf
     | _ -> (
-          match next buf.sedlex with Some c -> illegal buf c | None -> unreachable "main" )
+          match next buf.sedlex with
+           | Some c -> illegal buf c
+           | None -> unreachable "main" )
 
 
 and main buf =
@@ -604,10 +618,16 @@ let next buf =
 
 
 let gen_loc buf () =
-   match next_loc buf with EOF, _, _ -> None | _ as tuple -> Some tuple
+   match next_loc buf with
+    | EOF, _, _ -> None
+    | _ as tuple -> Some tuple
 
 
-let gen buf () = match next_loc buf with EOF, _, _ -> None | tok, _, _ -> Some tok
+let gen buf () =
+   match next_loc buf with
+    | EOF, _, _ -> None
+    | tok, _, _ -> Some tok
+
 
 let tokens_loc buf = gen_loc buf |> Gen.to_list |> Array.of_list
 

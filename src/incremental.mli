@@ -12,7 +12,7 @@ val statement_of_string : string -> AST.statement checkpoint
 
 (** {2 Menhir incremental-parsing helpers } *)
 
-val continue 
+val continue
    :  accept:('semantic -> 'result)
    -> fail:('semantic checkpoint -> 'semantic checkpoint -> 'result)
    -> 'semantic checkpoint

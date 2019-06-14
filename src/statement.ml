@@ -16,14 +16,20 @@ let count st = st.count
 
 let command st = st.cmd
 
-let payload_to_opt = function Empty -> None | Payload str -> Some str
+let payload_to_opt = function
+   | Empty -> None
+   | Payload str -> Some str
+
 
 (* These are a mess of mutating code instead of simple, functional iteration, mostly because this
  * library is targeting JavaScript, at the end of the day. This is all wrapped in a JavaScript class
  * that appears to wrap a mutable parse-result; so it might as well be *actually* mutable, no? *)
 
 let mem key st =
-   let is_matching_key = function Positional _ -> false | Flag f -> f.name == key in
+   let is_matching_key = function
+      | Positional _ -> false
+      | Flag f -> f.name == key
+   in
    (* FIXME: This is slow, but Array.exists isn't available until OCaml 4.03, and I am
       lazy. *)
    List.exists is_matching_key (Array.to_list st.args)
@@ -34,7 +40,10 @@ let is_resolved key st =
       | Positional _ -> false
       | Flag f -> (
             if f.name != key then false
-            else match f.payload with Unresolved -> false | Resolved _ | Absent -> true )
+            else
+            match f.payload with
+             | Unresolved -> false
+             | Resolved _ | Absent -> true )
    in
    (* FIXME: This is slow, but Array.exists isn't available until OCaml 4.03, and I am
       lazy. *)
@@ -46,7 +55,10 @@ let has_payload key st =
       | Positional _ -> false
       | Flag f -> (
             if f.name != key then false
-            else match f.payload with Unresolved | Absent -> false | Resolved _ -> true )
+            else
+            match f.payload with
+             | Unresolved | Absent -> false
+             | Resolved _ -> true )
    in
    (* FIXME: This is slow, but Array.exists isn't available until OCaml 4.03, and I am
       lazy. *)
@@ -139,7 +151,10 @@ let positionals st =
              | Unresolved ->
                flag.payload <- Absent ;
                false )
-   and map = function Positional str -> str | Flag _ -> failwith "Unreachable" in
+   and map = function
+      | Positional str -> str
+      | Flag _ -> failwith "Unreachable"
+   in
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
    List.filter filter (Array.to_list st.args) |> List.map map |> Array.of_list
