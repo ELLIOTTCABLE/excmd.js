@@ -5,33 +5,56 @@ type 'a t = (token, 'a) MenhirLib.Convert.traditional
 
 type script = AST.t
 
-exception ParseError of (Tokens.token Lexer.located * exn)
+exception ParseError of Tokens.token Lexer.located
+
+let error_loctoken_exn = function
+   | ParseError loctok -> loctok
+   | _ -> raise (Invalid_argument "error_loctoken_exn: expects a ParseError")
+
+
+let string_of_parsing_error = function
+   | Lexer.LexError (pos, desc) ->
+     Some
+        (String.concat "" ["LexError "; "\""; desc; "\" at "; Lexer.string_of_position pos])
+   | ParseError loctok -> Some ("ParseError at " ^ Lexer.string_of_loctoken loctok)
+   | _ -> None
+
 
 let script_automaton = ParserAutomaton.script
 
 let statement_automaton = ParserAutomaton.statement
 
-let parse buf p =
+let parse ?(exn = true) buf p =
+   let parser = MenhirLib.Convert.Simplified.traditional2revised p in
    let last_token = ref Lexing.(EOF, dummy_pos, dummy_pos) in
    let next_token () =
-      last_token := Lexer.next_loc buf ;
-      !last_token
+      let open Lexer in
+      let tok = next_loc buf in
+      print_endline (string_of_loctoken tok) ;
+      last_token := tok ;
+      tok
    in
-   let parser = MenhirLib.Convert.Simplified.traditional2revised p in
-   try parser next_token with
-    | Lexer.LexError (pos, s) -> raise (Lexer.LexError (pos, s))
-    | err -> raise (ParseError (!last_token, err))
+   try Some (parser next_token) with
+    | Lexer.LexError (pos, s) -> if exn then raise (Lexer.LexError (pos, s)) else None
+    | ParserAutomaton.Error -> if exn then raise (ParseError !last_token) else None
 
 
-let parse_string s p = parse (Lexer.buffer_of_string s) p
+let parse_string ?exn s p = parse ?exn (Lexer.buffer_of_string s) p
 
 (* let parse_file ~file p = *)
 (* parse (Lexer.buffer_of_file file) p *)
 
-let script buf = parse buf script_automaton
+let script ?exn buf = parse ?exn buf script_automaton
 
-let script_of_string str = parse_string str script_automaton
+let script_of_string ?exn str = parse_string ?exn str script_automaton
 
-let statement buf = parse buf statement_automaton |> Statement.dehydrate
+let statement ?exn buf =
+   match parse ?exn buf statement_automaton with
+    | Some stmt -> Some (Statement.dehydrate stmt)
+    | None -> None
 
-let statement_of_string str = parse_string str statement_automaton |> Statement.dehydrate
+
+let statement_of_string ?exn str =
+   match parse_string ?exn str statement_automaton with
+    | Some stmt -> Some (Statement.dehydrate stmt)
+    | None -> None

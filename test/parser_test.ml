@@ -1,14 +1,19 @@
 open Printf
 open Excmd
 
+let unwrap_exn = function
+   | Some v -> v
+   | None -> failwith "impossible None value!"
+
+
 let test_script desc str =
    printf "\n\n### %s:\nParser.script %S\n" desc str ;
-   AST.pp (Parser.script_of_string str)
+   Parser.script_of_string str |> unwrap_exn |> AST.pp
 
 
 let test_statement desc str =
    printf "\n\n### %s:\nParser.statement %S\n" desc str ;
-   Statement.pp (Parser.statement_of_string str)
+   Parser.statement_of_string str |> unwrap_exn |> Statement.pp
 
 
 let incremental_statement desc str =
@@ -103,8 +108,9 @@ let () =
     (* Automated tests *)
     | [|_|] -> tests ()
     (* Interactive usage *)
-    | [|_; "script"; str|] -> AST.pp (Parser.script_of_string str)
-    | [|_; "statement"; str|] -> Statement.pp (Parser.statement_of_string str)
+    | [|_; "script"; str|] -> Parser.script_of_string str |> unwrap_exn |> AST.pp
+    | [|_; "statement"; str|] ->
+      Parser.statement_of_string str |> unwrap_exn |> Statement.pp
     | [|_; _; _|] ->
       raise
          (Invalid_argument

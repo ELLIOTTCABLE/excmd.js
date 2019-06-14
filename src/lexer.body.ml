@@ -13,11 +13,17 @@ type mode =
 
 type buffer = {sedlex : Sedlexing.lexbuf; mutable mode : mode}
 
-type 'a located = 'a * Lexing.position * Lexing.position
+type position = Lexing.position =
+   {pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int}
+[@@deriving show]
+
+type 'a located = 'a * position * position [@@deriving show]
+
+type loctoken = Tokens.token located [@@deriving show]
 
 type 'a gen = unit -> 'a option
 
-exception LexError of Lexing.position * string
+exception LexError of position * string
 
 (* {2 Constants } *)
 
@@ -118,6 +124,16 @@ let end_lnum (tok : token located) =
 let end_cnum (tok : token located) =
    let _tok, _start, loc = tok in
    loc.pos_cnum - loc.pos_bol
+
+
+let error_loc_exn = function
+   | LexError (loc, _) -> loc
+   | _ -> raise (Invalid_argument "error_loc_exn: expects a LexError")
+
+
+let error_desc_exn = function
+   | LexError (_, desc) -> desc
+   | _ -> raise (Invalid_argument "error_desc_exn: expects a LexError")
 
 
 (* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
@@ -227,6 +243,17 @@ let token_body tok =
     | URL_REST s
     | URL_START s -> Some s
     | _ -> None
+
+
+let string_of_loctoken loctok =
+   Printf.sprintf "%s@%u:%u-%u:%u"
+      (show_token (token loctok))
+      (start_lnum loctok) (start_cnum loctok) (end_lnum loctok) (end_cnum loctok)
+
+
+let string_of_position pos =
+   let {pos_lnum; pos_cnum} = pos in
+   Printf.sprintf "%u:%u" pos_lnum pos_cnum
 
 
 let url_opening_fail buf opening closing =

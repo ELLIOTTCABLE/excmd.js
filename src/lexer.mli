@@ -1,22 +1,26 @@
-(* {2 Types } *)
 type buffer
+(** {2 Types } *)
 
-type 'a located = 'a * Lexing.position * Lexing.position
+type position = Lexing.position =
+   {pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int}
+[@@deriving show]
+
+type 'a located = 'a * position * position
 
 type 'a gen = unit -> 'a option
 
-exception LexError of Lexing.position * string
+exception LexError of position * string
 
-(* {2 Constructors } *)
 val sedlex_of_buffer : buffer -> Sedlexing.lexbuf
+(** {2 Constructors } *)
 
 val buffer_of_sedlex : Sedlexing.lexbuf -> buffer
 
 val buffer_of_string : string -> buffer
 
-(* {2 Accessors } *)
 (* FIXME: Isn't there a better way to design this API inside BuckleScript? *)
 val token : Tokens.token located -> Tokens.token
+(** {2 Accessors } *)
 
 val example_tokens : Tokens.token array
 (** A static list of all tokens available at runtime, with arbitrary (but legal) payloads
@@ -45,7 +49,12 @@ val end_lnum : Tokens.token located -> int
 
 val end_cnum : Tokens.token located -> int
 
-(* {2 Lexing functions } *)
+val error_loc_exn : exn -> position
+
+val error_desc_exn : exn -> string
+
+(** {2 Lexing functions } *)
+
 val next_loc : buffer -> Tokens.token located
 
 val next : buffer -> Tokens.token
@@ -57,3 +66,15 @@ val gen : buffer -> Tokens.token gen
 val tokens_loc : buffer -> Tokens.token located array
 
 val tokens : buffer -> Tokens.token array
+
+val show_loctoken : Tokens.token located -> string
+(** [show_loctoken tok] displays the internal OCaml representation of the located token
+    [tok]. *)
+
+val string_of_loctoken : Tokens.token located -> string
+(** [string_of_loctoken tok] displays a simple, human-readable representation of the
+    located token [tok]. *)
+
+val string_of_position : position -> string
+(** [string_of_position pos] displays a simple, human-readable representation of the
+    individual position [pos]. *)
