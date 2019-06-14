@@ -1,8 +1,8 @@
 (library
  (name        excmd)
  (public_name excmd)
- (libraries bs-shim ppx_deriving_yojson.runtime menhirLib sedlex)
- (preprocess (pps ppx_deriving_yojson sedlex.ppx))
+ (libraries bs-shim ppx_deriving ppx_deriving.std ppx_deriving_yojson.runtime menhirLib sedlex)
+ (preprocess (pps ppx_deriving.std ppx_deriving_yojson sedlex.ppx))
 
  ; Disable fatal-level warnings from the compiled output
  (flags (:standard -w -K-9)))

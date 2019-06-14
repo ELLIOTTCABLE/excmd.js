@@ -57,7 +57,7 @@
          "dir": "shim/native"
       }
    ],
-   "ppx-flags": ["ppx-sedlex/ppx.js"],
+   "ppx-flags": ["ppx-sedlex/ppx.js", "ppx-deriving/ppx.js"],
    "generators": [
       {
          "name": "menhir",
@@ -84,7 +84,7 @@
          "command": "cp $src_root_dir/src/uAX31.ml ${out} && tail -n +2 $src_root_dir/src/lexer.body.ml >> ${out}"
       }
    ],
-   "bs-dependencies": ["bs-sedlex", "bs-uchar", "bs-gen"],
+   "bs-dependencies": ["bs-sedlex", "bs-deriving", "bs-uchar", "bs-gen"],
    "package-specs": {
       "module": "commonjs",
       "in-source": true

@@ -15,7 +15,7 @@ if (null == inFile || null == outFile) {
 const linesToAnnotate = [
    [
       /type token =/,
-      '[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]',
+      '[@@bs.deriving jsConverter] [@@deriving show { with_path = false }, to_yojson { optional = true }]',
    ],
 ]
 
