@@ -28,22 +28,14 @@
                "edge": ["tokens.ml", ":", "tokens.generated.ml"]
             },
             {
-               "name": "menhir-annotate-types",
-               "edge": ["parserAutomaton.mli", ":", "parserAutomaton.generated.mli"]
-            },
-            {
-               "name": "menhir-annotate-types",
-               "edge": ["parserAutomaton.ml", ":", "parserAutomaton.generated.ml"]
-            },
-            {
                "name": "menhir-lib",
                "edge": ["menhirLib.ml", "menhirLib.mli", ":", "parserAutomaton.mly"]
             },
             {
                "name": "menhir",
                "edge": [
-                  "parserAutomaton.generated.ml",
-                  "parserAutomaton.generated.mli",
+                  "parserAutomaton.ml",
+                  "parserAutomaton.mli",
                   ":",
                   "parserAutomaton.mly",
                   "parserUtils.mly",
@@ -61,11 +53,11 @@
    "generators": [
       {
          "name": "menhir",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton.generated --explain --table --lalr --inspection"
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --table --lalr --inspection"
       },
       {
          "name": "menhir-with-logging",
-         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton.generated --explain --table --lalr --inspection --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
+         "command": "menhir $src_root_dir/src/parserAutomaton.mly $src_root_dir/src/parserUtils.mly --external-tokens Tokens --base $src_root_dir/src/parserAutomaton --explain --table --lalr --inspection --log-automaton 1 --log-code 1 --log-grammar 1 --trace"
       },
       {
          "name": "menhir-tokens",
@@ -73,7 +65,7 @@
       },
       {
          "name": "menhir-annotate-types",
-         "command": "$src_root_dir/scripts/annotateMenhirTypes.js ${in} ${out}"
+         "command": "node $src_root_dir/scripts/annotateMenhirTypes.bs.js ${in} ${out}"
       },
       {
          "name": "menhir-lib",

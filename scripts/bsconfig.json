@@ -1,0 +1,9 @@
+{
+   "name": "excmd-scripts",
+   "sources": ".",
+   "package-specs": {
+      "module": "commonjs",
+      "in-source": true
+   },
+   "suffix": ".bs.js"
+}

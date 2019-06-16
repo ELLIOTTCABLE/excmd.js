@@ -6,6 +6,7 @@
   "scripts": {
     "build:doc": "make build-doc",
     "build:ml": "make build-ml",
+    "build:scripts": "cd scripts && bsb -make-world",
     "build:bs": "bsb -make-world",
     "watch:bs": "bsb -make-world -w",
     "build:js": "babel --verbose src --ignore '**/*.bs.js' --copy-files --out-dir lib",
