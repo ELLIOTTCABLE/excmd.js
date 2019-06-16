@@ -69,5 +69,6 @@ format-ml:
 	   echo "compatible version of OCaml. You'll have to install these manually, and globally," && \
 	   echo "if you want to auto-reformat ML." && exit 1 \
 	)
-	ocamlformat --ocp-indent-config --ocp-indent-compat --wrap-comments --inplace $(INDEX_MANIFEST)
+	ocamlformat --enable-outside-detected-project \
+		--ocp-indent-config --ocp-indent-compat --wrap-comments --inplace $(INDEX_MANIFEST)
 	ocp-indent --inplace $(INDEX_MANIFEST)

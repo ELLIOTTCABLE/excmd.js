@@ -26,6 +26,7 @@ let tests () =
    (* Basic statements *)
    test_statement "Simple, single command" "test" ;
    test_statement "Single command, with count" "2test" ;
+
    (* Basic statements, with parameters *)
    test_statement "Single command, with single positional parameter" "test foo" ;
    test_statement "Single command, with single positional URL" "test google.com/search" ;
@@ -64,6 +65,7 @@ let tests () =
       "test --foo=google.com/search baz" ;
    test_statement "Single command with mixed flags and parameters"
       "test --foo bar --baz=widget qux -qu ux" ;
+
    (* Simple multi-statement scripts *)
    test_script "Statements separated by semicolons" "test; 2test; 3test" ;
    test_script "Statements separated by semicolons, with a trailing semicolon"
@@ -76,6 +78,7 @@ let tests () =
    test_script "Newlines after statements" "test;\n   2test;\n   3test" ;
    test_script "Newlines after statements, with a trailing newline"
       "test;\n   2test;\n   3test;\n   " ;
+
    (* Incremental API *)
    let pp, entrypoint =
       incremental_statement "An acceptable statement, incrementally"
