@@ -30,7 +30,6 @@ let parse ?(exn = true) buf p =
    let next_token () =
       let open Lexer in
       let tok = next_loc buf in
-      print_endline (string_of_loctoken tok) ;
       last_token := tok ;
       tok
    in
