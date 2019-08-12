@@ -103,6 +103,26 @@ let tests () =
       |> Array.map Lexer.show_token |> Array.to_list |> String.concat ", "
       |> print_endline
    in
+   Incremental.continue ~accept ~fail entrypoint ;
+   let _pp, entrypoint =
+      incremental_statement "Dumping of stack-debugging information from a checkpoint"
+         "hello --where="
+   in
+   let accept _statement = failwith "parsing should have failed" in
+   let fail last_good _failing =
+      Incremental.menhir_checkpoint_type last_good |> print_endline ;
+      Incremental.terminal_or_nonterminal last_good |> print_endline ;
+      Incremental.debug_checkpoint last_good
+   in
+   Incremental.continue ~accept ~fail entrypoint ;
+   let _pp, entrypoint =
+      incremental_statement "Ascertaining of current command from a checkpoint"
+         "a_command_name --blah="
+   in
+   let accept _statement = failwith "parsing should have failed" in
+   let fail last_good _failing =
+      Incremental.current_command last_good |> unwrap_exn |> print_endline
+   in
    Incremental.continue ~accept ~fail entrypoint
 
 

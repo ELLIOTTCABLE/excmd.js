@@ -316,3 +316,19 @@ fail-continuation invoked! cool.
 ### Listing of acceptable tokens during a failure:
 Incremental.statement "hello --where="
 URL_START, IDENTIFIER
+
+
+### Dumping of stack-debugging information from a checkpoint:
+Incremental.statement "hello --where="
+InputNeeded
+Terminal
+EQUALS : unit terminal
+FLAG_LONG : (string) terminal
+command : (string) nonterminal
+option_COUNT_ : (string option) nonterminal
+list_COLON_ : (unit list) nonterminal
+
+
+### Ascertaining of current command from a checkpoint:
+Incremental.statement "a_command_name --blah="
+a_command_name
