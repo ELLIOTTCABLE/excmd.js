@@ -9,7 +9,7 @@ test-ml: build-ml
 	dune runtest
 
 .PHONY: build-ml
-build-ml: src/uAX31.ml src/parserAutomaton.mly
+build-ml: scripts/annotateMenhirTypes.bs.js src/uAX31.ml src/parserAutomaton.mly
 	# This is a horrible hack. We run the BuckleScript build first, since the Menhir configuration is
 	# already laid out in bsconfig.json.
 	-./node_modules/.bin/bsb -make-world
@@ -38,6 +38,10 @@ build-doc: src/parserAutomaton.mly
 	@cp -Rv "_build/default/_doc/_html/"*.js docs/
 	@cp -Rv "_build/default/_doc/_html/"*.css docs/
 	@cp -Rv "_build/default/_doc/_html/excmd" docs/
+
+scripts/annotateMenhirTypes.bs.js:
+	# FIXME: I should be able to massage `bsb` into doing this, but ...
+	bsc -bs-suffix scripts/annotateMenhirTypes.ml
 
 .PHONY: clean-all
 clean-all: clean

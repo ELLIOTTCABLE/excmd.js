@@ -11,6 +11,7 @@ src/lexer.ml
 *.bs.js
 
 *.cmt
+*.cmj
 
 .bsb.lock
 
