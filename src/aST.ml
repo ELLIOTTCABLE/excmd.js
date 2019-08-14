@@ -2,16 +2,16 @@
 
     Some of our data-structures provide conversion functions to produce alternative
     formats of themselves. These are automatically generated at compile-time by
-    {{https://ocamlverse.github.io/content/ppx.html}PPX preprocessors} in OCaml.
+    {{:https://ocamlverse.github.io/content/ppx.html}PPX preprocessors} in OCaml.
 
     Unfortunately, we use different data-structures per compile-target: in native OCaml,
-    we use [{{https://github.com/ocaml-ppx/ppx_deriving_yojson} ppx_deriving_yojson}] to
+    we use [{{:https://github.com/ocaml-ppx/ppx_deriving_yojson} ppx_deriving_yojson}] to
     produce a value of type
-    [{{https://mjambon.github.io/mjambon2016/yojson-doc/Yojson.Basic.html#TYPEjson}
-    Yojson.Basic.json}]; but when being compiled to JavaScript, we use BuckleScript's
-    [{{https://bucklescript.github.io/docs/en/generate-converters-accessors.html#convert-between-jst-object-and-record}
-    jsConverter}] tooling to generate the built-in
-    [{{https://bucklescript.github.io/bucklescript/api/Js.html#TYPEt} Js.t}] type. These
+    {{:https://mjambon.github.io/mjambon2016/yojson-doc/Yojson.Basic.html#TYPEjson}
+    [Yojson.Basic.json]}; but when being compiled to JavaScript, we use BuckleScript's
+    {{:https://bucklescript.github.io/docs/en/generate-converters-accessors.html#convert-between-jst-object-and-record}
+    [jsConverter]} tooling to generate the built-in
+    {{:https://bucklescript.github.io/bucklescript/api/Js.html#TYPEt} [Js.t]} type. These
     generators also produce functions of different names: {!to_yojson} is available on
     the native side, and {!tToJs} on the BuckleScript side.
 
