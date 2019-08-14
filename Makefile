@@ -74,5 +74,5 @@ format-ml:
 	   echo "if you want to auto-reformat ML." && exit 1 \
 	)
 	ocamlformat --enable-outside-detected-project \
-		--ocp-indent-config --ocp-indent-compat --wrap-comments --inplace $(INDEX_MANIFEST)
+		--ocp-indent-config --ocp-indent-compat --inplace $(INDEX_MANIFEST)
 	ocp-indent --inplace $(INDEX_MANIFEST)

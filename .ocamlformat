@@ -1,5 +1,8 @@
 margin = 90
 
+parse-docstrings = true
+wrap-comments = true
+
 field-space = loose
 let-binding-spacing = sparse
 space-around-records = true

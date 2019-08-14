@@ -1,7 +1,7 @@
 type 'a checkpoint = private
    { status : 'a ParserAutomaton.MenhirInterpreter.checkpoint; buf : Lexer.buffer }
 
-(** {2 Incremental entry-checkpoints } *)
+(** {2 Incremental entry-checkpoints} *)
 
 val statement : Lexer.buffer -> AST.statement checkpoint
 (** Start the incremental Excmd parser with intent to consume, and produce, a single
@@ -10,7 +10,7 @@ val statement : Lexer.buffer -> AST.statement checkpoint
 val statement_of_string : string -> AST.statement checkpoint
 (** Helper to invoke {!val:statement} with a [string]. *)
 
-(** {2 Menhir incremental-parsing helpers } *)
+(** {2 Menhir incremental-parsing helpers} *)
 
 val continue
    :  accept:('semantic -> 'result)
@@ -19,7 +19,7 @@ val continue
    -> 'result
 (** A helper for Menhir's incremental parsers. Feeds the given ... NYD *)
 
-(** {2 Introspection } *)
+(** {2 Introspection} *)
 
 val acceptable_token : 'a checkpoint -> Tokens.token
 (** [acceptable_token cp], given a [cp] that is in an {!InputNeeded} state, will return a

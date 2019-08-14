@@ -1,8 +1,8 @@
-(** {2 Describing structures }
+(** {2 Describing structures}
 
     Some of our data-structures provide conversion functions to produce alternative
     formats of themselves. These are automatically generated at compile-time by
-    {{:https://ocamlverse.github.io/content/ppx.html}PPX preprocessors} in OCaml.
+    {{:https://ocamlverse.github.io/content/ppx.html} PPX preprocessors} in OCaml.
 
     Unfortunately, we use different data-structures per compile-target: in native OCaml,
     we use [{{:https://github.com/ocaml-ppx/ppx_deriving_yojson} ppx_deriving_yojson}] to

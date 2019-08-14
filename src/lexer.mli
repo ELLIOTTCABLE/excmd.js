@@ -1,5 +1,5 @@
 type buffer
-(** {2 Types } *)
+(** {2 Types} *)
 
 type position = Lexing.position =
    { pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int }
@@ -12,7 +12,7 @@ type 'a gen = unit -> 'a option
 exception LexError of position * string
 
 val sedlex_of_buffer : buffer -> Sedlexing.lexbuf
-(** {2 Constructors } *)
+(** {2 Constructors} *)
 
 val buffer_of_sedlex : Sedlexing.lexbuf -> buffer
 
@@ -20,7 +20,7 @@ val buffer_of_string : string -> buffer
 
 (* FIXME: Isn't there a better way to design this API inside BuckleScript? *)
 val token : Tokens.token located -> Tokens.token
-(** {2 Accessors } *)
+(** {2 Accessors} *)
 
 val example_tokens : Tokens.token array
 (** A static list of all tokens available at runtime, with arbitrary (but legal) payloads
@@ -53,7 +53,7 @@ val error_loc_exn : exn -> position
 
 val error_desc_exn : exn -> string
 
-(** {2 Lexing functions } *)
+(** {2 Lexing functions} *)
 
 val next_loc : buffer -> Tokens.token located
 
