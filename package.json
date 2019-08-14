@@ -86,6 +86,8 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
+      "!src/parserAutomaton.bs.js",
+      "!src/menhirLib.bs.js",
       "!**/node_modules/**",
       "!**/_opam/**"
     ],
