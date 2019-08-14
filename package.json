@@ -86,8 +86,6 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "src/**/*.{js,jsx}",
-      "lib/**/*.{js,jsx}",
-      "!lib/bs/**",
       "!**/node_modules/**",
       "!**/_opam/**"
     ],
