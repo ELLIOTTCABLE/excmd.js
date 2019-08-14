@@ -11,26 +11,26 @@ import $Statement from './statement.bs'
 // Used to ensure that nothing else can invoke these classes' constructors directly
 const INTERNAL = Symbol()
 
-function script(lexbuf) {
+function script(lexbuf, options = {}) {
    console.assert(lexbuf instanceof LexBuffer)
-   const $scpt = $Parser.script(lexbuf.$buf)
+   const $scpt = $Parser.script(options.throwException, lexbuf.$buf)
    return new Script(INTERNAL, $scpt)
 }
 
-function scriptOfString(str) {
+function scriptOfString(str, options = {}) {
    const lexbuf = LexBuffer.ofString(str)
-   return script(lexbuf)
+   return script(lexbuf, options)
 }
 
-function statement(lexbuf) {
+function statement(lexbuf, options = {}) {
    console.assert(lexbuf instanceof LexBuffer)
-   const $stmt = $Parser.statement(lexbuf.$buf)
+   const $stmt = $Parser.statement(options.throwException, lexbuf.$buf)
    return new Statement(INTERNAL, $stmt)
 }
 
-function statementOfString(str) {
+function statementOfString(str, options = {}) {
    const lexbuf = LexBuffer.ofString(str)
-   return statement(lexbuf)
+   return statement(lexbuf, options)
 }
 
 export const Parser = {

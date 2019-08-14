@@ -18,12 +18,12 @@ describe('Parser', () => {
    it("doesn't throw on a simple parse", () => {
       const $buf = of_string('hello')
 
-      expect(() => $Parser.statement($buf)).not.toThrow()
+      expect(() => $Parser.statement(true, $buf)).not.toThrow()
    })
 
    it('parses a single command', () => {
       const $buf = of_string('hello'),
-         $stmt = $Parser.statement($buf)
+         $stmt = $Parser.statement(true, $buf)
 
       expect($Statement.command($stmt)).toBe('hello')
    })
