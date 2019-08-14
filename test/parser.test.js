@@ -15,6 +15,12 @@ let of_string = function(js_string) {
 // interface.) See `test/parser_test.ml`. These are intentionally very superficial, to ensure that
 // behaviour is correctly reaching the JavaScript side.
 describe('Parser', () => {
+   it("doesn't throw on a simple parse", () => {
+      const $buf = of_string('hello')
+
+      expect(() => $Parser.statement($buf)).not.toThrow()
+   })
+
    it('parses a single command', () => {
       const $buf = of_string('hello'),
          $stmt = $Parser.statement($buf)
