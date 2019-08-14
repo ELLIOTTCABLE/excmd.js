@@ -47,10 +47,6 @@
       },
       {
          "dir": "shim/native"
-      },
-      {
-         "dir": "scripts",
-         "type": "dev"
       }
    ],
    "ppx-flags": ["ppx-sedlex/ppx.js", "ppx-deriving/ppx.js"],

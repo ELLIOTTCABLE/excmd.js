@@ -9,6 +9,7 @@ src/lexer.ml
 # ============
 #lib/bs/
 *.bs.js
+!scripts/annotateMenhirTypes.bs.js
 
 *.cmt
 *.cmj
