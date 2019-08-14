@@ -2,6 +2,10 @@ margin = 90
 
 field-space = loose
 let-binding-spacing = sparse
+space-around-records = true
+space-around-arrays = true
+space-around-lists = true
+space-around-variants = true
 
 let-open = auto
 

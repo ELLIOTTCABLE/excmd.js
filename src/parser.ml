@@ -15,7 +15,7 @@ let error_loctoken_exn = function
 let string_of_parsing_error = function
    | Lexer.LexError (pos, desc) ->
      Some
-        (String.concat "" ["LexError "; "\""; desc; "\" at "; Lexer.string_of_position pos])
+        (String.concat "" [ "LexError "; "\""; desc; "\" at "; Lexer.string_of_position pos ])
    | ParseError loctok -> Some ("ParseError at " ^ Lexer.string_of_loctoken loctok)
    | _ -> None
 

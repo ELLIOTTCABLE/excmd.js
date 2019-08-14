@@ -2,26 +2,26 @@ open Tokens
 module Interpreter = ParserAutomaton.MenhirInterpreter
 module Incremental = ParserAutomaton.Incremental
 
-type 'a checkpoint = {status : 'a Interpreter.checkpoint; buf : Lexer.buffer}
+type 'a checkpoint = { status : 'a Interpreter.checkpoint; buf : Lexer.buffer }
 
 type 'a t = Lexer.buffer -> 'a checkpoint
 
 let statement buf =
    let _start, curr = Sedlexing.lexing_positions (Lexer.sedlex_of_buffer buf) in
-   {buf; status = Incremental.statement curr}
+   { buf; status = Incremental.statement curr }
 
 
 let statement_of_string s =
    let buf = Lexer.buffer_of_string s in
    let _start, curr = Sedlexing.lexing_positions (Lexer.sedlex_of_buffer buf) in
-   {buf; status = Incremental.statement curr}
+   { buf; status = Incremental.statement curr }
 
 
 exception Break
 
 (* FIXME: Ugly, imperative mess. *)
 let acceptable_token cp =
-   let {status = cp; buf = _buf} = cp in
+   let { status = cp; buf = _buf } = cp in
    let len = Array.length Lexer.example_tokens in
    let accepted_token = ref None in
    ( try
@@ -37,7 +37,7 @@ let acceptable_token cp =
 
 
 let acceptable_tokens cp =
-   let {status = cp; buf = _buf} = cp in
+   let { status = cp; buf = _buf } = cp in
    let accepted_tokens = ref [] in
    Lexer.example_tokens
    |> Array.iter (fun tok ->
@@ -47,19 +47,19 @@ let acceptable_tokens cp =
 
 
 let continue ~accept ~fail cp =
-   let {status = cp; buf} = cp in
+   let { status = cp; buf } = cp in
    (* FIXME: This naive `last_token` won't be compatible with restarting. wat do *)
    let last_token = ref Lexing.(EOF, dummy_pos, dummy_pos) in
    let supplier () =
       last_token := Lexer.next_loc buf ;
       !last_token
    in
-   let fail cp1 cp2 = fail {status = cp1; buf} {status = cp2; buf} in
+   let fail cp1 cp2 = fail { status = cp1; buf } { status = cp2; buf } in
    Interpreter.loop_handle_undo accept fail supplier cp
 
 
 let menhir_checkpoint_type (cp : 'a checkpoint) =
-   let {status = cp} = cp in
+   let { status = cp } = cp in
    match cp with
     | InputNeeded _env -> "InputNeeded"
     | Shifting (_before, _after, _will_need_more) -> "Shifting"
@@ -70,7 +70,7 @@ let menhir_checkpoint_type (cp : 'a checkpoint) =
 
 
 let terminal_or_nonterminal (cp : 'a checkpoint) =
-   let {status = cp} = cp in
+   let { status = cp } = cp in
    let the_env =
       match cp with
        | InputNeeded env -> env
@@ -88,7 +88,7 @@ let terminal_or_nonterminal (cp : 'a checkpoint) =
 
 
 let current_command (cp : 'a checkpoint) =
-   let {status = menhir_cp} = cp in
+   let { status = menhir_cp } = cp in
    match menhir_cp with
     (* FIXME: Are all of these actually states in which I can't determine a command? *)
     | Shifting _ | AboutToReduce _ | HandlingError _ | Accepted _ | Rejected -> None
@@ -182,7 +182,7 @@ let print_stack (env : 'a Interpreter.env) =
 
 
 let debug_checkpoint (cp : 'a checkpoint) =
-   let {status = menhir_cp} = cp in
+   let { status = menhir_cp } = cp in
    match menhir_cp with
     | InputNeeded env -> print_stack env
     | _ -> failwith "supposed to be InputNeeded"

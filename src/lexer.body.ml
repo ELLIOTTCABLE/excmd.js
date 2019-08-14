@@ -11,10 +11,10 @@ type mode =
    | QuoteBalanced of int
    | QuoteComplex
 
-type buffer = {sedlex : Sedlexing.lexbuf; mutable mode : mode}
+type buffer = { sedlex : Sedlexing.lexbuf; mutable mode : mode }
 
 type position = Lexing.position =
-   {pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int}
+   { pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int }
 [@@deriving show]
 
 type 'a located = 'a * position * position [@@deriving show]
@@ -34,9 +34,9 @@ let known_schemes =
       "^(about|data?|f(eed|ile|tp)|g(eo|opher)|https?|i(nfo|rc[6s]?)|ldaps?|m(agnet|ailto)|n(ews|fs|ntp)|rsync|t(ag|elnet)|urn|view-source|wss?|xmpp|ymsgr):"
 
 
-let opening_for = [(")", "("); ("]", "[")]
+let opening_for = [ (")", "("); ("]", "[") ]
 
-let closing_for = [("(", ")"); ("[", "]")]
+let closing_for = [ ("(", ")"); ("[", "]") ]
 
 let quote_balanced_open =
    [%sedlex.regexp? 0x00AB (* '«' LEFT-POINTING DOUBLE ANGLE QUOTATION MARK *)]
@@ -54,16 +54,16 @@ let quote_balanced_open_char = "«"
 let quote_balanced_close_char = "»"
 
 let opening_for =
-   [(")", "("); ("]", "["); (quote_balanced_close_char, quote_balanced_open_char)]
+   [ (")", "("); ("]", "["); (quote_balanced_close_char, quote_balanced_open_char) ]
 
 
 let closing_for =
-   [("(", ")"); ("[", "]"); (quote_balanced_open_char, quote_balanced_close_char)]
+   [ ("(", ")"); ("[", "]"); (quote_balanced_open_char, quote_balanced_close_char) ]
 
 
 let is_known_scheme str = Js.Re.test str known_schemes
 
-let buffer_of_sedlex sedlex = {sedlex; mode = Main}
+let buffer_of_sedlex sedlex = { sedlex; mode = Main }
 
 let sedlex_of_buffer buf = buf.sedlex
 
@@ -208,7 +208,8 @@ let example_tokens =
     ; SEMICOLON
     ; FLAGS_SHORT (FLAGS_SHORT "" |> ex)
     ; URL_REST (URL_REST "" |> ex)
-    ; URL_START (URL_START "" |> ex) |]
+    ; URL_START (URL_START "" |> ex)
+   |]
 
 
 let compare_token a b =
@@ -252,7 +253,7 @@ let string_of_loctoken loctok =
 
 
 let string_of_position pos =
-   let {pos_lnum; pos_cnum} = pos in
+   let { pos_lnum; pos_cnum } = pos in
    Printf.sprintf "%u:%u" pos_lnum pos_cnum
 
 
@@ -263,7 +264,8 @@ let url_opening_fail buf opening closing =
           ; closing
           ; " in a bare URL - delimiters must be balanced. (Did you forget a "
           ; opening
-          ; "? If not, try enclosing the URL in quotes.)" ])
+          ; "? If not, try enclosing the URL in quotes.)"
+          ])
 
 
 let url_closing_fail buf opening closing =
@@ -273,13 +275,14 @@ let url_closing_fail buf opening closing =
           ; opening
           ; " in bare URL - delimiters must be balanced. (Did you forget a "
           ; closing
-          ; "? If not, try enclosing the URL in quotes.)" ])
+          ; "? If not, try enclosing the URL in quotes.)"
+          ])
 
 
 let quote_opening_fail buf opening closing =
    lexfail buf
       (String.concat "`"
-          ["Unmatched closing-quote "; closing; ". (Did you forget a "; opening; "?)"])
+          [ "Unmatched closing-quote "; closing; ". (Did you forget a "; opening; "?)" ])
 
 
 let quote_closing_fail buf opening closing =
@@ -289,7 +292,8 @@ let quote_closing_fail buf opening closing =
           ; opening
           ; ". (Reached EOF without finding a matching"
           ; closing
-          ; "; did you forget one?)" ])
+          ; "; did you forget one?)"
+          ])
 
 
 let quote_escaping_fail buf delim escape_seq =
@@ -301,7 +305,8 @@ let quote_escaping_fail buf delim escape_seq =
           ; delim
           ; " strings. (Did you forget to escape a backslash? Try "
           ; "\\" ^ escape_seq
-          ; " instead.)" ])
+          ; " instead.)"
+          ])
 
 
 let url_pop_delim buf closing xs =
@@ -525,7 +530,7 @@ and url_no_delim buf orig_start prev_end acc =
     | urlbody_opening_char ->
       let delim = utf8 buf in
       Buffer.add_string acc delim ;
-      url_inside_delims buf orig_start acc [delim]
+      url_inside_delims buf orig_start acc [ delim ]
     (* These cases are identical; but Sedlex demands that the last case stand alone. |
        urlbody_illegal_char | urlbody_closing_char -> *)
     | _ ->

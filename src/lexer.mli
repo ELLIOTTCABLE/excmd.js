@@ -2,7 +2,7 @@ type buffer
 (** {2 Types } *)
 
 type position = Lexing.position =
-   {pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int}
+   { pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int }
 [@@deriving show]
 
 type 'a located = 'a * position * position

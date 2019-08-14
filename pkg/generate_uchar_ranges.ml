@@ -35,7 +35,8 @@ type state =
    ; mutable viramas : Uchar.t list
    ; mutable nonspacings : Uchar.t list
    ; mutable non_reordered_nonspacings : Uchar.t list
-   ; mutable vowel_dependents : Uchar.t list }
+   ; mutable vowel_dependents : Uchar.t list
+   }
 
 let s : state =
    { curr = Uchar.min
@@ -46,7 +47,8 @@ let s : state =
    ; viramas = []
    ; nonspacings = []
    ; non_reordered_nonspacings = []
-   ; vowel_dependents = [] }
+   ; vowel_dependents = []
+   }
 
 
 type entry = Single of Uchar.t | Range of (Uchar.t * Uchar.t)
@@ -58,7 +60,7 @@ let collapse (entries : entry list) (cp : Uchar.t) : entry list =
       else Single cp :: Range (a, b) :: rest
     | Single b :: rest ->
       if Uchar.pred b = cp then Range (cp, b) :: rest else Single cp :: Single b :: rest
-    | [] -> [Single cp]
+    | [] -> [ Single cp ]
 
 
 let dump_header () =

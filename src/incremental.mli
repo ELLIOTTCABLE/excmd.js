@@ -1,5 +1,5 @@
 type 'a checkpoint = private
-   {status : 'a ParserAutomaton.MenhirInterpreter.checkpoint; buf : Lexer.buffer}
+   { status : 'a ParserAutomaton.MenhirInterpreter.checkpoint; buf : Lexer.buffer }
 
 (** {2 Incremental entry-checkpoints } *)
 

@@ -129,12 +129,12 @@ let tests () =
 let () =
    match Sys.argv with
     (* Automated tests *)
-    | [|_|] -> tests ()
+    | [| _ |] -> tests ()
     (* Interactive usage *)
-    | [|_; "script"; str|] -> Parser.script_of_string str |> unwrap_exn |> AST.pp
-    | [|_; "statement"; str|] ->
+    | [| _; "script"; str |] -> Parser.script_of_string str |> unwrap_exn |> AST.pp
+    | [| _; "statement"; str |] ->
       Parser.statement_of_string str |> unwrap_exn |> Statement.pp
-    | [|_; _; _|] ->
+    | [| _; _; _ |] ->
       raise
          (Invalid_argument
              "First argument must be a valid non-terminal (e.g. 'script' or 'statement')")

@@ -4,7 +4,8 @@ let linesToAnnotate =
    [| ( "type token ="
       , "\n\
          [@@bs.deriving jsConverter] [@@deriving show { with_path = false }, to_yojson \
-         { optional = true }]" ) |]
+         { optional = true }]" )
+   |]
 
 
 (* Why this is missing from [Node.Fs], I can't imagine. *)
@@ -26,8 +27,9 @@ external bufferIndexOf
    :  Node.buffer
       -> string
       -> ?offset:int
-      -> ?encoding:([`ascii | `utf8 | `utf16le | `usc2 | `base64 | `latin1 | `binary | `hex][@bs.string
-                    ])
+      -> ?encoding:
+         ([ `ascii | `utf8 | `utf16le | `usc2 | `base64 | `latin1 | `binary | `hex ][@bs.string
+          ])
       -> unit
       -> int
    = "indexOf"
@@ -53,7 +55,7 @@ let src, dest =
    let resolve = Node.Path.resolve "" in
    let args = Js.Array.slice ~start:2 ~end_:5 Sys.argv in
    match args |> Js.Array.map resolve with
-    | [|src; dest|] -> (src, dest)
+    | [| src; dest |] -> (src, dest)
     | _ ->
       print_usage () ;
       Js.Exn.raiseError "need exactly two arguments: a source, and a destination"
@@ -67,7 +69,7 @@ let prependAfterFirstOccurence ~(input : Node.buffer) ~(matchAfter : string)
    let startIndex = bufferIndexOf input matchAfter () in
    string_of_int startIndex |> print_endline ;
    if startIndex == -1 then
-      Js.String.concatMany [|"'"; matchAfter; "' not found in input file"|] ""
+      Js.String.concatMany [| "'"; matchAfter; "' not found in input file" |] ""
       |> Js.Exn.raiseError ;
    let followingIndex =
       bufferIndexOf input ~offset:startIndex prependBeforeFollowing ()
@@ -79,7 +81,8 @@ let prependAfterFirstOccurence ~(input : Node.buffer) ~(matchAfter : string)
           ; prependBeforeFollowing
           ; "' not found following '"
           ; matchAfter
-          ; "' in input file" |]
+          ; "' in input file"
+         |]
          ""
       |> Js.Exn.raiseError ;
 
@@ -91,7 +94,8 @@ let prependAfterFirstOccurence ~(input : Node.buffer) ~(matchAfter : string)
        ; matchAfter
        ; "' (byte "
        ; string_of_int startIndex
-       ; ")" |]
+       ; ")"
+      |]
       ""
    |> print_endline ;
 
@@ -99,7 +103,7 @@ let prependAfterFirstOccurence ~(input : Node.buffer) ~(matchAfter : string)
    let before = bufferSlice input ~end_:followingIndex () in
    let after = bufferSlice input ~start:followingIndex () in
    let length = bufferLength input + Js.String.length addition in
-   bufferConcat [|before; Node.Buffer.fromString addition; after|] ~length ()
+   bufferConcat [| before; Node.Buffer.fromString addition; after |] ~length ()
 
 
 let () =
