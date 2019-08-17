@@ -5,6 +5,13 @@ lib/
 src/lexer.ml
 
 
+# TypeScript
+# ==========
+src/**/*.d.ts
+src/**/*.d.ts.map
+!src/**/*.bs.d.ts
+
+
 # BuckleScript
 # ============
 #lib/bs/
