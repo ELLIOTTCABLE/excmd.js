@@ -1,4 +1,4 @@
-import {toFakeUTF8String, fixBrokenBuckleScriptUTF8String} from '../src/fake_string'
+import {toFakeUTF8String, fixBrokenBuckleScriptUTF8String} from './fake_string'
 
 import $Lexer from './lexer.bs'
 import $Parser from './parser.bs'
