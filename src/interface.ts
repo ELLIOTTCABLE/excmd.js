@@ -7,6 +7,7 @@ import {
 import $Lexer from './lexer.bs'
 import $Parser from './parser.bs'
 import $Statement from './statement.bs'
+import $Incremental from './incremental.bs'
 
 // A hack to ape nominal typing.
 type Nominal<Ty, Discriminant> = Ty & {__discriminant: Discriminant}
@@ -14,6 +15,14 @@ type Nominal<Ty, Discriminant> = Ty & {__discriminant: Discriminant}
 // Used to ensure that nothing else can invoke these classes' constructors directly; this mints a new, locally-scoped Symbol that cannot be reproduced outside of this file.
 type sentinel = Nominal<symbol, 'INTERNAL'>
 const INTERNAL = Symbol() as sentinel
+
+type checkpoint_state =
+   | 'InputNeeded'
+   | 'Shifting'
+   | 'AboutToReduce'
+   | 'HandlingError'
+   | 'Accepted'
+   | 'Rejected'
 
 // Some TypeScript-side types for BuckleScript runtime values
 type $string = string_as_utf_8_buffer
@@ -26,6 +35,7 @@ type $ASTt = Nominal<object, 'AST.t'>
 type $Statementt = Nominal<object, 'Statement.t'>
 type $flag_payload = Nominal<object, 'Statement.flag_payload'>
 
+type $checkpoint = Nominal<object, 'Incremental.checkpoint'>
 
 // Ugly, inline type-annotations for my BuckleScript types. Because genType is runtime-heavy trash.
 //---
@@ -68,6 +78,17 @@ type ParseOptions = {
    throwException?: boolean
 }
 
+// Helpers
+
+function fromFakeUTF8StringOption($str: string_as_utf_8_buffer | undefined): string {
+   if (typeof $str === 'undefined') {
+      return undefined
+   } else {
+      return fromFakeUTF8String($str)
+   }
+}
+
+// Wrapper for Parser.script
 function script(lexbuf: LexBuffer, options: ParseOptions = {}) {
    console.assert(lexbuf instanceof LexBuffer)
    const $scpt = $Parser.script(options.throwException, lexbuf.$buf)
@@ -78,9 +99,23 @@ function script(lexbuf: LexBuffer, options: ParseOptions = {}) {
    }
 }
 
+// Equivalent of Parser.script_of_string
 function scriptOfString(str: string, options: ParseOptions = {}) {
    const lexbuf = LexBuffer.ofString(str)
    return script(lexbuf, options)
+}
+
+// Wrapper for Incremental.script
+function startScript(lexbuf: LexBuffer) {
+   console.assert(lexbuf instanceof LexBuffer)
+   const $cp: $checkpoint = $Incremental.script(lexbuf.$buf)
+   return new Checkpoint(INTERNAL, $cp)
+}
+
+// Equivalent of Incremental.script_of_string
+function startScriptWithString(str: string) {
+   const lexbuf = LexBuffer.ofString(str)
+   return startScript(lexbuf)
 }
 
 function statement(lexbuf: LexBuffer, options: ParseOptions = {}) {
@@ -98,11 +133,28 @@ function statementOfString(str: string, options: ParseOptions = {}) {
    return statement(lexbuf, options)
 }
 
+// Wrapper for Incremental.script
+function startStatement(lexbuf: LexBuffer) {
+   console.assert(lexbuf instanceof LexBuffer)
+   const $cp: $checkpoint = $Incremental.statement(lexbuf.$buf)
+   return new Checkpoint(INTERNAL, $cp)
+}
+
+// Equivalent of Incremental.script_of_string
+function startStatementWithString(str: string) {
+   const lexbuf = LexBuffer.ofString(str)
+   return startStatement(lexbuf)
+}
+
 export const Parser = {
    script,
    scriptOfString,
+   startScript,
+   startScriptWithString,
    statement,
    statementOfString,
+   startStatement,
+   startStatementWithString,
 }
 
 // Wrapper for `AST.t`.
@@ -206,57 +258,120 @@ export class LexBuffer {
       return new LexBuffer(INTERNAL, $buf)
    }
 
-   next(): Token {
-      const $tok = $Lexer.next_loc(this.$buf)
-      return new Token(INTERNAL, $tok)
+   next(): LocatedToken {
+      const $loctok = $Lexer.next_loc(this.$buf)
+      return new LocatedToken(INTERNAL, $loctok)
    }
 
-   rest(): Token[] {
-      return $Lexer.tokens_loc(this.$buf).map($tok => new Token(INTERNAL, $tok))
+   rest(): LocatedToken[] {
+      return $Lexer
+         .tokens_loc(this.$buf)
+         .map($loctok => new LocatedToken(INTERNAL, $loctok))
+   }
+}
+
+export class LocatedToken {
+   $loctok: $token_located
+
+   constructor(isInternal: sentinel, $loctok: $token_located) {
+      if (isInternal !== INTERNAL) throw new Error('`LocatedToken` cannot be constructed')
+
+      this.$loctok = $loctok
+   }
+
+   get $token(): $token {
+      return $Lexer.token(this.$loctok)
+   }
+
+   get token(): Token {
+      return new Token(INTERNAL, this.$token)
+   }
+
+   get id(): symbol {
+      return Symbol.for($Lexer.show_token(this.$token))
+   }
+
+   get startLine(): number {
+      return $Lexer.start_lnum(this.$loctok)
+   }
+   get startIdx(): number {
+      return $Lexer.start_cnum(this.$loctok)
+   }
+   get endLine(): number {
+      return $Lexer.end_lnum(this.$loctok)
+   }
+   get endIdx(): number {
+      return $Lexer.end_cnum(this.$loctok)
+   }
+
+   get body(): string | undefined {
+      return new Token(INTERNAL, this.$token).body
    }
 }
 
 export class Token {
-   $tok: $token_located
+   $token: $token
 
-   constructor(isInternal: sentinel, $tok: $token_located) {
+   constructor(isInternal: sentinel, $tok: $token) {
       if (isInternal !== INTERNAL) throw new Error('`Token` cannot be constructed')
 
-      this.$tok = $tok
-   }
-
-   get $raw(): $token {
-      return $Lexer.token(this.$tok)
+      this.$token = $tok
    }
 
    get id(): symbol {
-      return Symbol.for($Lexer.show_token(this.$raw))
-   }
-
-   get startLine(): number {
-      return $Lexer.start_lnum(this.$tok)
-   }
-   get startIdx(): number {
-      return $Lexer.start_cnum(this.$tok)
-   }
-   get endLine(): number {
-      return $Lexer.end_lnum(this.$tok)
-   }
-   get endIdx(): number {
-      return $Lexer.end_cnum(this.$tok)
+      return Symbol.for($Lexer.show_token(this.$token))
    }
 
    get body(): string | undefined {
-      let $body = $Lexer.token_body(this.$raw)
-      if (typeof $body === 'undefined') {
-         return undefined
-      } else {
-         return fromFakeUTF8String($body)
-      }
+      let $body = $Lexer.token_body(this.$token)
+      return fromFakeUTF8StringOption($body)
    }
 
    compare(other: Token): boolean {
       console.assert(other instanceof Token)
-      return $Lexer.compare_token(this.$raw, other.$raw)
+      return $Lexer.compare_token(this.$token, other.$token)
+   }
+}
+
+// Wrapper for Incremental.checkpoint.
+export class Checkpoint {
+   $cp: $checkpoint
+
+   constructor(isInternal: sentinel, $cp: $checkpoint) {
+      if (isInternal !== INTERNAL)
+         throw new Error(
+            '`Checkpoint` can only be constructed by `Excmd.startScript()` and friends.',
+         )
+
+      this.$cp = $cp
+   }
+
+   // FIXME: This, and some of these others, have constraints on the *state* of the checkpoint
+   //        before they make sense (i.e. 'this must be in the InputNeeded state' or similar.) I'd
+   //        like to raise the errors on the JavaScript side, in a JavaScript-friendly way, with
+   //        the option of returning an optional instead of allowing for runtime exceptions ...
+   get acceptable_token(): Token {
+      const $tok = $Incremental.acceptable_token(this.$cp)
+      return new Token(INTERNAL, $tok)
+   }
+
+   get acceptable_tokens(): Token[] {
+      const $toks = $Incremental.acceptable_tokens(this.$cp)
+      return $toks.map($tok => new Token(INTERNAL, $tok))
+   }
+
+   get command(): string | undefined {
+      const $command = $Incremental.current_command(this.$cp)
+      return fromFakeUTF8StringOption($command)
+   }
+
+   // FIXME: More accessors
+
+   get automaton_status(): checkpoint_state {
+      return $Incremental.automaton_status(this.$cp)
+   }
+
+   get symbol_type(): 'terminal' | 'nonterminal' {
+      return $Incremental.symbol_type(this.$cp)
    }
 }

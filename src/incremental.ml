@@ -6,6 +6,17 @@ type 'a checkpoint = { status : 'a Interpreter.checkpoint; buf : Lexer.buffer }
 
 type 'a t = Lexer.buffer -> 'a checkpoint
 
+let script buf =
+   let _start, curr = Sedlexing.lexing_positions (Lexer.sedlex_of_buffer buf) in
+   { buf; status = Incremental.script curr }
+
+
+let script_of_string s =
+   let buf = Lexer.buffer_of_string s in
+   let _start, curr = Sedlexing.lexing_positions (Lexer.sedlex_of_buffer buf) in
+   { buf; status = Incremental.script curr }
+
+
 let statement buf =
    let _start, curr = Sedlexing.lexing_positions (Lexer.sedlex_of_buffer buf) in
    { buf; status = Incremental.statement curr }
@@ -58,7 +69,7 @@ let continue ~accept ~fail cp =
    Interpreter.loop_handle_undo accept fail supplier cp
 
 
-let menhir_checkpoint_type (cp : 'a checkpoint) =
+let automaton_status (cp : 'a checkpoint) =
    let { status = cp } = cp in
    match cp with
     | InputNeeded _env -> "InputNeeded"
@@ -69,22 +80,20 @@ let menhir_checkpoint_type (cp : 'a checkpoint) =
     | Rejected -> "Rejected"
 
 
-let terminal_or_nonterminal (cp : 'a checkpoint) =
+let symbol_type (cp : 'a checkpoint) =
    let { status = cp } = cp in
    let the_env =
       match cp with
        | InputNeeded env -> env
        | _ ->
-         failwith
-            "terminal_or_nonterminal: I don't know how to handle non-InputNeeded \
-             checkpoints"
+         failwith "symbol_type: I don't know how to handle non-InputNeeded checkpoints"
    in
    match Interpreter.top the_env with
     | Some (Interpreter.Element (lr1state, _v, _startp, _endp)) -> (
           match Interpreter.incoming_symbol lr1state with
            | Interpreter.T _x -> "Terminal"
            | Interpreter.N _x -> "Nonterminal" )
-    | None -> failwith "terminal_or_nonterminal: the automaton's stack is empty"
+    | None -> failwith "symbol_type: the automaton's stack is empty"
 
 
 let current_command (cp : 'a checkpoint) =
