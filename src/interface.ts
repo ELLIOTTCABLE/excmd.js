@@ -1,4 +1,8 @@
-import {toFakeUTF8String, fromFakeUTF8String, string_as_utf_8_buffer} from 'ocaml-string-convert'
+import {
+   toFakeUTF8String,
+   fromFakeUTF8String,
+   string_as_utf_8_buffer,
+} from 'ocaml-string-convert'
 
 import $Lexer from './lexer.bs'
 import $Parser from './parser.bs'

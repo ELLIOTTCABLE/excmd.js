@@ -616,23 +616,17 @@ describe('Lexer', () => {
       expect($Lexer.show_token($tok1)).toBe('QUOTE_OPEN')
       expect(fromFakeUTF8String($Lexer.token_body($tok1))).toEqual('«')
       expect($Lexer.show_token($tok2)).toBe('QUOTE_CHUNK')
-      expect(fromFakeUTF8String($Lexer.token_body($tok2))).toEqual(
-         'testing some ',
-      )
+      expect(fromFakeUTF8String($Lexer.token_body($tok2))).toEqual('testing some ')
       expect($Lexer.show_token($tok3)).toBe('QUOTE_OPEN')
       expect(fromFakeUTF8String($Lexer.token_body($tok3))).toEqual('«')
       expect($Lexer.show_token($tok4)).toBe('QUOTE_CHUNK')
-      expect(fromFakeUTF8String($Lexer.token_body($tok4))).toEqual(
-         'balanced ',
-      )
+      expect(fromFakeUTF8String($Lexer.token_body($tok4))).toEqual('balanced ')
       expect($Lexer.show_token($tok5)).toBe('QUOTE_OPEN')
       expect(fromFakeUTF8String($Lexer.token_body($tok5))).toEqual('«')
       expect($Lexer.show_token($tok6)).toBe('QUOTE_CLOSE')
       expect(fromFakeUTF8String($Lexer.token_body($tok6))).toEqual('»')
       expect($Lexer.show_token($tok7)).toBe('QUOTE_CHUNK')
-      expect(fromFakeUTF8String($Lexer.token_body($tok7))).toEqual(
-         ' strings',
-      )
+      expect(fromFakeUTF8String($Lexer.token_body($tok7))).toEqual(' strings')
       expect($Lexer.show_token($tok8)).toBe('QUOTE_CLOSE')
       expect(fromFakeUTF8String($Lexer.token_body($tok8))).toEqual('»')
       expect($Lexer.show_token($tok9)).toBe('QUOTE_CLOSE')

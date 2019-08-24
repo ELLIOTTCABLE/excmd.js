@@ -36,7 +36,7 @@
       "promote:ml": "dune promote",
       "test": "npm-run-all build:bs --parallel test:js test:ml",
       "changed:ml": "./scripts/invokeJestWithBucklescriptPaths.js",
-      "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.ts' 'src/**/*.js' 'test/**/*.js'",
+      "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.ts' 'src/**/*.js' 'test/**/*.js' 'examples/**/*.ts'",
       "format:ml": "make format-ml",
       "format": "npm-run-all 'format:*'",
       "lint-staged": "lint-staged"
