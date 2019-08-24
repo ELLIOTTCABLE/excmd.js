@@ -30,10 +30,11 @@
       "clean:all": "make clean-all",
       "prepare": "npm-run-all clean build",
       "test:js": "jest",
-      "test:js:staged": "jest --onlyChanged",
+      "test:js:coverage": "jest --collect-coverage",
+      "test:js:staged": "jest --only-changed",
       "test:ml": "dune runtest",
       "promote:ml": "dune promote",
-      "test": "npm-run-all build:bs --parallel 'test:*'",
+      "test": "npm-run-all build:bs --parallel test:js test:ml",
       "changed:ml": "./scripts/invokeJestWithBucklescriptPaths.js",
       "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.ts' 'src/**/*.js' 'test/**/*.js'",
       "format:ml": "make format-ml",
@@ -101,7 +102,6 @@
    },
    "jest": {
       "verbose": true,
-      "collectCoverage": true,
       "collectCoverageFrom": [
          "src/**/*.{js,jsx}",
          "!src/parserAutomaton.bs.js",
