@@ -9,7 +9,7 @@ let of_string = function(js_string) {
 }
 
 describe('Lexer', () => {
-   it('lexes an EOF', () => {
+   it.skip('lexes an EOF', () => {
       const $buf = of_string(''),
          $tok = $Lexer.next($buf)
 
@@ -641,7 +641,7 @@ describe('Lexer', () => {
 })
 
 describe('Lexer (objective interface)', () => {
-   it('lexes an EOF', () => {
+   it.skip('lexes an EOF', () => {
       const buf = LexBuffer.ofString(''),
          tok = buf.next()
 
