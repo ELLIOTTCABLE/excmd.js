@@ -110,8 +110,8 @@ let tests () =
    in
    let accept _statement = failwith "parsing should have failed" in
    let fail last_good _failing =
-      Incremental.menhir_checkpoint_type last_good |> print_endline ;
-      Incremental.terminal_or_nonterminal last_good |> print_endline ;
+      Incremental.automaton_status last_good |> print_endline ;
+      Incremental.symbol_type last_good |> print_endline ;
       Incremental.debug_checkpoint last_good
    in
    Incremental.continue ~accept ~fail entrypoint ;
