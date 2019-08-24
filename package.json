@@ -81,7 +81,8 @@
       "bs-platform": "^5.0.6",
       "bs-sedlex": "^20.0.0-pre.2",
       "bs-uchar": "0.0.4",
-      "fast-text-encoding": "^1.0.0"
+      "fast-text-encoding": "^1.0.0",
+      "ocaml-string-convert": "0.0.3"
    },
    "devDependencies": {
       "@babel/cli": "^7.5.5",

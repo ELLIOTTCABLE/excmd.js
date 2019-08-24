@@ -1,5 +1,4 @@
 import {Parser, LexBuffer, Script, Statement} from '../src/interface'
-import {toFakeUTF8String, fromFakeUTF8String} from '../src/fake_string'
 
 describe('JavaScript interface', () => {
    describe('Parser.script()', () => {

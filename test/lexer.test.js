@@ -1,7 +1,7 @@
 import $Lexer from '../src/lexer.bs'
 import $Tokens from '../src/tokens.bs'
 import {LexBuffer, Token} from '../src/interface'
-import {toFakeUTF8String, fixBrokenBuckleScriptUTF8String} from '../src/fake_string'
+import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 
 let of_string = function(js_string) {
    const utf8_arr = toFakeUTF8String(js_string)
@@ -563,7 +563,7 @@ describe('Lexer', () => {
          $tok = $Lexer.next($buf)
 
       expect($Lexer.show_token($tok)).toBe('QUOTE_OPEN')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok))).toEqual('«')
+      expect(fromFakeUTF8String($Lexer.token_body($tok))).toEqual('«')
    })
 
    it('consumes spaces inside a balanced string', () => {
@@ -596,7 +596,7 @@ describe('Lexer', () => {
          $tok = $Lexer.next($buf)
 
       expect($Lexer.show_token($tok)).toBe('QUOTE_CLOSE')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok))).toEqual('»')
+      expect(fromFakeUTF8String($Lexer.token_body($tok))).toEqual('»')
    })
 
    // TODO: This should probably be done with Jest's snapshotting or something.
@@ -614,29 +614,29 @@ describe('Lexer', () => {
          $tok9 = $Lexer.next($buf)
 
       expect($Lexer.show_token($tok1)).toBe('QUOTE_OPEN')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok1))).toEqual('«')
+      expect(fromFakeUTF8String($Lexer.token_body($tok1))).toEqual('«')
       expect($Lexer.show_token($tok2)).toBe('QUOTE_CHUNK')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok2))).toEqual(
+      expect(fromFakeUTF8String($Lexer.token_body($tok2))).toEqual(
          'testing some ',
       )
       expect($Lexer.show_token($tok3)).toBe('QUOTE_OPEN')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok3))).toEqual('«')
+      expect(fromFakeUTF8String($Lexer.token_body($tok3))).toEqual('«')
       expect($Lexer.show_token($tok4)).toBe('QUOTE_CHUNK')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok4))).toEqual(
+      expect(fromFakeUTF8String($Lexer.token_body($tok4))).toEqual(
          'balanced ',
       )
       expect($Lexer.show_token($tok5)).toBe('QUOTE_OPEN')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok5))).toEqual('«')
+      expect(fromFakeUTF8String($Lexer.token_body($tok5))).toEqual('«')
       expect($Lexer.show_token($tok6)).toBe('QUOTE_CLOSE')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok6))).toEqual('»')
+      expect(fromFakeUTF8String($Lexer.token_body($tok6))).toEqual('»')
       expect($Lexer.show_token($tok7)).toBe('QUOTE_CHUNK')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok7))).toEqual(
+      expect(fromFakeUTF8String($Lexer.token_body($tok7))).toEqual(
          ' strings',
       )
       expect($Lexer.show_token($tok8)).toBe('QUOTE_CLOSE')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok8))).toEqual('»')
+      expect(fromFakeUTF8String($Lexer.token_body($tok8))).toEqual('»')
       expect($Lexer.show_token($tok9)).toBe('QUOTE_CLOSE')
-      expect(fixBrokenBuckleScriptUTF8String($Lexer.token_body($tok9))).toEqual('»')
+      expect(fromFakeUTF8String($Lexer.token_body($tok9))).toEqual('»')
    })
 })
 

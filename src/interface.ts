@@ -1,18 +1,18 @@
-import {toFakeUTF8String, fixBrokenBuckleScriptUTF8String} from './fake_string'
+import {toFakeUTF8String, fromFakeUTF8String, string_as_utf_8_buffer} from 'ocaml-string-convert'
 
 import $Lexer from './lexer.bs'
 import $Parser from './parser.bs'
 import $Statement from './statement.bs'
 
 // A hack to ape nominal typing.
-type Nominal<Ty, Discriminant> = Ty & {__brand: Discriminant}
+type Nominal<Ty, Discriminant> = Ty & {__discriminant: Discriminant}
 
 // Used to ensure that nothing else can invoke these classes' constructors directly; this mints a new, locally-scoped Symbol that cannot be reproduced outside of this file.
 type sentinel = Nominal<symbol, 'INTERNAL'>
 const INTERNAL = Symbol() as sentinel
 
 // Some TypeScript-side types for BuckleScript runtime values
-type $string = Nominal<string, 'BuckleScript string'>
+type $string = string_as_utf_8_buffer
 
 type $ASTt = Nominal<object, 'AST.t'>
 type $Statementt = Nominal<object, 'Statement.t'>
@@ -139,7 +139,7 @@ export class Statement {
 
    get command(): string {
       let $command = $Statement.command(this.$stmt)
-      return fixBrokenBuckleScriptUTF8String($command)
+      return fromFakeUTF8String($command)
    }
 
    // Wrapper for `Statement.mem`
@@ -153,7 +153,7 @@ export class Statement {
 
    // Wrapper for `Statement.positionals`
    getPositionals(): string[] {
-      return $Statement.positionals(this.$stmt).map(fixBrokenBuckleScriptUTF8String)
+      return $Statement.positionals(this.$stmt).map(fromFakeUTF8String)
    }
 
    // Wrapper for `Statement.flag`
@@ -246,7 +246,7 @@ export class Token {
       if (typeof $body === 'undefined') {
          return undefined
       } else {
-         return fixBrokenBuckleScriptUTF8String($body)
+         return fromFakeUTF8String($body)
       }
    }
 

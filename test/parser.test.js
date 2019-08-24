@@ -3,7 +3,7 @@ import $Tokens from '../src/tokens.bs'
 import $Parser from '../src/parser.bs'
 import $Statement from '../src/statement.bs'
 import {LexBuffer, Token, Parser} from '../src/interface'
-import {toFakeUTF8String, fromFakeUTF8String} from '../src/fake_string'
+import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 
 let of_string = function(js_string) {
    const utf8_arr = toFakeUTF8String(js_string)
