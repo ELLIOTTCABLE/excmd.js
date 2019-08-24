@@ -18,13 +18,14 @@ const INTERNAL = Symbol() as sentinel
 // Some TypeScript-side types for BuckleScript runtime values
 type $string = string_as_utf_8_buffer
 
+type $buffer = Nominal<object, 'Lexer.buffer'>
+type $token = Nominal<object, 'Tokens.token'>
+type $token_located = Nominal<object, 'Tokens.token located'>
+
 type $ASTt = Nominal<object, 'AST.t'>
 type $Statementt = Nominal<object, 'Statement.t'>
 type $flag_payload = Nominal<object, 'Statement.flag_payload'>
 
-type $buffer = Nominal<object, 'Lexer.buffer'>
-type $token = Nominal<object, 'Tokens.token'>
-type $token_located = Nominal<object, 'Tokens.token located'>
 
 // Ugly, inline type-annotations for my BuckleScript types. Because genType is runtime-heavy trash.
 //---
@@ -112,7 +113,7 @@ export class Script {
    constructor(isInternal: sentinel, $scpt: $ASTt) {
       if (isInternal !== INTERNAL)
          throw new Error(
-            '`Script` can only be constructed by `Excmd.parse()` and friends.',
+            '`Script` can only be constructed by `Excmd.script()` and friends.',
          )
 
       this.$scpt = $scpt
@@ -131,7 +132,7 @@ export class Statement {
    constructor(isInternal: sentinel, $stmt: $Statementt) {
       if (isInternal !== INTERNAL)
          throw new Error(
-            '`Statement` can only be constructed by `Excmd.parse()` and friends.',
+            '`Statement` can only be constructed by `Excmd.script()` and friends.',
          )
 
       this.$stmt = $stmt
