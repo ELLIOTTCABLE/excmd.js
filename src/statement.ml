@@ -83,7 +83,6 @@ let flag key st =
                        consuming_flag := None ;
                        false )
               | Flag flag -> (
-                    print_endline flag.name ;
                     if flag.name != key then true
                     else
                     match flag.payload with
