@@ -40,7 +40,6 @@ val acceptable_tokens : 'a checkpoint -> Tokens.token array
 
     JavaScript interface: [Checkpoint::acceptable_tokens()]. *)
 
-
 val current_command : 'a checkpoint -> string option
 (** [current_command cp] will, if the automaton has already accepted a IDENTIFIER token
     that will eventually become the [Statement.command] of the current statement, produce

@@ -2,6 +2,15 @@ open Tokens
 module Interpreter = ParserAutomaton.MenhirInterpreter
 module Incremental = ParserAutomaton.Incremental
 
+(* FIXME: So. Soooooooooo. Hmm. Basically everything in this file is *way*, way too
+   tightly-coupled to the specifics of the grammar; changes to parserAutomaton.mly are
+   basically always going to require updates to this file in lockstep. That's nasty.
+   These are the kinds of things that keep me up at night.
+
+   There *should* be a way to keep this a little more decoupled; but I'm simply not an
+   experienced-enough parser-generator-user to produce and maintain a properly-decoupled
+   automaton, I suppose ... *)
+
 type 'a checkpoint = { status : 'a Interpreter.checkpoint; buf : Lexer.buffer }
 
 type 'a t = Lexer.buffer -> 'a checkpoint
