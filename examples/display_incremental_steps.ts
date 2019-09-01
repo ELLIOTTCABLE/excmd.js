@@ -11,11 +11,6 @@ function interrogate(startingValue: string) {
    const start: Excmd.Checkpoint = Excmd.Parser.startStatementWithString(startingValue)
 }
 
-function goodbye(code?: number) {
-   printNotice('Buh-bye 💖 !')
-   term.processExit(typeof code === 'undefined' ? 0 : code)
-}
-
 // ### Ignore me, mundane terminal-setup noise follows.
 
 function handleKeypress(buf: TextBuffer, key: string) {
@@ -76,7 +71,7 @@ function handleKeypress(buf: TextBuffer, key: string) {
             break
 
          case 'CTRL_C':
-            showNotice(keyDesc, true)
+            showNotice(' Buh-bye 💖 ! ', true)
             term.processExit(1)
             break
 
@@ -167,7 +162,7 @@ function showNotice(str: string, drawNow = true) {
    notice.fill({char: ' '})
    notice.draw()
 
-   notice.x = term.width - termkit.stringWidth(str)
+   notice.x = term.width - termkit.stringWidth(str) - 1
    notice.put({x: 0, y: 0, markup: true}, str)
    drawNow ? draw(notice) : notice.draw()
 
