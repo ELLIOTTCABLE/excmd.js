@@ -4,11 +4,48 @@ import Excmd from '../'
 
 const term = termkit.terminal
 
-// TODO: Document me!
-function interrogate(startingValue: string) {
-   let buffer = startingValue
+function describeCheckpoint(output: ScreenBuffer, cp: Excmd.Checkpoint) {
+   const state = cp.automaton_status
 
-   const start: Excmd.Checkpoint = Excmd.Parser.startStatementWithString(startingValue)
+   switch (state) {
+      case 'Accepted':
+      case 'Rejected':
+         output.put({markup: true, x: 0, y: 0}, `State: ^_${state}^:`)
+         break
+
+      case 'InputNeeded':
+      case 'Shifting':
+      case 'AboutToReduce':
+      case 'HandlingError':
+         const {
+            command,
+            incoming_symbol: symbol,
+            incoming_symbol_type: type,
+            incoming_symbol_category: category,
+         } = cp
+
+         if (typeof symbol === 'undefined')
+            output.put({markup: true, x: 0, y: 0}, `State: ^_${state}^: (initial)`)
+         else {
+            const symbol_desc = `${symbol} : (${type}) ${category}`
+
+            output.put(
+               {markup: true, x: 0, y: 0},
+               `State: ^_${state}^:, incoming: ^_${symbol_desc}^:, current command: ^_${command}^:`,
+            )
+         }
+   }
+
+   draw(output)
+}
+
+function onChange(input: TextBuffer, output: ScreenBuffer) {
+   const textContent = input.getText()
+   const start: Excmd.Checkpoint = Excmd.Parser.startStatementWithString(textContent)
+
+   output.fill({char: ' '})
+   describeCheckpoint(output, start)
+   draw(output)
 }
 
 // ### Ignore me, mundane terminal-setup noise follows.
@@ -112,7 +149,7 @@ function moveToEnd(buf: TextBuffer) {
    buf.moveToEndOfLine()
 }
 
-// ### Aaaaaand off we go!
+// ... now we start actually setting up the terminal!
 
 setupAltMode()
 
@@ -194,4 +231,10 @@ moveToEnd(input)
 input.drawCursor()
 draw(input)
 
+const output = new termkit.ScreenBuffer({dst: screen, y: 0, height: term.height - 6})
+
 term.on('key', handleKeypress.bind(null, input))
+
+// ### Aaaaand we're off!
+
+term.on('key', onChange.bind(null, input, output))
