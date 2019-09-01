@@ -110,8 +110,10 @@ let tests () =
    in
    let accept _statement = failwith "parsing should have failed" in
    let fail last_good _failing =
-      Incremental.automaton_status last_good |> print_endline ;
-      Incremental.symbol_type last_good |> print_endline ;
+      Incremental.automaton_status_str last_good |> print_endline ;
+      Incremental.incoming_symbol_category_str last_good |> unwrap_exn |> print_endline ;
+      Incremental.incoming_symbol_type_str last_good |> unwrap_exn |> print_endline ;
+      Incremental.incoming_symbol_str last_good |> unwrap_exn |> print_endline ;
       Incremental.debug_checkpoint last_good
    in
    Incremental.continue ~accept ~fail entrypoint ;

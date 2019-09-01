@@ -368,11 +368,19 @@ export class Checkpoint {
    // FIXME: More accessors
 
    get automaton_status(): checkpoint_state {
-      return $Incremental.automaton_status(this.$cp)
+      return $Incremental.automaton_status_str(this.$cp)
    }
 
-   get symbol_type(): 'terminal' | 'nonterminal' {
-      return $Incremental.symbol_type(this.$cp)
+   get incoming_symbol_category(): 'terminal' | 'nonterminal' | undefined {
+      return $Incremental.incoming_symbol_category_str(this.$cp)
+   }
+
+   get incoming_symbol_type(): string | undefined {
+      return $Incremental.incoming_symbol_type_str(this.$cp)
+   }
+
+   get incoming_symbol(): string | undefined {
+      return $Incremental.incoming_symbol_str(this.$cp)
    }
 }
 

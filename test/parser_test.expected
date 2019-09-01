@@ -322,11 +322,13 @@ URL_START, IDENTIFIER
 Incremental.statement "hello --where="
 InputNeeded
 Terminal
-EQUALS : unit terminal
-FLAG_LONG : (string) terminal
-command : (string) nonterminal
-option_COUNT_ : (string option) nonterminal
-list_COLON_ : (unit list) nonterminal
+unit
+EQUALS
+EQUALS : (unit) Terminal
+FLAG_LONG : (string) Terminal
+command : (string) Nonterminal
+option_COUNT_ : (string option) Nonterminal
+list_COLON_ : (unit list) Nonterminal
 
 
 ### Ascertaining of current command from a checkpoint:

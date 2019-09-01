@@ -78,7 +78,24 @@ let continue ~accept ~fail cp =
    Interpreter.loop_handle_undo accept fail supplier cp
 
 
-let automaton_status (cp : 'a checkpoint) =
+let current_command (cp : 'a checkpoint) =
+   let { status = menhir_cp } = cp in
+   match menhir_cp with
+    (* FIXME: Are all of these actually states in which I can't determine a command? *)
+    | Shifting _ | AboutToReduce _ | HandlingError _ | Accepted _ | Rejected -> None
+    | InputNeeded env ->
+      let rec f i =
+         match Interpreter.get i env with
+          | None -> None
+          | Some (Interpreter.Element (lr1state, valu, _startp, _endp)) -> (
+                match Interpreter.incoming_symbol lr1state with
+                 | Interpreter.N Interpreter.N_command -> Some (valu : string)
+                 | _ -> f (i + 1) )
+      in
+      f 0
+
+
+let automaton_status_str (cp : 'a checkpoint) =
    let { status = cp } = cp in
    match cp with
     | InputNeeded _env -> "InputNeeded"
@@ -89,110 +106,148 @@ let automaton_status (cp : 'a checkpoint) =
     | Rejected -> "Rejected"
 
 
-let symbol_type (cp : 'a checkpoint) =
+let element_incoming_symbol_category_str = function
+   | Interpreter.Element (lr1state, _valu, _startp, _endp) -> (
+         match Interpreter.incoming_symbol lr1state with
+          | Interpreter.T _x -> "Terminal"
+          | Interpreter.N _x -> "Nonterminal" )
+
+
+let incoming_symbol_category_str (cp : 'a checkpoint) =
    let { status = cp } = cp in
    let the_env =
       match cp with
        | InputNeeded env -> env
-       | _ ->
-         failwith "symbol_type: I don't know how to handle non-InputNeeded checkpoints"
+       (* FIXME: Should I, indeed, take the [before] state, here? *)
+       | Shifting (before, _after, _final) -> before
+       | AboutToReduce (env, _prod) -> env
+       | HandlingError env -> env
+       | Accepted _v ->
+         failwith "incoming_symbol_category: I don't know how to handle Accepted checkpoints"
+       | Rejected ->
+         failwith "incoming_symbol_category: I don't know how to handle Rejected checkpoints"
    in
    match Interpreter.top the_env with
-    | Some (Interpreter.Element (lr1state, _v, _startp, _endp)) -> (
-          match Interpreter.incoming_symbol lr1state with
-           | Interpreter.T _x -> "Terminal"
-           | Interpreter.N _x -> "Nonterminal" )
-    | None -> failwith "symbol_type: the automaton's stack is empty"
-
-
-let current_command (cp : 'a checkpoint) =
-   let { status = menhir_cp } = cp in
-   match menhir_cp with
-    (* FIXME: Are all of these actually states in which I can't determine a command? *)
-    | Shifting _ | AboutToReduce _ | HandlingError _ | Accepted _ | Rejected -> None
-    | InputNeeded env ->
-      let rec f i =
-         match Interpreter.get i env with
-          | None -> None
-          | Some (Interpreter.Element (lr1state, v, _startp, _endp)) -> (
-                match Interpreter.incoming_symbol lr1state with
-                 | Interpreter.N Interpreter.N_command -> Some (v : string)
-                 | _ -> f (i + 1) )
-      in
-      f 0
-
+    | Some el -> Some (element_incoming_symbol_category_str el)
+    | None -> None
 
 (* Ugggggggggggggggh literally copy-pasted this into existence out of compiled files,
    there HAS to be a better way to do this ... *)
-let print_stack_element el =
-   match el with
-    | Interpreter.Element (s, _v, _startp, _endp) -> (
-          match Interpreter.incoming_symbol s with
-           | Interpreter.N Interpreter.N_unterminated_statement ->
-             "unterminated_statement : (AST.statement) nonterminal"
-           | Interpreter.N Interpreter.N_statement -> "statement : (AST.statement) nonterminal"
-           | Interpreter.N Interpreter.N_short_flags_before_positional ->
-             "short_flags_before_positional : (AST.arg list) nonterminal"
-           | Interpreter.N Interpreter.N_short_flags_before_flag ->
-             "short_flags_before_flag : (AST.arg list) nonterminal"
-           | Interpreter.N Interpreter.N_script -> "script : (AST.t) nonterminal"
-           | Interpreter.N Interpreter.N_positional_and_arguments ->
-             "positional_and_arguments : (AST.arg list) nonterminal"
-           | Interpreter.N Interpreter.N_optterm_nonempty_list_break_unterminated_statement_ ->
-             "optterm_nonempty_list_break_unterminated_statement_ : (AST.statement list) \
-              nonterminal"
-           | Interpreter.N Interpreter.N_optterm_list_break_unterminated_statement_ ->
-             "optterm_list_break_unterminated_statement_ : (AST.statement list) nonterminal"
-           | Interpreter.N Interpreter.N_option_break_ ->
-             "option_break_ : (unit option) nonterminal"
-           | Interpreter.N Interpreter.N_option_COUNT_ ->
-             "option_COUNT_ : (string option) nonterminal"
-           | Interpreter.N Interpreter.N_nonempty_arguments ->
-             "nonempty_arguments : (AST.arg list) nonterminal"
-           | Interpreter.N Interpreter.N_noncommand_word ->
-             "noncommand_word : (string) nonterminal"
-           | Interpreter.N Interpreter.N_long_flag_before_positional ->
-             "long_flag_before_positional : (AST.arg) nonterminal"
-           | Interpreter.N Interpreter.N_long_flag_before_flag ->
-             "long_flag_before_flag : (AST.arg) nonterminal"
-           | Interpreter.N Interpreter.N_list_COLON_ -> "list_COLON_ : (unit list) nonterminal"
-           | Interpreter.N Interpreter.N_last_short_flags ->
-             "last_short_flags : (AST.arg list) nonterminal"
-           | Interpreter.N Interpreter.N_last_long_flag ->
-             "last_long_flag : (AST.arg) nonterminal"
-           | Interpreter.N Interpreter.N_flag_and_arguments ->
-             "flag_and_arguments : (AST.arg list) nonterminal"
-           | Interpreter.N Interpreter.N_command -> "command : (string) nonterminal"
-           | Interpreter.N Interpreter.N_break -> "break : (unit) nonterminal"
-           | Interpreter.N Interpreter.N_arguments -> "arguments : (AST.arg list) nonterminal"
-           | Interpreter.T Tokens.T_error -> "error : unit terminal"
-           | Interpreter.T Tokens.T_URL_START -> "URL_START : (string) terminal"
-           | Interpreter.T Tokens.T_URL_REST -> "URL_REST : (string) terminal"
-           | Interpreter.T Tokens.T_SEMICOLON -> "SEMICOLON : unit terminal"
-           | Interpreter.T Tokens.T_QUOTE_OPEN -> "QUOTE_OPEN : (string) terminal"
-           | Interpreter.T Tokens.T_QUOTE_ESCAPE -> "QUOTE_ESCAPE : (string) terminal"
-           | Interpreter.T Tokens.T_QUOTE_CLOSE -> "QUOTE_CLOSE : (string) terminal"
-           | Interpreter.T Tokens.T_QUOTE_CHUNK -> "QUOTE_CHUNK : (string) terminal"
-           | Interpreter.T Tokens.T_PIPE -> "PIPE : unit terminal"
-           | Interpreter.T Tokens.T_PAREN_OPEN -> "PAREN_OPEN : unit terminal"
-           | Interpreter.T Tokens.T_PAREN_CLOSE -> "PAREN_CLOSE : unit terminal"
-           | Interpreter.T Tokens.T_IDENTIFIER -> "IDENTIFIER : (string) terminal"
-           | Interpreter.T Tokens.T_FLAG_LONG -> "FLAG_LONG : (string) terminal"
-           | Interpreter.T Tokens.T_FLAGS_SHORT -> "FLAGS_SHORT : (string) terminal"
-           | Interpreter.T Tokens.T_EQUALS -> "EQUALS : unit terminal"
-           | Interpreter.T Tokens.T_EOF -> "EOF : unit terminal"
-           | Interpreter.T Tokens.T_COUNT -> "COUNT : (string) terminal"
-           | Interpreter.T Tokens.T_COMMENT_OPEN -> "COMMENT_OPEN : unit terminal"
-           | Interpreter.T Tokens.T_COMMENT_CLOSE -> "COMMENT_CLOSE : unit terminal"
-           | Interpreter.T Tokens.T_COMMENT -> "COMMENT : (string) terminal"
-           | Interpreter.T Tokens.T_COLON -> "COLON : unit terminal" )
+let element_incoming_symbol_desc = function
+   | Interpreter.Element (lr1state, _valu, _startp, _endp) -> (
+         match Interpreter.incoming_symbol lr1state with
+          | Interpreter.N Interpreter.N_unterminated_statement ->
+            "unterminated_statement", "AST.statement"
+          | Interpreter.N Interpreter.N_statement -> "statement", "AST.statement"
+          | Interpreter.N Interpreter.N_short_flags_before_positional ->
+            "short_flags_before_positional", "AST.arg list"
+          | Interpreter.N Interpreter.N_short_flags_before_flag ->
+            "short_flags_before_flag", "AST.arg list"
+          | Interpreter.N Interpreter.N_script -> "script", "AST.t"
+          | Interpreter.N Interpreter.N_positional_and_arguments ->
+            "positional_and_arguments", "AST.arg list"
+          | Interpreter.N Interpreter.N_optterm_nonempty_list_break_unterminated_statement_ ->
+            "optterm_nonempty_list_break_unterminated_statement_", "AST.statement list"
+          | Interpreter.N Interpreter.N_optterm_list_break_unterminated_statement_ ->
+            "optterm_list_break_unterminated_statement_", "AST.statement list"
+          | Interpreter.N Interpreter.N_option_break_ ->
+            "option_break_", "unit option"
+          | Interpreter.N Interpreter.N_option_COUNT_ ->
+            "option_COUNT_", "string option"
+          | Interpreter.N Interpreter.N_nonempty_arguments ->
+            "nonempty_arguments", "AST.arg list"
+          | Interpreter.N Interpreter.N_noncommand_word ->
+            "noncommand_word", "string"
+          | Interpreter.N Interpreter.N_long_flag_before_positional ->
+            "long_flag_before_positional", "AST.arg"
+          | Interpreter.N Interpreter.N_long_flag_before_flag ->
+            "long_flag_before_flag", "AST.arg"
+          | Interpreter.N Interpreter.N_list_COLON_ -> "list_COLON_", "unit list"
+          | Interpreter.N Interpreter.N_last_short_flags ->
+            "last_short_flags", "AST.arg list"
+          | Interpreter.N Interpreter.N_last_long_flag ->
+            "last_long_flag", "AST.arg"
+          | Interpreter.N Interpreter.N_flag_and_arguments ->
+            "flag_and_arguments", "AST.arg list"
+          | Interpreter.N Interpreter.N_command -> "command", "string"
+          | Interpreter.N Interpreter.N_break -> "break", "unit"
+          | Interpreter.N Interpreter.N_arguments -> "arguments", "AST.arg list"
+          | Interpreter.T Tokens.T_error -> "error", "unit"
+          | Interpreter.T Tokens.T_URL_START -> "URL_START", "string"
+          | Interpreter.T Tokens.T_URL_REST -> "URL_REST", "string"
+          | Interpreter.T Tokens.T_SEMICOLON -> "SEMICOLON", "unit"
+          | Interpreter.T Tokens.T_QUOTE_OPEN -> "QUOTE_OPEN", "string"
+          | Interpreter.T Tokens.T_QUOTE_ESCAPE -> "QUOTE_ESCAPE", "string"
+          | Interpreter.T Tokens.T_QUOTE_CLOSE -> "QUOTE_CLOSE", "string"
+          | Interpreter.T Tokens.T_QUOTE_CHUNK -> "QUOTE_CHUNK", "string"
+          | Interpreter.T Tokens.T_PIPE -> "PIPE", "unit"
+          | Interpreter.T Tokens.T_PAREN_OPEN -> "PAREN_OPEN", "unit"
+          | Interpreter.T Tokens.T_PAREN_CLOSE -> "PAREN_CLOSE", "unit"
+          | Interpreter.T Tokens.T_IDENTIFIER -> "IDENTIFIER", "string"
+          | Interpreter.T Tokens.T_FLAG_LONG -> "FLAG_LONG", "string"
+          | Interpreter.T Tokens.T_FLAGS_SHORT -> "FLAGS_SHORT", "string"
+          | Interpreter.T Tokens.T_EQUALS -> "EQUALS", "unit"
+          | Interpreter.T Tokens.T_EOF -> "EOF", "unit"
+          | Interpreter.T Tokens.T_COUNT -> "COUNT", "string"
+          | Interpreter.T Tokens.T_COMMENT_OPEN -> "COMMENT_OPEN", "unit"
+          | Interpreter.T Tokens.T_COMMENT_CLOSE -> "COMMENT_CLOSE", "unit"
+          | Interpreter.T Tokens.T_COMMENT -> "COMMENT", "string"
+          | Interpreter.T Tokens.T_COLON -> "COLON", "unit" )
+
+let incoming_symbol_type_str (cp : 'a checkpoint) =
+   let { status = cp } = cp in
+   let the_env =
+      match cp with
+       | InputNeeded env -> env
+       (* FIXME: Should I, indeed, take the [before] state, here? *)
+       | Shifting (before, _after, _final) -> before
+       | AboutToReduce (env, _prod) -> env
+       | HandlingError env -> env
+       | Accepted _v ->
+         failwith "incoming_symbol_type: I don't know how to handle Accepted checkpoints"
+       | Rejected ->
+         failwith "incoming_symbol_type: I don't know how to handle Rejected checkpoints"
+   in
+   match Interpreter.top the_env with
+    | Some el -> begin
+          match element_incoming_symbol_desc el with
+           | (_name, typ) -> Some typ
+       end
+    | None -> None
+
+let incoming_symbol_str (cp : 'a checkpoint) =
+   let { status = cp } = cp in
+   let the_env =
+      match cp with
+       | InputNeeded env -> env
+       (* FIXME: Should I, indeed, take the [before] state, here? *)
+       | Shifting (before, _after, _final) -> before
+       | AboutToReduce (env, _prod) -> env
+       | HandlingError env -> env
+       | Accepted _v ->
+         failwith "incoming_symbol: I don't know how to handle Accepted checkpoints"
+       | Rejected ->
+         failwith "incoming_symbol: I don't know how to handle Rejected checkpoints"
+   in
+   match Interpreter.top the_env with
+    | Some el -> begin
+          match element_incoming_symbol_desc el with
+           | (name, _typ) -> Some name
+       end
+    | None -> None
+
+
+let element_incoming_symbol_desc_str el =
+   let cat = element_incoming_symbol_category_str el in
+   match element_incoming_symbol_desc el with
+    | name, typ -> String.concat "" [name; " : ("; typ; ") "; cat]
 
 
 let print_stack (env : 'a Interpreter.env) =
    let rec f i =
       match Interpreter.get i env with
        | Some el ->
-         print_stack_element el |> print_endline ;
+         element_incoming_symbol_desc_str el |> print_endline ;
          f (i + 1)
        | None -> ()
    in
