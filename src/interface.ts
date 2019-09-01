@@ -375,3 +375,13 @@ export class Checkpoint {
       return $Incremental.symbol_type(this.$cp)
    }
 }
+
+export default {
+   Parser,
+   Script,
+   Statement,
+   LexBuffer,
+   LocatedToken,
+   Token,
+   Checkpoint,
+}
