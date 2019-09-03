@@ -454,7 +454,7 @@ export class AutomatonStack<D extends SemanticDiscriminator> {
    constructor(isInternal: sentinel, cp: Checkpoint<D>, isAfterStack: boolean) {
       if (isInternal !== INTERNAL)
          throw new Error(
-            '`AutomatonStackw` can only be obtained via `Checkpoint::beforeStack()` and friends.',
+            '`AutomatonStack` can only be obtained via `Checkpoint::beforeStack()` and friends.',
          )
 
       this.cp = cp
