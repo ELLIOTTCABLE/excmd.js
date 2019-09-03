@@ -4,7 +4,21 @@ import Excmd from '../'
 
 const term = termkit.terminal
 
-function describeCheckpoint(output: ScreenBuffer, cp: Excmd.Checkpoint) {
+function describeStatement(output: ScreenBuffer, stmt: Statement) {
+   output.put({markup: true, y: 1, x: 0}, `Count: ^_${stmt.count}^:`)
+   output.put({markup: true, y: 2, x: 0}, `Command: ^_${stmt.command}^:`)
+
+   const positionals = stmt.getPositionals()
+   if (positionals.length) {
+      output.put({y: 4, x: 0}, `Positionals (including ambiguous flag-payloads):`)
+
+      for (let [idx, positional] of positionals.entries()) {
+         output.put({markup: true, y: 5 + idx, x: 0}, `- "${positional}"`)
+      }
+   }
+}
+
+function describeCheckpoint(output: ScreenBuffer, cp: Checkpoint) {
    const state = cp.automaton_status
 
    switch (state) {
@@ -39,12 +53,28 @@ function describeCheckpoint(output: ScreenBuffer, cp: Excmd.Checkpoint) {
    draw(output)
 }
 
+function displayStack(output: ScreenBuffer, cp: Checkpoint) {
+   for (let el of cp.beforeStack) {
+      output.put({}, el.incoming_symbol)
+   }
+}
+
 function onChange(input: TextBuffer, output: ScreenBuffer) {
    const textContent = input.getText()
    const start: Excmd.Checkpoint = Excmd.Parser.startStatementWithString(textContent)
 
    output.fill({char: ' '})
-   describeCheckpoint(output, start)
+   output.moveTo(0, 0)
+
+   start.continue({
+      onAccept: function(stmt) {
+         output.put({}, 'Input accepted!\n')
+         describeStatement(output, stmt)
+      },
+      onFail: function(lastGood, errorAt) {
+         displayStack(output, lastGood)
+      },
+   })
    draw(output)
 }
 
