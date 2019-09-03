@@ -175,14 +175,14 @@ function draw(buf: TextBuffer | ScreenBuffer, immediate = false) {
       if (null !== drawTimeout) clearTimeout(drawTimeout)
       if (drawPending) drawPending = false
 
-      next.draw()
+      next.draw({delta: true})
       next.drawCursor()
 
       drawTimeout = setTimeout(function checkForScheduledDraw() {
          drawTimeout = null
 
          if (drawPending) {
-            next.draw()
+            next.draw({delta: true})
             next.drawCursor()
 
             drawPending = false
