@@ -109,7 +109,7 @@ function scriptOfString(str: string, options: ParseOptions = {}) {
 function startScript(lexbuf: LexBuffer) {
    console.assert(lexbuf instanceof LexBuffer)
    const $cp: $checkpoint = $Incremental.script(lexbuf.$buf)
-   return new Checkpoint(INTERNAL, $cp)
+   return new Checkpoint(INTERNAL, $cp, 'script')
 }
 
 // Equivalent of Incremental.script_of_string
@@ -137,7 +137,7 @@ function statementOfString(str: string, options: ParseOptions = {}) {
 function startStatement(lexbuf: LexBuffer) {
    console.assert(lexbuf instanceof LexBuffer)
    const $cp: $checkpoint = $Incremental.statement(lexbuf.$buf)
-   return new Checkpoint(INTERNAL, $cp)
+   return new Checkpoint(INTERNAL, $cp, 'statement')
 }
 
 // Equivalent of Incremental.script_of_string
@@ -333,17 +333,71 @@ export class Token {
    }
 }
 
-// Wrapper for Incremental.checkpoint.
-export class Checkpoint {
-   $cp: $checkpoint
+interface SemanticMap {
+   script: Script
+   statement: Statement
+}
 
-   constructor(isInternal: sentinel, $cp: $checkpoint) {
+type SemanticDiscriminator = keyof SemanticMap
+
+// Wrapper for Incremental.checkpoint.
+export class Checkpoint<D extends SemanticDiscriminator> {
+   $cp: $checkpoint
+   type: D
+
+   constructor(isInternal: sentinel, $cp: $checkpoint, type: D) {
       if (isInternal !== INTERNAL)
          throw new Error(
             '`Checkpoint` can only be constructed by `Excmd.startScript()` and friends.',
          )
 
       this.$cp = $cp
+      this.type = type
+   }
+
+   producesScript(): this is Checkpoint<'script'> {
+      return this.type === 'script'
+   }
+
+   producesStatement(): this is Checkpoint<'statement'> {
+      return this.type === 'statement'
+   }
+
+   continue<T>(
+      opts: {
+         onAccept?: (val: SemanticMap[D]) => T
+         onFail?: (lastGood: Checkpoint<D>, errorAt: Checkpoint<D>) => T
+      } = {},
+   ): T {
+      const self = this
+
+      let acceptMapper
+      if (typeof opts.onAccept === 'undefined') acceptMapper = function() {}
+      else if (this.producesScript())
+         acceptMapper = function wrapScript($scpt: $ASTt) {
+            const scpt = new Script(INTERNAL, $scpt),
+               onAccept = opts.onAccept as (Script) => T
+            return onAccept(scpt)
+         }
+      else
+         acceptMapper = function wrapStatement($stmt: $Statementt) {
+            const stmt = new Statement(INTERNAL, $stmt),
+               onAccept = opts.onAccept as (Statement) => T
+            return onAccept(stmt)
+         }
+
+      let failMapper
+      if (typeof opts.onFail === 'undefined') failMapper = function() {}
+      else
+         failMapper = function($lastGood: $checkpoint, $errorAt: $checkpoint) {
+            const lastGood = new Checkpoint(INTERNAL, $lastGood, self.type),
+               errorAt = new Checkpoint(INTERNAL, $errorAt, self.type)
+
+            return opts.onFail(lastGood, errorAt)
+         }
+
+      // (BuckleScript mangles `continue` due to that being a reserved word in JavaScript.)
+      return $Incremental.$$continue(acceptMapper, failMapper, this.$cp)
    }
 
    // FIXME: This, and some of these others, have constraints on the *state* of the checkpoint
@@ -371,7 +425,7 @@ export class Checkpoint {
       return $Incremental.automaton_status_str(this.$cp)
    }
 
-   get incoming_symbol_category(): 'terminal' | 'nonterminal' | undefined {
+   get incoming_symbol_category(): 'Terminal' | 'Nonterminal' | undefined {
       return $Incremental.incoming_symbol_category_str(this.$cp)
    }
 
