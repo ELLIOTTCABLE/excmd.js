@@ -236,17 +236,20 @@ export class Statement {
    }
 
    // Wrapper for `Statement.iter`
-   forEachFlag(f: (name: string, payload: string | undefined) => void): void {
+   forEachFlag(
+      f: (name: string, payload: string | undefined, idx: number) => void,
+   ): void {
       const stringMapper = function(
+         idx: number,
          $name: $string,
          $payloadOpt: $flag_payload | undefined,
       ) {
          const name = fromFakeUTF8String($name),
             payload = fromFlagPayloadOption($payloadOpt)
 
-         f(name, payload)
+         f(name, payload, idx)
       }
-      $Statement.iter(stringMapper)
+      $Statement.iteri(stringMapper, this.$stmt)
    }
 
    // Wrapper for `Statement.flag`

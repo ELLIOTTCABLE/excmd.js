@@ -128,18 +128,21 @@ let resolve_all_flags st =
    st.args <- Array.of_list (List.filter iterator (Array.to_list st.args))
 
 
-let iter f st =
+let iteri f st =
    resolve_all_flags st ;
-   let iterator = function
+   let iterator i = function
       | Positional _ -> ()
       | Flag flag -> (
             match flag.payload with
-             | Absent -> f flag.name Empty
-             | Resolved value -> f flag.name (Payload value)
+             | Absent -> f i flag.name Empty
+             | Resolved value -> f i flag.name (Payload value)
              | Unresolved -> failwith "Unreachable" )
    in
-   Array.iter iterator st.args
+   Array.iteri iterator st.args
 
+let iter f st =
+   let f _i a b = f a b in
+   iteri f st
 
 let positionals st =
    let filter = function

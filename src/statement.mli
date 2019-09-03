@@ -54,6 +54,8 @@ val iter : (string -> flag_payload -> unit) -> t -> unit
     This {{!reso} fully resolves} [stmt] — any ambiguous words will be consumed as the
     values to their associated flags, becoming unavailable as positional arguments. *)
 
+val iteri: (int -> string -> flag_payload -> unit) -> t -> unit
+
 val flag : string -> t -> flag_payload option
 (** [flag fl stmt] finds the flag by the name of [fl], {{!reso} resolves} it if
     necessary, and produces the payload there of, if any.
