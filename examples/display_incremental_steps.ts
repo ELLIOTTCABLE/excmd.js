@@ -13,8 +13,28 @@ function describeStatement(output: ScreenBuffer, stmt: Statement) {
       output.put({y: 4, x: 0}, `Positionals (including ambiguous flag-payloads):`)
 
       for (let [idx, positional] of positionals.entries()) {
-         output.put({markup: true, y: 5 + idx, x: 0}, `- "${positional}"`)
+         output.put({markup: true, y: 5 + idx, x: 0}, `${idx}. "${positional}"`)
       }
+   }
+
+   const flagsStart = positionals.length ? 7 + positionals.length : 5
+
+   // TODO: Hmm, I wonder if I should add a more efficient ‘are there any flags at all’ test ...
+   if (stmt.flags.length) {
+      output.put({y: flagsStart - 1, x: 0}, `Flags:`)
+
+      stmt.forEachFlag(function(flag, payload, idx) {
+         if (payload)
+            output.put(
+               {markup: true, y: flagsStart + idx, x: 0},
+               `- ${flag}: "${payload}"`,
+            )
+         else
+            output.put(
+               {markup: true, y: flagsStart + idx, x: 0},
+               `- ${flag} (no payload)`,
+            )
+      })
    }
 }
 
