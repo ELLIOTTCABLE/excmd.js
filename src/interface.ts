@@ -36,6 +36,7 @@ type $Statementt = Nominal<object, 'Statement.t'>
 type $flag_payload = Nominal<object, 'Statement.flag_payload'>
 
 type $checkpoint = Nominal<object, 'Incremental.checkpoint'>
+type $element = Nominal<object, 'MenhirInterpreter.element'>
 
 // Ugly, inline type-annotations for my BuckleScript types. Because genType is runtime-heavy trash.
 //---
@@ -435,6 +436,65 @@ export class Checkpoint<D extends SemanticDiscriminator> {
 
    get incoming_symbol(): string | undefined {
       return $Incremental.incoming_symbol_str(this.$cp)
+   }
+
+   get beforeStack(): AutomatonStack<D> {
+      return new AutomatonStack(INTERNAL, this, false)
+   }
+
+   get afterStack(): AutomatonStack<D> {
+      return new AutomatonStack(INTERNAL, this, true)
+   }
+}
+
+export class AutomatonStack<D extends SemanticDiscriminator> {
+   cp: Checkpoint<D>
+   isAfterStack: boolean
+
+   constructor(isInternal: sentinel, cp: Checkpoint<D>, isAfterStack: boolean) {
+      if (isInternal !== INTERNAL)
+         throw new Error(
+            '`AutomatonStackw` can only be obtained via `Checkpoint::beforeStack()` and friends.',
+         )
+
+      this.cp = cp
+      this.isAfterStack = isAfterStack
+   }
+
+   *[Symbol.iterator]() {
+      const $cp = this.cp.$cp
+
+      const $get = this.isAfterStack ? $Incremental.get_after : $Incremental.get_before
+
+      // Translated, "while get_whichever() isn't None." Yeah, it's a mess.
+      for (let $el: $element, idx = 0; ($el = $get($cp, idx)); idx++) {
+         yield new AutomatonElement(INTERNAL, $el)
+      }
+   }
+}
+
+export class AutomatonElement {
+   $el: $element
+
+   constructor(isInternal: sentinel, $el: $element) {
+      if (isInternal !== INTERNAL)
+         throw new Error(
+            '`AutomatonElement` can only be obtained by iterating over `Checkpoint::stackBefore()` and friends.',
+         )
+
+      this.$el = $el
+   }
+
+   get incoming_symbol_category(): 'Terminal' | 'Nonterminal' {
+      return $Incremental.element_incoming_symbol_category_str(this.$el)
+   }
+
+   get incoming_symbol_type(): string {
+      return $Incremental.element_incoming_symbol_type_str(this.$el)
+   }
+
+   get incoming_symbol(): string {
+      return $Incremental.element_incoming_symbol_str(this.$el)
    }
 }
 

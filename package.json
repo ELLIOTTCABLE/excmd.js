@@ -77,6 +77,7 @@
    },
    "homepage": "https://github.com/ELLIOTTCABLE/excmd.js#readme",
    "dependencies": {
+      "@babel/runtime": "^7.5.5",
       "bs-deriving": "^42.1.0",
       "bs-gen": "^0.5.2",
       "bs-platform": "^5.0.6",
@@ -88,6 +89,7 @@
    "devDependencies": {
       "@babel/cli": "^7.5.5",
       "@babel/core": "^7.5.5",
+      "@babel/plugin-transform-runtime": "^7.5.5",
       "@babel/preset-env": "^7.5.5",
       "@babel/preset-typescript": "^7.3.3",
       "@types/terminal-kit": "^1.28.0",
