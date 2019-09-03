@@ -33,6 +33,9 @@ val has_payload : string -> t -> bool
     already {{!reso} resolved}, {e and} flag [fl] resolved to a [string] payload instead
     of a [bool]. Returns [false] otherwise. *)
 
+val flags : t -> string array
+(** [flags stmt] returns a list of the flags used in [stmt], including only the {e names} of flags - not the payloads. *)
+
 (** {2 Resolvers (mutative getters)} *)
 
 (** All of these may, in some circumstances, mutate the data-structure. *)

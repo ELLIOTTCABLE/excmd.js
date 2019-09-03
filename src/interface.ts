@@ -207,6 +207,10 @@ export class Statement {
       return $Statement.mem($flag, this.$stmt)
    }
 
+   get flags(): string[] {
+      return $Statement.flags(this.$stmt).map(fromFakeUTF8String)
+   }
+
    // The rest are intentionally not native JavaScript ‘getters’, as they may cause mutation.
 
    // Wrapper for `Statement.positionals`

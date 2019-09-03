@@ -157,3 +157,15 @@ let positionals st =
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
    List.filter filter (Array.to_list st.args) |> List.map map |> Array.of_list
+
+let flags st =
+   let filter = function
+      | Flag _flag -> true
+      | Positional _ -> false
+   and map = function
+      | Flag flag -> flag.name
+      | Positional _ -> failwith "Unreachable"
+   in
+   (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
+      lazy. *)
+   List.filter filter (Array.to_list st.args) |> List.map map |> Array.of_list
