@@ -89,6 +89,23 @@ function fromFakeUTF8StringOption($str: string_as_utf_8_buffer | undefined): str
    }
 }
 
+function fromFlagPayloadOption($payloadOpt: $flag_payload | undefined) {
+   if (typeof $payloadOpt === 'undefined') {
+      // `None`
+      return undefined
+   } else {
+      const $payload = $Statement.payload_to_opt($payloadOpt)
+
+      if (typeof $payload === 'undefined') {
+         // `Some Empty`
+         return undefined
+      } else {
+         // `Some (Payload str)`
+         return fromFakeUTF8String($payload)
+      }
+   }
+}
+
 // Wrapper for Parser.script
 function script(lexbuf: LexBuffer, options: ParseOptions = {}) {
    console.assert(lexbuf instanceof LexBuffer)
@@ -218,29 +235,27 @@ export class Statement {
       return $Statement.positionals(this.$stmt).map(fromFakeUTF8String)
    }
 
+   // Wrapper for `Statement.iter`
+   forEachFlag(f: (name: string, payload: string | undefined) => void): void {
+      const stringMapper = function(
+         $name: $string,
+         $payloadOpt: $flag_payload | undefined,
+      ) {
+         const name = fromFakeUTF8String($name),
+            payload = fromFlagPayloadOption($payloadOpt)
+
+         f(name, payload)
+      }
+      $Statement.iter(stringMapper)
+   }
+
    // Wrapper for `Statement.flag`
-   //---
-   // FIXME: This is hella slower than it needs to be; it iterates over all the flags a bunch of
-   //        times. I know how to fix it, I'm just lazy. Let me know if this impacts you somehow?
    getFlag(flag: string) {
       console.assert(typeof flag === 'string')
-      let $flag = toFakeUTF8String(flag)
-      const $flagPayloadOption = $Statement.flag($flag, this.$stmt)
+      const $flag = toFakeUTF8String(flag),
+         $payloadOpt = $Statement.flag($flag, this.$stmt)
 
-      if (typeof $flagPayloadOption === 'undefined') {
-         // `None`
-         return undefined
-      } else {
-         const $flagPayload = $Statement.payload_to_opt($flagPayloadOption)
-
-         if (typeof $flagPayload === 'undefined') {
-            // `Some Empty`
-            return undefined
-         } else {
-            // `Some (Payload str)`
-            return $flagPayload
-         }
-      }
+      return fromFlagPayloadOption($payloadOpt)
    }
 }
 
