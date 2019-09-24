@@ -25,6 +25,7 @@ type checkpoint_state =
    | 'Rejected'
 
 // Some TypeScript-side types for BuckleScript runtime values
+type $exn = Nominal<Array<any>, 'exn'>
 type $string = string_as_utf_8_buffer
 
 type $buffer = Nominal<object, 'Lexer.buffer'>
@@ -79,7 +80,90 @@ type ParseOptions = {
    throwException?: boolean
 }
 
+// Errors
+
+export class OCamlError extends Error {
+   $exn: $exn
+
+   constructor($exn: $exn) {
+      // FIXME: This is fragile; I'm depending on the BuckleScript runtime-repr of `exn`, here ...
+      console.assert(
+         Array.isArray($exn) && Array.isArray($exn[0]) && typeof $exn[0][0] === 'string',
+      )
+
+      const [_, __, message] = $exn
+
+      if (typeof message === 'string' && message.length > 0) {
+         super(message)
+      } else {
+         super('Unknown OCaml-side error')
+      }
+
+      this.$exn = $exn
+
+      // Set the prototype explicitly. See:
+      //    <https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work>
+      Object.setPrototypeOf(this, OCamlError.prototype)
+   }
+}
+
+export class LexError extends OCamlError {
+   constructor($exn: $exn) {
+      super($exn)
+
+      Object.setPrototypeOf(this, LexError.prototype)
+   }
+}
+
+const errorMap = {
+   'Lexer.LexError': LexError,
+}
+
 // Helpers
+
+function isOCamlExn($exn: unknown): $exn is $exn {
+   return Array.isArray($exn) && Array.isArray($exn[0]) && typeof $exn[0][0] === 'string'
+}
+
+// Call a BuckleScript-generated OCaml function, catch OCaml `exn`-type exceptions, attempt to wrap
+// them in a JavaScript-side `Error`-descendant, and then throw them. Naturally, *this function*
+// will show up in the stack-trace — that is perfectly fine, as OCaml `exn`s *don't actually
+// maintain a stack*, as a performance trade-off; thus, no information is being lost here.
+function buckleScriptErrorTrampoline<R>(
+   bs_function: (...args: unknown[]) => R,
+   ...args: unknown[]
+): R {
+   try {
+      return bs_function.apply(null, args)
+   } catch ($exn) {
+      if (isOCamlExn($exn)) {
+         const [[error_variant_string]] = $exn
+         const ErrorConstructor: typeof OCamlError =
+            errorMap[error_variant_string] || OCamlError
+
+         throw new ErrorConstructor($exn)
+      } else {
+         throw $exn
+      }
+   }
+}
+
+// Meta-programmatic nonsense to translate all errors occuring in BuckleScript-land.
+function mapExposedFunctionsThruErrorTrampoline($module) {
+   for (const exposed in $module) {
+      if ($module.hasOwnProperty(exposed)) {
+         const $func = $module[exposed]
+
+         if ($func instanceof Function) {
+            $module[exposed] = buckleScriptErrorTrampoline.bind(null, $func)
+         }
+      }
+   }
+}
+
+;[$Lexer, $Parser, $Statement, $Incremental].forEach(
+   mapExposedFunctionsThruErrorTrampoline,
+)
 
 function fromFakeUTF8StringOption($str: string_as_utf_8_buffer | undefined): string {
    if (typeof $str === 'undefined') {
@@ -521,6 +605,8 @@ export class AutomatonElement {
 }
 
 export default {
+   OCamlError,
+   LexError,
    Parser,
    Script,
    Statement,
