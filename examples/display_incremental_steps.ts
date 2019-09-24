@@ -276,7 +276,7 @@ const input = new termkit.TextBuffer({
    y: term.height - 5,
 })
 
-input.setText(process.argv[2])
+input.setText(process.argv[2] || '')
 moveToEnd(input)
 input.drawCursor()
 draw(input)
