@@ -6,6 +6,7 @@
 %token <string> COUNT
 %token EOF
 %token EQUALS
+%token <int * string> ERR_UNEXPECTED_CHARACTER
 %token <string> FLAGS_SHORT
 %token <string> FLAG_LONG
 %token <string> IDENTIFIER

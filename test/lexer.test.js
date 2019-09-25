@@ -210,14 +210,18 @@ describe('Lexer', () => {
 
    it('will not include a medial separator at the end of an identifier', () => {
       const $buf = of_string('hello-'),
-         $tok = $Lexer.next($buf)
+         $tok1 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toEqual('IDENTIFIER')
-      expect($Lexer.token_body($tok)).toEqual('hello')
+      expect($Lexer.show_token($tok1)).toEqual('IDENTIFIER')
+      expect($Lexer.token_body($tok1)).toEqual('hello')
 
-      expect(() => {
-         $Lexer.next($buf)
-      }).toThrowError("unexpected character in expression: 'U+002D'")
+      const $tok2 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok2)).toEqual('ERR_UNEXPECTED_CHARACTER')
+      expect($Lexer.token_is_erraneous($tok2)).toEqual(true)
+      expect($Lexer.token_error_message($tok2)).toEqual(
+         "unexpected character in expression: U+002D, '-'",
+      )
    })
 
    it('lexes a pipe', () => {

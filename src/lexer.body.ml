@@ -71,6 +71,10 @@ let sedlex_of_buffer buf = buf.sedlex
 let buffer_of_string str = buffer_of_sedlex (Utf8.from_string str)
 
 (* {2 Helpers } *)
+let unwrap_exn = function
+   | Some x -> x
+   | None -> raise (Invalid_argument "unwrap_exn")
+
 let lexing_positions buf = sedlex_of_buffer buf |> lexing_positions
 
 let locate buf tok =
@@ -90,12 +94,16 @@ let start buf =
 
 let utf8 buf = sedlex_of_buffer buf |> Utf8.lexeme
 
-let lexfail buf s = raise (LexError (curr buf, s))
+let lexcrash buf s = raise (LexError (curr buf, s))
 
 let illegal buf c =
-   Uchar.to_int c
-   |> Printf.sprintf "unexpected character in expression: 'U+%04X'"
-   |> lexfail buf
+   let i = (Uchar.to_int c) in
+   let msg = if Uchar.is_char c then
+         Printf.sprintf "unexpected character in expression: U+%04X, '%c'" i (Uchar.to_char c)
+      else
+         Printf.sprintf "unexpected character in expression: U+%04X" i
+   in
+   ERR_UNEXPECTED_CHARACTER (i, msg) |> locate buf
 
 
 let unreachable str = failwith (Printf.sprintf "Unreachable: %s" str)
@@ -137,6 +145,12 @@ let error_desc_exn = function
 
 
 (* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
+let token_is_erraneous tok =
+   match tok with
+    | ERR_UNEXPECTED_CHARACTER (_, _) -> true
+    | _ -> false
+
+
 let show_token tok =
    match tok with
     | COLON -> "COLON"
@@ -146,6 +160,7 @@ let show_token tok =
     | COUNT _ -> "COUNT"
     | EOF -> "EOF"
     | EQUALS -> "EQUALS"
+    | ERR_UNEXPECTED_CHARACTER (_, _) -> "ERR_UNEXPECTED_CHARACTER"
     | IDENTIFIER _ -> "IDENTIFIER"
     | FLAG_LONG _ -> "FLAG_LONG"
     | PAREN_CLOSE -> "PAREN_CLOSE"
@@ -163,26 +178,27 @@ let show_token tok =
 
 let example_of_token tok =
    match tok with
-    | COLON -> ":"
-    | COMMENT str -> if str != "" then str else "a comment"
-    | COMMENT_CLOSE -> "*/"
-    | COMMENT_OPEN -> "/*"
-    | COUNT str -> if str != "" then str else "2"
-    | EOF -> ""
-    | EQUALS -> "="
-    | IDENTIFIER str -> if str != "" then str else "ident"
-    | FLAG_LONG flag -> if flag != "" then "--" ^ flag else "--flag"
-    | PAREN_CLOSE -> ")"
-    | PAREN_OPEN -> "("
-    | PIPE -> "|"
-    | QUOTE_CHUNK str -> if str != "" then str else "a quote"
-    | QUOTE_CLOSE ch -> if ch != "" then ch else quote_balanced_close_char
-    | QUOTE_ESCAPE str -> if str != "" then str else "\\\\" (* That's two slashes, '\\' *)
-    | QUOTE_OPEN ch -> if ch != "" then ch else quote_balanced_open_char
-    | SEMICOLON -> ";"
-    | FLAGS_SHORT flags -> if flags != "" then "-" ^ flags else "-FlGs"
-    | URL_REST url -> if url != "" then url else "/search?q=tridactyl"
-    | URL_START url -> if url != "" then url else "google.com"
+    | COLON -> Some ":"
+    | COMMENT str -> Some (if str != "" then str else "a comment")
+    | COMMENT_CLOSE -> Some "*/"
+    | COMMENT_OPEN -> Some "/*"
+    | COUNT str -> Some (if str != "" then str else "2")
+    | EOF -> Some ""
+    | EQUALS -> Some "="
+    | ERR_UNEXPECTED_CHARACTER (_, _) -> None
+    | IDENTIFIER str -> Some (if str != "" then str else "ident")
+    | FLAG_LONG flag -> Some (if flag != "" then "--" ^ flag else "--flag")
+    | PAREN_CLOSE -> Some ")"
+    | PAREN_OPEN -> Some "("
+    | PIPE -> Some "|"
+    | QUOTE_CHUNK str -> Some (if str != "" then str else "a quote")
+    | QUOTE_CLOSE ch -> Some (if ch != "" then ch else quote_balanced_close_char)
+    | QUOTE_ESCAPE str -> Some (if str != "" then str else "\\\\") (* That's two slashes, '\\' *)
+    | QUOTE_OPEN ch -> Some (if ch != "" then ch else quote_balanced_open_char)
+    | SEMICOLON -> Some ";"
+    | FLAGS_SHORT flags -> Some (if flags != "" then "-" ^ flags else "-FlGs")
+    | URL_REST url -> Some (if url != "" then url else "/search?q=tridactyl")
+    | URL_START url -> Some (if url != "" then url else "google.com")
 
 
 let example_tokens =
@@ -190,25 +206,25 @@ let example_tokens =
       "example token" is consistently encoded only in [example_of_token]. *)
    let ex = example_of_token in
    [| COLON
-    ; COMMENT (COMMENT "" |> ex)
+    ; COMMENT (COMMENT "" |> ex |> unwrap_exn)
     ; COMMENT_CLOSE
     ; COMMENT_OPEN
-    ; COUNT (COUNT "" |> ex)
+    ; COUNT (COUNT "" |> ex |> unwrap_exn)
     ; EOF
     ; EQUALS
-    ; IDENTIFIER (IDENTIFIER "" |> ex)
-    ; FLAG_LONG (FLAG_LONG "" |> ex)
+    ; IDENTIFIER (IDENTIFIER "" |> ex |> unwrap_exn)
+    ; FLAG_LONG (FLAG_LONG "" |> ex |> unwrap_exn)
     ; PAREN_CLOSE
     ; PAREN_OPEN
     ; PIPE
-    ; QUOTE_CHUNK (QUOTE_CHUNK "" |> ex)
-    ; QUOTE_CLOSE (QUOTE_CLOSE "" |> ex)
-    ; QUOTE_ESCAPE (QUOTE_ESCAPE "" |> ex)
-    ; QUOTE_OPEN (QUOTE_OPEN "" |> ex)
+    ; QUOTE_CHUNK (QUOTE_CHUNK "" |> ex |> unwrap_exn)
+    ; QUOTE_CLOSE (QUOTE_CLOSE "" |> ex |> unwrap_exn)
+    ; QUOTE_ESCAPE (QUOTE_ESCAPE "" |> ex |> unwrap_exn)
+    ; QUOTE_OPEN (QUOTE_OPEN "" |> ex |> unwrap_exn)
     ; SEMICOLON
-    ; FLAGS_SHORT (FLAGS_SHORT "" |> ex)
-    ; URL_REST (URL_REST "" |> ex)
-    ; URL_START (URL_START "" |> ex)
+    ; FLAGS_SHORT (FLAGS_SHORT "" |> ex |> unwrap_exn)
+    ; URL_REST (URL_REST "" |> ex |> unwrap_exn)
+    ; URL_START (URL_START "" |> ex |> unwrap_exn)
    |]
 
 
@@ -218,6 +234,7 @@ let compare_token a b =
    match (a, b) with
     | COUNT _, COUNT _
     | COMMENT _, COMMENT _
+    | ERR_UNEXPECTED_CHARACTER _, ERR_UNEXPECTED_CHARACTER _
     | IDENTIFIER _, IDENTIFIER _
     | FLAG_LONG _, FLAG_LONG _
     | FLAGS_SHORT _, FLAGS_SHORT _
@@ -245,6 +262,10 @@ let token_body tok =
     | URL_START s -> Some s
     | _ -> None
 
+let token_error_message tok =
+   match tok with
+    | ERR_UNEXPECTED_CHARACTER (_int, msg) -> Some msg
+    | _ -> None
 
 let string_of_loctoken loctok =
    Printf.sprintf "%s@%u:%u-%u:%u"
@@ -258,7 +279,7 @@ let string_of_position pos =
 
 
 let url_opening_fail buf opening closing =
-   lexfail buf
+   lexcrash buf
       (String.concat "`"
           [ "Unmatched closing "
           ; closing
@@ -269,7 +290,7 @@ let url_opening_fail buf opening closing =
 
 
 let url_closing_fail buf opening closing =
-   lexfail buf
+   lexcrash buf
       (String.concat "`"
           [ "Unmatched opening "
           ; opening
@@ -280,13 +301,13 @@ let url_closing_fail buf opening closing =
 
 
 let quote_opening_fail buf opening closing =
-   lexfail buf
+   lexcrash buf
       (String.concat "`"
           [ "Unmatched closing-quote "; closing; ". (Did you forget a "; opening; "?)" ])
 
 
 let quote_closing_fail buf opening closing =
-   lexfail buf
+   lexcrash buf
       (String.concat "`"
           [ "Unmatched opening-quote "
           ; opening
@@ -297,7 +318,7 @@ let quote_closing_fail buf opening closing =
 
 
 let quote_escaping_fail buf delim escape_seq =
-   lexfail buf
+   lexcrash buf
       (String.concat "`"
           [ "The escape-sequence"
           ; escape_seq
@@ -444,7 +465,7 @@ and comment_block depth buf =
       Buffer.add_string acc (utf8 buf) ;
       comment_block_continuing buf (start buf) acc
     | eof ->
-      lexfail buf
+      lexcrash buf
          "Reached end-of-file without finding a matching block-comment end-delimiter"
     | _ -> unreachable "comment_block"
 
@@ -459,7 +480,7 @@ and comment_block_continuing buf orig_start acc =
       Buffer.add_string acc (utf8 buf) ;
       comment_block_continuing buf orig_start acc
     | eof ->
-      lexfail buf
+      lexcrash buf
          "Reached end-of-file without finding a matching block-comment end-delimiter"
     | _ -> unreachable "comment_block_continuing"
 
@@ -587,7 +608,7 @@ and immediate ?(saw_whitespace = false) buf =
     | "/*" ->
       buf.mode <- CommentBlock 1 ;
       COMMENT_OPEN |> locate buf
-    | "*/" -> lexfail buf "Unmatched block-comment end-delimiter"
+    | "*/" -> lexcrash buf "Unmatched block-comment end-delimiter"
     | "\"" ->
       buf.mode <- QuoteComplex ;
       QUOTE_OPEN (utf8 buf) |> locate buf
@@ -614,7 +635,7 @@ and immediate ?(saw_whitespace = false) buf =
       FLAGS_SHORT flags |> locate buf
     | '=' ->
       if saw_whitespace then
-         lexfail buf
+         lexcrash buf
             "Unexpected whitespace before '='; try attaching explicit parameters directly \
              after their flag"
       else buf.mode <- Immediate ;
@@ -642,15 +663,30 @@ let next_loc buf =
     | QuoteBalanced depth -> quote_balanced buf depth
     | QuoteComplex -> quote_complex buf
 
+let next_loc_exn buf =
+   let tok = next_loc buf in
+   if token_is_erraneous (token tok) then
+      let message = token_error_message (token tok) |> unwrap_exn in
+      lexcrash buf message
+   else
+      tok
 
 (** Return *just* the next token, discarding location information. *)
 let next buf =
    let tok, _, _ = next_loc buf in
    tok
 
+let next_exn buf =
+   let tok, _, _ = next_loc_exn buf in
+   tok
 
 let gen_loc buf () =
    match next_loc buf with
+    | EOF, _, _ -> None
+    | _ as tuple -> Some tuple
+
+let gen_loc_exn buf () =
+   match next_loc_exn buf with
     | EOF, _, _ -> None
     | _ as tuple -> Some tuple
 
@@ -660,9 +696,19 @@ let gen buf () =
     | EOF, _, _ -> None
     | tok, _, _ -> Some tok
 
+let gen_exn buf () =
+   match next_loc_exn buf with
+    | EOF, _, _ -> None
+    | tok, _, _ -> Some tok
+
 
 let tokens_loc buf = gen_loc buf |> Gen.to_list |> Array.of_list
 
+let tokens_loc_exn buf = gen_loc_exn buf |> Gen.to_list |> Array.of_list
+
+
 let tokens buf = gen buf |> Gen.to_list |> Array.of_list
+
+let tokens_exn buf = gen_exn buf |> Gen.to_list |> Array.of_list
 
 let mode buf = buf.mode
