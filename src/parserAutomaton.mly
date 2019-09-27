@@ -30,7 +30,8 @@
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
 %type <AST.statement> unterminated_statement
-%type <string>       command noncommand_word
+%type <string>       command noncommand_word quotation quotation_chunk
+%type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
 %type <AST.arg list> arguments nonempty_arguments positional_and_arguments
                         flag_and_arguments
 %type <AST.arg>      long_flag_before_positional long_flag_before_flag last_long_flag
@@ -66,11 +67,13 @@ unterminated_statement:
 
 command:
  | x = IDENTIFIER { x }
+ | x = quotation { x }
  ;
 
 noncommand_word:
  | x = IDENTIFIER { x }
  | hd = URL_START; tl = URL_REST { hd ^ tl }
+ | x = quotation { x }
  ;
 
 arguments:
@@ -136,6 +139,36 @@ short_flags_before_flag:
 last_short_flags:
  | xs = explode(FLAGS_SHORT)
  { List.map (fun x -> Flag {name = x; payload = Absent}) xs }
+ ;
+
+quotation:
+ | xs = rev_nonempty_quotation; QUOTE_CLOSE { List.rev xs |> String.concat "" }
+ ;
+
+rev_nonempty_quotation:
+ | x = QUOTE_OPEN { [] }
+ | xs = rev_nonempty_quotation; x = quotation_chunk { x :: xs }
+ | xs = rev_nonempty_quotation; ys = rev_subquotation { ys @ xs }
+ ;
+
+(* Subquotation differs from top-level quotation, in that the inner delimiters are included as part
+ * of the quoted data. *)
+rev_subquotation:
+ | xs = rev_nonempty_subquotation; x = QUOTE_CLOSE { x :: xs }
+ ;
+
+(* This ... could be more performant. At the moment, it depends on [ys @ xs], which is O(n) in the
+ * size of [ys]. A better data-structure may be called for ... but at the data-sizes we're dealing
+ * with, this becoming a problem is unlikely. *)
+rev_nonempty_subquotation:
+ | x = QUOTE_OPEN { [x] }
+ | xs = rev_nonempty_subquotation; x = quotation_chunk { x :: xs }
+ | xs = rev_nonempty_subquotation; ys = rev_subquotation { ys @ xs }
+ ;
+
+quotation_chunk:
+ | x = QUOTE_CHUNK { x }
+ | x = QUOTE_ESCAPE { x }
  ;
 
 break:
