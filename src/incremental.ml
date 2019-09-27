@@ -188,7 +188,8 @@ let element_incoming_symbol_desc = function
           | Interpreter.T Tokens.T_FLAGS_SHORT -> ("FLAGS_SHORT", "string")
           | Interpreter.T Tokens.T_EQUALS -> ("EQUALS", "unit")
           | Interpreter.T Tokens.T_EOF -> ("EOF", "unit")
-          | Interpreter.T Tokens.T_ERR_UNEXPECTED_CHARACTER -> ("ERR_UNEXPECTED_CHARACTER", "int * string")
+          | Interpreter.T Tokens.T_ERR_UNEXPECTED_CHARACTER ->
+            ("ERR_UNEXPECTED_CHARACTER", "int * string")
           | Interpreter.T Tokens.T_COUNT -> ("COUNT", "string")
           | Interpreter.T Tokens.T_COMMENT_OPEN -> ("COMMENT_OPEN", "unit")
           | Interpreter.T Tokens.T_COMMENT_CLOSE -> ("COMMENT_CLOSE", "unit")

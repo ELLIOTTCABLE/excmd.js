@@ -34,7 +34,8 @@ val has_payload : string -> t -> bool
     of a [bool]. Returns [false] otherwise. *)
 
 val flags : t -> string array
-(** [flags stmt] returns a list of the flags used in [stmt], including only the {e names} of flags - not the payloads. *)
+(** [flags stmt] returns a list of the flags used in [stmt], including only the {e names}
+    of flags - not the payloads. *)
 
 (** {2 Resolvers (mutative getters)} *)
 
@@ -54,7 +55,7 @@ val iter : (string -> flag_payload -> unit) -> t -> unit
     This {{!reso} fully resolves} [stmt] — any ambiguous words will be consumed as the
     values to their associated flags, becoming unavailable as positional arguments. *)
 
-val iteri: (int -> string -> flag_payload -> unit) -> t -> unit
+val iteri : (int -> string -> flag_payload -> unit) -> t -> unit
 
 val flag : string -> t -> flag_payload option
 (** [flag fl stmt] finds the flag by the name of [fl], {{!reso} resolves} it if

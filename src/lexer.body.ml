@@ -75,6 +75,7 @@ let unwrap_exn = function
    | Some x -> x
    | None -> raise (Invalid_argument "unwrap_exn")
 
+
 let lexing_positions buf = sedlex_of_buffer buf |> lexing_positions
 
 let locate buf tok =
@@ -97,11 +98,12 @@ let utf8 buf = sedlex_of_buffer buf |> Utf8.lexeme
 let lexcrash buf s = raise (LexError (curr buf, s))
 
 let illegal buf c =
-   let i = (Uchar.to_int c) in
-   let msg = if Uchar.is_char c then
-         Printf.sprintf "unexpected character in expression: U+%04X, '%c'" i (Uchar.to_char c)
-      else
-         Printf.sprintf "unexpected character in expression: U+%04X" i
+   let i = Uchar.to_int c in
+   let msg =
+      if Uchar.is_char c then
+         Printf.sprintf "unexpected character in expression: U+%04X, '%c'" i
+            (Uchar.to_char c)
+      else Printf.sprintf "unexpected character in expression: U+%04X" i
    in
    ERR_UNEXPECTED_CHARACTER (i, msg) |> locate buf
 
@@ -193,7 +195,8 @@ let example_of_token tok =
     | PIPE -> Some "|"
     | QUOTE_CHUNK str -> Some (if str != "" then str else "a quote")
     | QUOTE_CLOSE ch -> Some (if ch != "" then ch else quote_balanced_close_char)
-    | QUOTE_ESCAPE str -> Some (if str != "" then str else "\\\\") (* That's two slashes, '\\' *)
+    | QUOTE_ESCAPE str ->
+      Some (if str != "" then str else "\\\\") (* That's two slashes, '\\' *)
     | QUOTE_OPEN ch -> Some (if ch != "" then ch else quote_balanced_open_char)
     | SEMICOLON -> Some ";"
     | FLAGS_SHORT flags -> Some (if flags != "" then "-" ^ flags else "-FlGs")
@@ -262,10 +265,12 @@ let token_body tok =
     | URL_START s -> Some s
     | _ -> None
 
+
 let token_error_message tok =
    match tok with
     | ERR_UNEXPECTED_CHARACTER (_int, msg) -> Some msg
     | _ -> None
+
 
 let string_of_loctoken loctok =
    Printf.sprintf "%s@%u:%u-%u:%u"
@@ -663,27 +668,31 @@ let next_loc buf =
     | QuoteBalanced depth -> quote_balanced buf depth
     | QuoteComplex -> quote_complex buf
 
+
 let next_loc_exn buf =
    let tok = next_loc buf in
    if token_is_erraneous (token tok) then
       let message = token_error_message (token tok) |> unwrap_exn in
       lexcrash buf message
-   else
-      tok
+   else tok
+
 
 (** Return *just* the next token, discarding location information. *)
 let next buf =
    let tok, _, _ = next_loc buf in
    tok
 
+
 let next_exn buf =
    let tok, _, _ = next_loc_exn buf in
    tok
+
 
 let gen_loc buf () =
    match next_loc buf with
     | EOF, _, _ -> None
     | _ as tuple -> Some tuple
+
 
 let gen_loc_exn buf () =
    match next_loc_exn buf with
@@ -696,6 +705,7 @@ let gen buf () =
     | EOF, _, _ -> None
     | tok, _, _ -> Some tok
 
+
 let gen_exn buf () =
    match next_loc_exn buf with
     | EOF, _, _ -> None
@@ -705,7 +715,6 @@ let gen_exn buf () =
 let tokens_loc buf = gen_loc buf |> Gen.to_list |> Array.of_list
 
 let tokens_loc_exn buf = gen_loc_exn buf |> Gen.to_list |> Array.of_list
-
 
 let tokens buf = gen buf |> Gen.to_list |> Array.of_list
 

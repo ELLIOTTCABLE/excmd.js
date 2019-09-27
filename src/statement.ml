@@ -140,9 +140,11 @@ let iteri f st =
    in
    Array.iteri iterator st.args
 
+
 let iter f st =
    let f _i a b = f a b in
    iteri f st
+
 
 let positionals st =
    let filter = function
@@ -160,6 +162,7 @@ let positionals st =
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
    List.filter filter (Array.to_list st.args) |> List.map map |> Array.of_list
+
 
 let flags st =
    let filter = function
