@@ -324,7 +324,7 @@ let quote_closing_fail buf opening closing =
       (String.concat "`"
           [ "Unmatched opening-quote "
           ; opening
-          ; ". (Reached EOF without finding a matching"
+          ; ". (Reached EOF without finding a matching "
           ; closing
           ; "; did you forget one?)"
           ])
