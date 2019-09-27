@@ -34,6 +34,7 @@ let tests () =
    test_statement "Single command, with multiple positional parameters" "test foo bar" ;
    test_statement "Single command, count, and multiple positional parameters"
       "2test foo bar" ;
+
    test_statement "Single command, with single boolean flag" "test --foo" ;
    test_statement "Single command, with multiple boolean flags" "test --foo --bar" ;
    test_statement "Single command, with single boolean short-flag" "test -f" ;
@@ -41,6 +42,7 @@ let tests () =
       "test -foo" ;
    test_statement "Single command, with multiple, separated boolean short-flags"
       "test -f -o -o" ;
+
    test_statement "Single command, with single possibly-parameterized flag"
       "test --foo bar" ;
    test_statement "Single command, with single possibly-parameterized short-flag"
@@ -55,6 +57,7 @@ let tests () =
       "test --foo bar --baz widget" ;
    test_statement "Single command, with single explicitly-parameterized flag"
       "test --foo=bar" ;
+
    test_statement
       "Single command with single explicitly-parameterized flag followed by a positional \
        parameter"
@@ -63,6 +66,7 @@ let tests () =
       "Single command, single explicitly-parameterized flag with a URL payload, followed \
        by a positional parameter"
       "test --foo=google.com/search baz" ;
+
    test_statement "Single command with mixed flags and parameters"
       "test --foo bar --baz=widget qux -qu ux" ;
 
@@ -75,6 +79,7 @@ let tests () =
    test_script
       "Statements, with arguments, separated by semicolons, with a trailing semicolon"
       "test --foo bar; 2test --foo=bar; 3test --foo bar;" ;
+
    test_script "Newlines after statements" "test;\n   2test;\n   3test" ;
    test_script "Newlines after statements, with a trailing newline"
       "test;\n   2test;\n   3test;\n   " ;
