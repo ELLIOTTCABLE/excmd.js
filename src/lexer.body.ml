@@ -111,6 +111,14 @@ let illegal buf c =
 let unreachable str = failwith (Printf.sprintf "Unreachable: %s" str)
 
 (* {2 Accessors } *)
+let position_fname pos = pos.pos_fname
+
+let position_lnum pos = pos.pos_lnum
+
+let position_bol pos = pos.pos_bol
+
+let position_cnum pos = pos.pos_cnum
+
 let token (tok : token located) =
    let tok, _loc, _end = tok in
    tok

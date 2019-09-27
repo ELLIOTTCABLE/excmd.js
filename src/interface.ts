@@ -31,6 +31,7 @@ type $string = string_as_utf_8_buffer
 type $buffer = Nominal<object, 'Lexer.buffer'>
 type $token = Nominal<object, 'Tokens.token'>
 type $token_located = Nominal<object, 'Tokens.token located'>
+type $position = Nominal<object, 'Lexing.position'>
 
 type $ASTt = Nominal<object, 'AST.t'>
 type $Statementt = Nominal<object, 'Statement.t'>
@@ -85,18 +86,20 @@ type ParseOptions = {
 export class OCamlError extends Error {
    $exn: $exn
 
-   constructor($exn: $exn) {
+   constructor($exn: $exn, message?: string) {
       // FIXME: This is fragile; I'm depending on the BuckleScript runtime-repr of `exn`, here ...
       console.assert(
          Array.isArray($exn) && Array.isArray($exn[0]) && typeof $exn[0][0] === 'string',
       )
 
-      const [_, __, message] = $exn
+      const [[error_variant, _], __] = $exn
 
       if (typeof message === 'string' && message.length > 0) {
          super(message)
+      } else if (typeof error_variant === 'string') {
+         super('OCaml exception: ' + error_variant)
       } else {
-         super('Unknown OCaml-side error')
+         super('Unknown OCaml exception.')
       }
 
       this.$exn = $exn
@@ -108,15 +111,45 @@ export class OCamlError extends Error {
 }
 
 export class LexError extends OCamlError {
+   pos: Position
+
    constructor($exn: $exn) {
-      super($exn)
+      const [[$error_variant, _], $pos, $message] = $exn,
+         message = fromFakeUTF8String($message),
+         pos = new Position(INTERNAL, $pos)
+
+      let print
+      if (typeof message === 'string' && message.length > 0) {
+         print = `${message} (${pos.filename}:${pos.line}:${pos.character})`
+      } else {
+         print = `Unknown LexError (${pos.filename}:${pos.line}:${pos.character})`
+      }
+      super($exn, print)
+
+      this.name = 'LexError'
+      this.pos = pos
 
       Object.setPrototypeOf(this, LexError.prototype)
    }
 }
 
+export class ParseError extends OCamlError {
+   token: LocatedToken
+
+   constructor($exn: $exn) {
+      const [[$error_variant, _], $loctok] = $exn
+
+      super($exn)
+      this.name = 'ParseError'
+      this.token = new LocatedToken(INTERNAL, $loctok)
+
+      Object.setPrototypeOf(this, ParseError.prototype)
+   }
+}
+
 const errorMap = {
    'Lexer.LexError': LexError,
+   'Parser.ParseError': ParseError,
 }
 
 // Helpers
@@ -137,11 +170,16 @@ function buckleScriptErrorTrampoline<R>(
       return bs_function.apply(null, args)
    } catch ($exn) {
       if (isOCamlExn($exn)) {
-         const [[error_variant_string]] = $exn
-         const ErrorConstructor: typeof OCamlError =
-            errorMap[error_variant_string] || OCamlError
+         const [[error_variant]] = $exn
+         if (error_variant === 'Caml_js_exceptions.Error') {
+            const orig_error = $exn[1]
+            throw orig_error
+         } else {
+            const ErrorConstructor: typeof OCamlError =
+               errorMap[error_variant] || OCamlError
 
-         throw new ErrorConstructor($exn)
+            throw new ErrorConstructor($exn)
+         }
       } else {
          throw $exn
       }
@@ -374,6 +412,33 @@ export class LexBuffer {
       return $Lexer
          .tokens_loc(this.$buf)
          .map($loctok => new LocatedToken(INTERNAL, $loctok))
+   }
+}
+
+export class Position {
+   $pos: $position
+
+   constructor(isInternal: sentinel, $pos: $position) {
+      if (isInternal !== INTERNAL) throw new Error('`Position` cannot be constructed')
+
+      this.$pos = $pos
+   }
+
+   get filename(): string {
+      const $fname = $Lexer.position_fname(this.$pos)
+      return fromFakeUTF8StringOption($fname)
+   }
+
+   get line(): number {
+      return $Lexer.position_lnum(this.$pos)
+   }
+
+   get byte(): number {
+      return $Lexer.position_cnum(this.$pos)
+   }
+
+   get character(): number {
+      return $Lexer.position_bol(this.$pos)
    }
 }
 

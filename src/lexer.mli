@@ -87,6 +87,14 @@ val error_loc_exn : exn -> position
 
 val error_desc_exn : exn -> string
 
+val position_fname : position -> string
+
+val position_lnum : position -> int
+
+val position_bol : position -> int
+
+val position_cnum : position -> int
+
 (** {2 Lexing functions} *)
 
 val next_loc : buffer -> Tokens.token located
