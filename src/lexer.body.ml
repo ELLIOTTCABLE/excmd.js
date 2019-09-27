@@ -507,7 +507,7 @@ and quote_balanced buf depth =
       buf.mode <- QuoteBalanced (depth + 1) ;
       QUOTE_OPEN (utf8 buf) |> locate buf
     | quote_balanced_close ->
-      buf.mode <- (if depth = 1 then Main else QuoteBalanced (depth + 1)) ;
+      buf.mode <- (if depth = 1 then Main else QuoteBalanced (depth - 1)) ;
       QUOTE_CLOSE (utf8 buf) |> locate buf
     | eof -> quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
     | _ -> unreachable "quote_balanced"
