@@ -534,19 +534,6 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('\\')
    })
 
-   it('supports the complex-string delimiter, escaped, *in* complex strings', () => {
-      // Note that the JavaScript escaping here means that this string is *actually*:
-      // "hello \" there"
-      const quote = '"hello \\" there"',
-         $buf = of_string(quote),
-         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
-         __ = $Lexer.next($buf), // Discard one QUOTE_CHUNK
-         $tok = $Lexer.next($buf)
-
-      expect($Lexer.show_token($tok)).toBe('QUOTE_ESCAPE')
-      expect($Lexer.token_body($tok)).toEqual('"')
-   })
-
    it('reserves all unknown escapes for future use by throwing an immediate error', () => {
       // Note that the JavaScript escaping here means that this string is *actually*:
       // "hello \q there"
