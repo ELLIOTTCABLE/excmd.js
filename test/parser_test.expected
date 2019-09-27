@@ -315,7 +315,7 @@ fail-continuation invoked! cool.
 
 ### Listing of acceptable tokens during a failure:
 Incremental.statement "hello --where="
-URL_START, IDENTIFIER
+URL_START, QUOTE_OPEN, IDENTIFIER
 
 
 ### Dumping of stack-debugging information from a checkpoint:
