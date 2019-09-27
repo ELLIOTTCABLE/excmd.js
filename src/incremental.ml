@@ -137,7 +137,9 @@ let incoming_symbol_category_str cp =
 
 
 (* Ugggggggggggggggh literally copy-pasted this into existence out of compiled files,
-   there HAS to be a better way to do this ... *)
+   there HAS to be a better way to do this ...
+
+   Vi command: %s/\vI.N_(\S+) : \((.+)\) nonterminal/I.N_\1 -> ("\1", "\2") *)
 let element_incoming_symbol_desc = function
    | I.Element (lr1state, _valu, _startp, _endp) -> (
          match I.incoming_symbol lr1state with
