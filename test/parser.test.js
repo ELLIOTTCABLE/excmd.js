@@ -2,7 +2,7 @@ import $Lexer from '../src/lexer.bs'
 import $Tokens from '../src/tokens.bs'
 import $Parser from '../src/parser.bs'
 import $Statement from '../src/statement.bs'
-import {LexBuffer, Token, Parser} from '../src/interface'
+import {LexBuffer, Token, Parser, ParseError} from '../src/interface'
 import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 
 let of_string = function(js_string) {
@@ -26,5 +26,11 @@ describe('Parser', () => {
          $stmt = $Parser.statement(true, $buf)
 
       expect($Statement.command($stmt)).toBe('hello')
+   })
+
+   it('throws natual JavaScript ParseErrors, not BuckleScript exn reps', () => {
+      const $buf = of_string('hello-')
+
+      expect(() => $Parser.statement(true, $buf)).toThrow(ParseError)
    })
 })
