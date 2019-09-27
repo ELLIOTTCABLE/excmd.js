@@ -146,7 +146,7 @@ quotation:
  ;
 
 rev_nonempty_quotation:
- | x = QUOTE_OPEN { [] }
+ | QUOTE_OPEN { [] }
  | xs = rev_nonempty_quotation; x = quotation_chunk { x :: xs }
  | xs = rev_nonempty_quotation; ys = rev_subquotation { ys @ xs }
  ;
