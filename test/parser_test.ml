@@ -134,6 +134,7 @@ let tests () =
 
 
 let () =
+   Printexc.record_backtrace true ;
    match Sys.argv with
     (* Automated tests *)
     | [| _ |] -> tests ()
@@ -150,6 +151,6 @@ let () =
          "!! Please provide either no arguments (to run the automated tests), or exactly \
           two arguments (for\n" ;
       eprintf
-         "!! interactive experimentation): a nonterminal entry-point (e.g. 'script'), \
-          and a string to parse.\n" ;
+         "!! interactive experimentation): a nonterminal entry-point (e.g. 'script'), and \
+          a string to parse.\n" ;
       raise (Invalid_argument "Either exactly two, or zero, arguments are required")
