@@ -81,6 +81,7 @@ let tests () =
       "\"test\" --foo \"bar\"" ;
    test_statement "Single dquoted command, flag, and payload"
       "\"test\" \"--foo\" \"bar\"" ;
+   test_statement "Bare command, long-flag, only the flag's name quoted" "test --\"foo\"" ;
 
    (* Simple multi-statement scripts *)
    test_script "Statements separated by semicolons" "test; 2test; 3test" ;
