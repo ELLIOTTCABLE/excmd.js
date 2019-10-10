@@ -6,8 +6,8 @@ open Sedlexing
 type mode =
    | BareURL
    | CommentBlock of int
-   | Immediate
-   | Main
+   | MainDisallowingWhitespace
+   | MainIgnoringWhitespace
    | QuoteBalanced of int
    | QuoteComplex
 
@@ -63,7 +63,7 @@ let closing_for =
 
 let is_known_scheme str = Js.Re.test str known_schemes
 
-let buffer_of_sedlex sedlex = { sedlex; mode = Main }
+let buffer_of_sedlex sedlex = { sedlex; mode = MainIgnoringWhitespace }
 
 let sedlex_of_buffer buf = buf.sedlex
 
@@ -157,7 +157,7 @@ let error_desc_exn = function
 (* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
 let token_is_erraneous tok =
    match tok with
-    | ERR_UNEXPECTED_CHARACTER (_, _) -> true
+    | ERR_UNEXPECTED_CHARACTER (_, _) | ERR_UNEXPECTED_WHITESPACE _ -> true
     | _ -> false
 
 
@@ -171,6 +171,7 @@ let show_token tok =
     | EOF -> "EOF"
     | EQUALS -> "EQUALS"
     | ERR_UNEXPECTED_CHARACTER (_, _) -> "ERR_UNEXPECTED_CHARACTER"
+    | ERR_UNEXPECTED_WHITESPACE _ -> "ERR_UNEXPECTED_WHITESPACE"
     | IDENTIFIER _ -> "IDENTIFIER"
     | FLAG_LONG_START -> "FLAG_LONG_START"
     | FLAGS_SHORT_START -> "FLAGS_SHORT_START"
@@ -196,6 +197,7 @@ let example_of_token tok =
     | EOF -> Some ""
     | EQUALS -> Some "="
     | ERR_UNEXPECTED_CHARACTER (_, _) -> None
+    | ERR_UNEXPECTED_WHITESPACE _ -> None
     | IDENTIFIER str -> Some (if str != "" then str else "ident")
     | FLAG_LONG_START -> Some "--"
     | FLAGS_SHORT_START -> Some "-"
@@ -246,6 +248,7 @@ let compare_token a b =
     | COUNT _, COUNT _
     | COMMENT _, COMMENT _
     | ERR_UNEXPECTED_CHARACTER _, ERR_UNEXPECTED_CHARACTER _
+    | ERR_UNEXPECTED_WHITESPACE _, ERR_UNEXPECTED_WHITESPACE _
     | IDENTIFIER _, IDENTIFIER _
     | QUOTE_CHUNK _, QUOTE_CHUNK _
     | QUOTE_CLOSE _, QUOTE_CLOSE _
@@ -273,6 +276,7 @@ let token_body tok =
 let token_error_message tok =
    match tok with
     | ERR_UNEXPECTED_CHARACTER (_int, msg) -> Some msg
+    | ERR_UNEXPECTED_WHITESPACE msg -> Some msg
     | _ -> None
 
 
@@ -450,21 +454,13 @@ let urlbody_continue_char =
 
 (* {2 Lexer body } *)
 
-(* Swallow and discard whitespace; produces no tokens. *)
-let rec swallow_atmosphere ?(saw_whitespace = false) buf =
-   let slbuf = sedlex_of_buffer buf in
-   match%sedlex slbuf with
-    | Plus space -> swallow_atmosphere ~saw_whitespace:true buf
-    | _ -> saw_whitespace
-
-
 (* Wow. This is a monstrosity. *)
-and comment_block depth buf =
+let rec comment_block depth buf =
    (* Js.log "token (mode: CommentBlock)"; *)
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
     | "*/" ->
-      buf.mode <- (if depth = 1 then Main else CommentBlock (depth - 1)) ;
+      buf.mode <- (if depth = 1 then MainIgnoringWhitespace else CommentBlock (depth - 1)) ;
       COMMENT_CLOSE |> locate buf
     | "/*" ->
       buf.mode <- CommentBlock (depth + 1) ;
@@ -503,7 +499,8 @@ and quote_balanced buf depth =
       buf.mode <- QuoteBalanced (depth + 1) ;
       QUOTE_OPEN (utf8 buf) |> locate buf
     | quote_balanced_close ->
-      buf.mode <- (if depth = 1 then Main else QuoteBalanced (depth - 1)) ;
+      buf.mode <-
+         (if depth = 1 then MainIgnoringWhitespace else QuoteBalanced (depth - 1)) ;
       QUOTE_CLOSE (utf8 buf) |> locate buf
     | eof -> quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
     | _ -> unreachable "quote_balanced"
@@ -519,7 +516,7 @@ and quote_complex buf =
       QUOTE_ESCAPE ch |> locate buf
     | '\\', any -> quote_escaping_fail buf "\"" (utf8 buf)
     | '"' ->
-      buf.mode <- Main ;
+      buf.mode <- MainIgnoringWhitespace ;
       QUOTE_CLOSE (utf8 buf) |> locate buf
     | eof -> quote_closing_fail buf "\"" "\""
     | _ -> unreachable "quote_complex"
@@ -529,8 +526,8 @@ and known_scheme_or_identifier buf =
    let str = utf8 buf in
    (* Js.log ("token: possibly known scheme, " ^ str); *)
    (* If this isn't a known scheme, we don't want to create an infinite loop by returning
-      [buf] to [immediate]; so we fast-forward to producing only the [IDENTIFIER] portion
-      of this non-scheme word. *)
+      [buf] to [main]; so we fast-forward to producing only the [IDENTIFIER] portion of
+      this non-scheme word. *)
    if not (is_known_scheme str) then (
       rollback (sedlex_of_buffer buf) ;
       just_identifier buf )
@@ -594,7 +591,7 @@ and url_inside_delims buf orig_start acc open_delims =
 
 
 and url_finish buf start curr acc =
-   buf.mode <- Main ;
+   buf.mode <- MainIgnoringWhitespace ;
    (URL_REST (Buffer.contents acc), start, curr)
 
 
@@ -605,12 +602,14 @@ and just_identifier buf =
     | _ -> unreachable "just_identifier"
 
 
-and immediate ?(saw_whitespace = false) buf =
-   (* Js.log "token (mode: Immediate)"; *)
-   buf.mode <- Main ;
+and main ~allow_whitespace buf =
+   buf.mode <- MainIgnoringWhitespace ;
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
     | eof -> EOF |> locate buf
+    | Plus space ->
+      if allow_whitespace then main ~allow_whitespace buf
+      else ERR_UNEXPECTED_WHITESPACE "unexpected whitespace in expression" |> locate buf
     (* One-line comments are lexed as a single token ... *)
     | "//", Star (Compl (newline_char | eof)) -> COMMENT (utf8 buf) |> locate buf
     (* ... while block-comments swap into a custom lexing-mode to handle proper nesting. *)
@@ -634,18 +633,17 @@ and immediate ?(saw_whitespace = false) buf =
     | url_possible_scheme -> known_scheme_or_identifier buf
     | identifier -> IDENTIFIER (utf8 buf) |> locate buf
     | url_domain -> url_start buf
-    | "-" ->
-      buf.mode <- Immediate ;
+    | '-' ->
+      buf.mode <- MainDisallowingWhitespace ;
       FLAGS_SHORT_START |> locate buf
     | "--" ->
-      buf.mode <- Immediate ;
+      buf.mode <- MainDisallowingWhitespace ;
       FLAG_LONG_START |> locate buf
+    | Plus space, '=' ->
+      (* FIXME: This is gonna report an error in the wrong place (including the =) *)
+      ERR_UNEXPECTED_WHITESPACE "unexpected space before '='" |> locate buf
     | '=' ->
-      if saw_whitespace then
-         lexcrash buf
-            "Unexpected whitespace before '='; try attaching explicit parameters directly \
-             after their flag"
-      else buf.mode <- Immediate ;
+      buf.mode <- MainDisallowingWhitespace ;
       EQUALS |> locate buf
     | '(' -> PAREN_OPEN |> locate buf
     | ')' -> PAREN_CLOSE |> locate buf
@@ -655,18 +653,13 @@ and immediate ?(saw_whitespace = false) buf =
            | None -> unreachable "main" )
 
 
-and main buf =
-   let saw_whitespace = swallow_atmosphere buf in
-   immediate ~saw_whitespace buf
-
-
 (** Return the next token, with location information. *)
 let next_loc buf =
    match buf.mode with
     | BareURL -> url_rest buf
     | CommentBlock depth -> comment_block depth buf
-    | Immediate -> immediate buf
-    | Main -> main buf
+    | MainDisallowingWhitespace -> main ~allow_whitespace:false buf
+    | MainIgnoringWhitespace -> main ~allow_whitespace:true buf
     | QuoteBalanced depth -> quote_balanced buf depth
     | QuoteComplex -> quote_complex buf
 

@@ -191,6 +191,7 @@ let element_incoming_symbol_desc = function
           | I.T Tokens.T_EQUALS -> ("EQUALS", "unit")
           | I.T Tokens.T_EOF -> ("EOF", "unit")
           | I.T Tokens.T_ERR_UNEXPECTED_CHARACTER -> ("ERR_UNEXPECTED_CHARACTER", "int * string")
+          | I.T Tokens.T_ERR_UNEXPECTED_WHITESPACE -> ("ERR_UNEXPECTED_WHITESPACE", "string")
           | I.T Tokens.T_COUNT -> ("COUNT", "string")
           | I.T Tokens.T_COMMENT_OPEN -> ("COMMENT_OPEN", "unit")
           | I.T Tokens.T_COMMENT_CLOSE -> ("COMMENT_CLOSE", "unit")

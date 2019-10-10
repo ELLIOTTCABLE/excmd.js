@@ -319,9 +319,14 @@ describe('Lexer', () => {
    it('disallows an explicit payload with spacing (before)', () => {
       const $buf = of_string('--hello =world')
 
-      $Lexer.next($buf) // Discard a token
+      $Lexer.next($buf) // Discard one token (FLAG_LONG_START)
+      $Lexer.next($buf) // Discard another token (IDENTIFIER)
 
-      expect(() => $Lexer.next($buf)).toThrowError('Unexpected whitespace')
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_UNEXPECTED_WHITESPACE')
+      expect($Lexer.token_is_erraneous($tok)).toEqual(true)
+      expect($Lexer.token_error_message($tok)).toEqual("unexpected space before '='")
    })
 
    // FIXME: This error-message isn't consistent with the previous one. Clean that up.

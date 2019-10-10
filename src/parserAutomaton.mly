@@ -7,6 +7,7 @@
 %token EOF
 %token EQUALS
 %token <int * string> ERR_UNEXPECTED_CHARACTER
+%token <string> ERR_UNEXPECTED_WHITESPACE
 %token FLAGS_SHORT_START
 %token FLAG_LONG_START
 %token <string> IDENTIFIER
