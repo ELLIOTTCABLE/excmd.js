@@ -70,6 +70,18 @@ let tests () =
    test_statement "Single command with mixed flags and parameters"
       "test --foo bar --baz=widget qux -qu ux" ;
 
+   (* These are, of course, going to be a nightmare of double-escaping. I'm sorry, Jon. *)
+   test_statement "Single dquoted command" "\"test\"" ;
+   test_statement "Single dquoted command with bare positional" "\"test\" foo" ;
+   test_statement "Single dquoted command with bare flag" "\"test\" --foo" ;
+   test_statement "Bare command with single dquoted positional" "test \"foo\"" ;
+   test_statement "Single dquoted command with single dquoted positional"
+      "\"test\" \"foo\"" ;
+   test_statement "Single dquoted command, bare flag, and dquoted payload"
+      "\"test\" --foo \"bar\"" ;
+   test_statement "Single dquoted command, flag, and payload"
+      "\"test\" \"--foo\" \"bar\"" ;
+
    (* Simple multi-statement scripts *)
    test_script "Statements separated by semicolons" "test; 2test; 3test" ;
    test_script "Statements separated by semicolons, with a trailing semicolon"

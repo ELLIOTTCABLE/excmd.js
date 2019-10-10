@@ -198,6 +198,49 @@ Parser.statement "test --foo bar --baz=widget qux -qu ux"
   ]
 }
 
+### Single dquoted command:
+Parser.statement "\"test\""
+{ "count": 1, "cmd": "test", "args": [] }
+
+### Single dquoted command with bare positional:
+Parser.statement "\"test\" foo"
+{ "count": 1, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
+
+### Single dquoted command with bare flag:
+Parser.statement "\"test\" --foo"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
+}
+
+### Bare command with single dquoted positional:
+Parser.statement "test \"foo\""
+{ "count": 1, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
+
+### Single dquoted command with single dquoted positional:
+Parser.statement "\"test\" \"foo\""
+{ "count": 1, "cmd": "test", "args": [ [ "Positional", "foo" ] ] }
+
+### Single dquoted command, bare flag, and dquoted payload:
+Parser.statement "\"test\" --foo \"bar\""
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "bar" ]
+  ]
+}
+
+### Single dquoted command, flag, and payload:
+Parser.statement "\"test\" \"--foo\" \"bar\""
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Positional", "--foo" ], [ "Positional", "bar" ] ]
+}
+
 ### Statements separated by semicolons:
 Parser.script "test; 2test; 3test"
 {
