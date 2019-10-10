@@ -319,8 +319,8 @@ describe('Lexer', () => {
    it('disallows an explicit payload with spacing (before)', () => {
       const $buf = of_string('--hello =world')
 
-      $Lexer.next($buf) // Discard one token (FLAG_LONG_START)
-      $Lexer.next($buf) // Discard another token (IDENTIFIER)
+      $Lexer.next($buf) // Discard FLAG_LONG_START
+      $Lexer.next($buf) // Discard IDENTIFIER
 
       const $tok = $Lexer.next($buf)
 
@@ -333,11 +333,17 @@ describe('Lexer', () => {
    it('disallows an explicit payload with spacing (after)', () => {
       const $buf = of_string('--hello= world')
 
-      // Discard two tokens
-      $Lexer.next($buf)
-      $Lexer.next($buf)
+      $Lexer.next($buf) // Discard FLAG_LONG_START
+      $Lexer.next($buf) // Discard IDENTIFIER
+      $Lexer.next($buf) // Discard EQUALS
 
-      expect(() => $Lexer.next($buf)).toThrowError()
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_UNEXPECTED_WHITESPACE')
+      expect($Lexer.token_is_erraneous($tok)).toEqual(true)
+      expect($Lexer.token_error_message($tok)).toEqual(
+         'unexpected whitespace in expression',
+      )
    })
 
    it('lexes the start of a bare URL as its own token', () => {
