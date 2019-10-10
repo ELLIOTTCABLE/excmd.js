@@ -368,7 +368,7 @@ Terminal
 unit
 EQUALS
 EQUALS : (unit) Terminal
-FLAG_LONG : (string) Terminal
+flag_long : (string) Nonterminal
 command : (string) Nonterminal
 option_COUNT_ : (string option) Nonterminal
 list_COLON_ : (unit list) Nonterminal

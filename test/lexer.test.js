@@ -263,47 +263,57 @@ describe('Lexer', () => {
 
    it('lexes a long flag', () => {
       const $buf = of_string('--hello'),
-         $tok = $Lexer.next($buf)
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toBe('FLAG_LONG')
-      expect($Lexer.token_body($tok)).toEqual('hello')
+      expect($Lexer.show_token($tok1)).toBe('FLAG_LONG_START')
+      expect($Lexer.show_token($tok2)).toBe('IDENTIFIER')
+      expect($Lexer.token_body($tok2)).toEqual('hello')
    })
 
    it('lexes a ‘long’ flag of a single character', () => {
       const $buf = of_string('--h'),
-         $tok = $Lexer.next($buf)
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toBe('FLAG_LONG')
-      expect($Lexer.token_body($tok)).toEqual('h')
+      expect($Lexer.show_token($tok1)).toBe('FLAG_LONG_START')
+      expect($Lexer.show_token($tok2)).toBe('IDENTIFIER')
+      expect($Lexer.token_body($tok2)).toEqual('h')
    })
 
    it('lexes a single short flag', () => {
       const $buf = of_string('-h'),
-         $tok = $Lexer.next($buf)
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toBe('FLAGS_SHORT')
-      expect($Lexer.token_body($tok)).toEqual('h')
+      expect($Lexer.show_token($tok1)).toBe('FLAGS_SHORT_START')
+      expect($Lexer.show_token($tok2)).toBe('IDENTIFIER')
+      expect($Lexer.token_body($tok2)).toEqual('h')
    })
 
    it('lexes multiple concatenated short flags', () => {
       const $buf = of_string('-hElLo'),
-         $tok = $Lexer.next($buf)
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok)).toBe('FLAGS_SHORT')
-      expect($Lexer.token_body($tok)).toEqual('hElLo')
+      expect($Lexer.show_token($tok1)).toBe('FLAGS_SHORT_START')
+      expect($Lexer.show_token($tok2)).toBe('IDENTIFIER')
+      expect($Lexer.token_body($tok2)).toEqual('hElLo')
    })
 
    it('lexes a long flag with an explicit payload', () => {
       const $buf = of_string('--hello=world'),
          $tok1 = $Lexer.next($buf),
          $tok2 = $Lexer.next($buf),
-         $tok3 = $Lexer.next($buf)
+         $tok3 = $Lexer.next($buf),
+         $tok4 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok1)).toBe('FLAG_LONG')
-      expect($Lexer.token_body($tok1)).toEqual('hello')
-      expect($Lexer.show_token($tok2)).toBe('EQUALS')
-      expect($Lexer.show_token($tok3)).toBe('IDENTIFIER')
-      expect($Lexer.token_body($tok3)).toEqual('world')
+      expect($Lexer.show_token($tok1)).toBe('FLAG_LONG_START')
+      expect($Lexer.show_token($tok2)).toBe('IDENTIFIER')
+      expect($Lexer.token_body($tok2)).toEqual('hello')
+      expect($Lexer.show_token($tok3)).toBe('EQUALS')
+      expect($Lexer.show_token($tok4)).toBe('IDENTIFIER')
+      expect($Lexer.token_body($tok4)).toEqual('world')
    })
 
    it('disallows an explicit payload with spacing (before)', () => {
@@ -455,15 +465,17 @@ describe('Lexer', () => {
          $tok1 = $Lexer.next($buf),
          $tok2 = $Lexer.next($buf),
          $tok3 = $Lexer.next($buf),
-         $tok4 = $Lexer.next($buf)
+         $tok4 = $Lexer.next($buf),
+         $tok5 = $Lexer.next($buf)
 
-      expect($Lexer.show_token($tok1)).toBe('FLAG_LONG')
-      expect($Lexer.token_body($tok1)).toEqual('site')
-      expect($Lexer.show_token($tok2)).toBe('EQUALS')
-      expect($Lexer.show_token($tok3)).toBe('URL_START')
-      expect($Lexer.token_body($tok3)).toEqual('github.com')
-      expect($Lexer.show_token($tok4)).toBe('URL_REST')
-      expect($Lexer.token_body($tok4)).toEqual('/ELLIOTTCABLE')
+      expect($Lexer.show_token($tok1)).toBe('FLAG_LONG_START')
+      expect($Lexer.show_token($tok2)).toBe('IDENTIFIER')
+      expect($Lexer.token_body($tok2)).toEqual('site')
+      expect($Lexer.show_token($tok3)).toBe('EQUALS')
+      expect($Lexer.show_token($tok4)).toBe('URL_START')
+      expect($Lexer.token_body($tok4)).toEqual('github.com')
+      expect($Lexer.show_token($tok5)).toBe('URL_REST')
+      expect($Lexer.token_body($tok5)).toEqual('/ELLIOTTCABLE')
    })
 
    it('lexes the first delimiter of a complex string', () => {

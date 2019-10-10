@@ -7,8 +7,8 @@
 %token EOF
 %token EQUALS
 %token <int * string> ERR_UNEXPECTED_CHARACTER
-%token <string> FLAGS_SHORT
-%token <string> FLAG_LONG
+%token FLAGS_SHORT_START
+%token FLAG_LONG_START
 %token <string> IDENTIFIER
 %token PAREN_CLOSE
 %token PAREN_OPEN
@@ -30,7 +30,7 @@
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
 %type <AST.statement> unterminated_statement
-%type <string>       command noncommand_word quotation quotation_chunk
+%type <string>       command noncommand_word quotation quotation_chunk flag_long flags_short
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
 %type <AST.arg list> arguments nonempty_arguments positional_and_arguments
                         flag_and_arguments
@@ -103,8 +103,8 @@ flag_and_arguments:
  ;
 
 long_flag_before_positional:
- | name = FLAG_LONG  { Flag {name; payload = Unresolved} }
- | name = FLAG_LONG; EQUALS; payload = noncommand_word
+ | name = flag_long  { Flag {name; payload = Unresolved} }
+ | name = flag_long; EQUALS; payload = noncommand_word
  { Flag {name; payload = Resolved payload} }
  ;
 
@@ -113,14 +113,14 @@ long_flag_before_flag:
  ;
 
 last_long_flag:
- | name = FLAG_LONG  { Flag {name; payload = Absent} }
- | name = FLAG_LONG; EQUALS; payload = noncommand_word
+ | name = flag_long  { Flag {name; payload = Absent} }
+ | name = flag_long; EQUALS; payload = noncommand_word
  { Flag {name; payload = Resolved payload} }
  ;
 
 
 short_flags_before_positional:
- | xs = explode(FLAGS_SHORT)
+ | xs = explode(flags_short)
  {
    let len = List.length xs in
    xs |> List.mapi (fun i x ->
@@ -137,7 +137,7 @@ short_flags_before_flag:
  ;
 
 last_short_flags:
- | xs = explode(FLAGS_SHORT)
+ | xs = explode(flags_short)
  { List.map (fun x -> Flag {name = x; payload = Absent}) xs }
  ;
 
@@ -169,6 +169,14 @@ rev_nonempty_subquotation:
 quotation_chunk:
  | x = QUOTE_CHUNK { x }
  | x = QUOTE_ESCAPE { x }
+ ;
+
+flag_long:
+ | FLAG_LONG_START; x = IDENTIFIER { x }
+ ;
+
+flags_short:
+ | FLAGS_SHORT_START; x = IDENTIFIER { x }
  ;
 
 break:

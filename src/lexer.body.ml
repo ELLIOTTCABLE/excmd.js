@@ -172,7 +172,8 @@ let show_token tok =
     | EQUALS -> "EQUALS"
     | ERR_UNEXPECTED_CHARACTER (_, _) -> "ERR_UNEXPECTED_CHARACTER"
     | IDENTIFIER _ -> "IDENTIFIER"
-    | FLAG_LONG _ -> "FLAG_LONG"
+    | FLAG_LONG_START -> "FLAG_LONG_START"
+    | FLAGS_SHORT_START -> "FLAGS_SHORT_START"
     | PAREN_CLOSE -> "PAREN_CLOSE"
     | PAREN_OPEN -> "PAREN_OPEN"
     | PIPE -> "PIPE"
@@ -181,7 +182,6 @@ let show_token tok =
     | QUOTE_ESCAPE _ -> "QUOTE_ESCAPE"
     | QUOTE_OPEN _ -> "QUOTE_OPEN"
     | SEMICOLON -> "SEMICOLON"
-    | FLAGS_SHORT _ -> "FLAGS_SHORT"
     | URL_REST _ -> "URL_REST"
     | URL_START _ -> "URL_START"
 
@@ -197,7 +197,8 @@ let example_of_token tok =
     | EQUALS -> Some "="
     | ERR_UNEXPECTED_CHARACTER (_, _) -> None
     | IDENTIFIER str -> Some (if str != "" then str else "ident")
-    | FLAG_LONG flag -> Some (if flag != "" then "--" ^ flag else "--flag")
+    | FLAG_LONG_START -> Some "--"
+    | FLAGS_SHORT_START -> Some "-"
     | PAREN_CLOSE -> Some ")"
     | PAREN_OPEN -> Some "("
     | PIPE -> Some "|"
@@ -207,7 +208,6 @@ let example_of_token tok =
       Some (if str != "" then str else "\\\\") (* That's two slashes, '\\' *)
     | QUOTE_OPEN ch -> Some (if ch != "" then ch else quote_balanced_open_char)
     | SEMICOLON -> Some ";"
-    | FLAGS_SHORT flags -> Some (if flags != "" then "-" ^ flags else "-FlGs")
     | URL_REST url -> Some (if url != "" then url else "/search?q=tridactyl")
     | URL_START url -> Some (if url != "" then url else "google.com")
 
@@ -224,7 +224,7 @@ let example_tokens =
     ; EOF
     ; EQUALS
     ; IDENTIFIER (IDENTIFIER "" |> ex |> unwrap_exn)
-    ; FLAG_LONG (FLAG_LONG "" |> ex |> unwrap_exn)
+    ; FLAG_LONG_START
     ; PAREN_CLOSE
     ; PAREN_OPEN
     ; PIPE
@@ -233,7 +233,7 @@ let example_tokens =
     ; QUOTE_ESCAPE (QUOTE_ESCAPE "" |> ex |> unwrap_exn)
     ; QUOTE_OPEN (QUOTE_OPEN "" |> ex |> unwrap_exn)
     ; SEMICOLON
-    ; FLAGS_SHORT (FLAGS_SHORT "" |> ex |> unwrap_exn)
+    ; FLAGS_SHORT_START
     ; URL_REST (URL_REST "" |> ex |> unwrap_exn)
     ; URL_START (URL_START "" |> ex |> unwrap_exn)
    |]
@@ -247,8 +247,6 @@ let compare_token a b =
     | COMMENT _, COMMENT _
     | ERR_UNEXPECTED_CHARACTER _, ERR_UNEXPECTED_CHARACTER _
     | IDENTIFIER _, IDENTIFIER _
-    | FLAG_LONG _, FLAG_LONG _
-    | FLAGS_SHORT _, FLAGS_SHORT _
     | QUOTE_CHUNK _, QUOTE_CHUNK _
     | QUOTE_CLOSE _, QUOTE_CLOSE _
     | QUOTE_ESCAPE _, QUOTE_ESCAPE _
@@ -263,8 +261,6 @@ let token_body tok =
     | COUNT s
     | COMMENT s
     | IDENTIFIER s
-    | FLAG_LONG s
-    | FLAGS_SHORT s
     | QUOTE_CHUNK s
     | QUOTE_CLOSE s
     | QUOTE_ESCAPE s
@@ -638,14 +634,12 @@ and immediate ?(saw_whitespace = false) buf =
     | url_possible_scheme -> known_scheme_or_identifier buf
     | identifier -> IDENTIFIER (utf8 buf) |> locate buf
     | url_domain -> url_start buf
-    | "--", identifier ->
-      let whole = utf8 buf in
-      let flag = String.sub whole 2 (String.length whole - 2) in
-      FLAG_LONG flag |> locate buf
-    | "-", identifier ->
-      let whole = utf8 buf in
-      let flags = String.sub whole 1 (String.length whole - 1) in
-      FLAGS_SHORT flags |> locate buf
+    | "-" ->
+      buf.mode <- Immediate ;
+      FLAGS_SHORT_START |> locate buf
+    | "--" ->
+      buf.mode <- Immediate ;
+      FLAG_LONG_START |> locate buf
     | '=' ->
       if saw_whitespace then
          lexcrash buf
