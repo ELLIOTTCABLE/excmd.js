@@ -85,7 +85,7 @@ let tests () =
       "\"test\" \"foo\"" ;
    test_statement "Single dquoted command, bare flag, and dquoted payload"
       "\"test\" --foo \"bar\"" ;
-   test_statement "Single dquoted command, flag, and payload"
+   test_statement "Single dquoted command, flag-esque positional, and positional"
       "\"test\" \"--foo\" \"bar\"" ;
    test_statement "Bare command, long-flag, only the flag's name quoted" "test --\"foo\"" ;
 

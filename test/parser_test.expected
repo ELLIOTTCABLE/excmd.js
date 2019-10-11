@@ -256,7 +256,7 @@ Parser.statement "\"test\" --foo \"bar\""
   ]
 }
 
-### Single dquoted command, flag, and payload:
+### Single dquoted command, flag-esque positional, and positional:
 Parser.statement "\"test\" \"--foo\" \"bar\""
 {
   "count": 1,
