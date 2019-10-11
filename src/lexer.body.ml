@@ -196,7 +196,7 @@ let example_of_token tok =
     | COMMENT_CLOSE -> Some "*/"
     | COMMENT_OPEN -> Some "/*"
     | COUNT str -> Some (if str != "" then str else "2")
-    | EOF -> Some ""
+    | EOF -> None
     | EQUALS -> Some "="
     | ERR_UNEXPECTED_CHARACTER (_, _) -> None
     | ERR_UNEXPECTED_WHITESPACE _ -> None
@@ -226,7 +226,6 @@ let example_tokens =
     ; COMMENT_CLOSE
     ; COMMENT_OPEN
     ; COUNT (COUNT "" |> ex |> unwrap_exn)
-    ; EOF
     ; EQUALS
     ; IDENTIFIER (IDENTIFIER "" |> ex |> unwrap_exn)
     ; FLAG_LONG_START
