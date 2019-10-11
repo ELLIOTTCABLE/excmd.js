@@ -509,7 +509,7 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok5)).toEqual('/ELLIOTTCABLE')
    })
 
-   it('lexes the first delimiter of a complex string', () => {
+   it('lexes the first delimiter of a complex quotation', () => {
       const quote = '"hello there"',
          $buf = of_string(quote),
          $tok = $Lexer.next($buf)
@@ -518,7 +518,7 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('"')
    })
 
-   it('consumes spaces inside a complex string', () => {
+   it('consumes spaces inside a complex quotation', () => {
       const quote = '"hello there"',
          $buf = of_string(quote),
          _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
@@ -528,7 +528,7 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('hello there')
    })
 
-   it('lexes the last delimiter of a complex string', () => {
+   it('lexes the last delimiter of a complex quotation', () => {
       const quote = '"hello there"',
          $buf = of_string(quote),
          _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
@@ -539,7 +539,7 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('"')
    })
 
-   it('produces complex strings in chunks, punctuated by escapes', () => {
+   it('produces complex quotations in chunks, punctuated by escapes', () => {
       // Note that the JavaScript escaping here means that this string is *actually*:
       // "hello \" there"
       const quote = '"hello \\" there"',
@@ -551,7 +551,7 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('hello ')
    })
 
-   it('supports the complex-string delimiter, escaped, *in* complex strings', () => {
+   it('supports the complex-quotation delimiter, escaped, *in* complex quotations', () => {
       // Note that the JavaScript escaping here means that this string is *actually*:
       // "hello \" there"
       const quote = '"hello \\" there"',
@@ -665,6 +665,30 @@ describe('Lexer', () => {
       expect(fromFakeUTF8String($Lexer.token_body($tok8))).toEqual('»')
       expect($Lexer.show_token($tok9)).toBe('QUOTE_CLOSE')
       expect(fromFakeUTF8String($Lexer.token_body($tok9))).toEqual('»')
+   })
+
+   it('produces double-dash as a BARE_DOUBLE_DASH when followed by spacing', () => {
+      const quote = '-- "foo bar"',
+         $buf = of_string(quote),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf),
+         $tok3 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('BARE_DOUBLE_DASH')
+      expect($Lexer.show_token($tok2)).toBe('QUOTE_OPEN')
+      expect($Lexer.token_body($tok2)).toEqual('"')
+   })
+
+   it('produces double-dash as a FLAG_LONG_START when followed by quotation', () => {
+      const quote = '--"foo bar"',
+         $buf = of_string(quote),
+         $tok1 = $Lexer.next($buf),
+         $tok2 = $Lexer.next($buf),
+         $tok3 = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok1)).toBe('FLAG_LONG_START')
+      expect($Lexer.show_token($tok2)).toBe('QUOTE_OPEN')
+      expect($Lexer.token_body($tok2)).toEqual('"')
    })
 })
 
