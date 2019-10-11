@@ -182,6 +182,29 @@ Parser.statement "test --foo=google.com/search baz"
   ]
 }
 
+### Single command with a bare-double-dash:
+Parser.statement "test --"
+{ "count": 1, "cmd": "test", "args": [ [ "Positional", "--" ] ] }
+
+### Single command with a bare-double-dash followed by a long-flag:
+Parser.statement "test -- --foo"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Positional", "--" ],
+    [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ]
+  ]
+}
+
+### Single command with a bare-double-dash followed by another, normal positional:
+Parser.statement "test -- foo"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Positional", "--" ], [ "Positional", "foo" ] ]
+}
+
 ### Single command with mixed flags and parameters:
 Parser.statement "test --foo bar --baz=widget qux -qu ux"
 {
@@ -358,7 +381,7 @@ fail-continuation invoked! cool.
 
 ### Listing of acceptable tokens during a failure:
 Incremental.statement "hello --where="
-URL_START, QUOTE_OPEN, IDENTIFIER
+URL_START, QUOTE_OPEN, IDENTIFIER, BARE_DOUBLE_DASH
 
 
 ### Dumping of stack-debugging information from a checkpoint:

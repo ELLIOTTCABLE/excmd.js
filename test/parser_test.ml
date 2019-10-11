@@ -57,7 +57,6 @@ let tests () =
       "test --foo bar --baz widget" ;
    test_statement "Single command, with single explicitly-parameterized flag"
       "test --foo=bar" ;
-
    test_statement
       "Single command with single explicitly-parameterized flag followed by a positional \
        parameter"
@@ -66,6 +65,13 @@ let tests () =
       "Single command, single explicitly-parameterized flag with a URL payload, followed \
        by a positional parameter"
       "test --foo=google.com/search baz" ;
+
+   test_statement "Single command with a bare-double-dash" "test --" ;
+   test_statement "Single command with a bare-double-dash followed by a long-flag"
+      "test -- --foo" ;
+   test_statement
+      "Single command with a bare-double-dash followed by another, normal positional"
+      "test -- foo" ;
 
    test_statement "Single command with mixed flags and parameters"
       "test --foo bar --baz=widget qux -qu ux" ;

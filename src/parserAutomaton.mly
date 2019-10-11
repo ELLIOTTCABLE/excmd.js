@@ -1,4 +1,5 @@
 (* {2 Tokens } *)
+%token BARE_DOUBLE_DASH
 %token COLON
 %token <string> COMMENT
 %token COMMENT_CLOSE
@@ -75,6 +76,7 @@ noncommand_word:
  | x = IDENTIFIER { x }
  | hd = URL_START; tl = URL_REST { hd ^ tl }
  | x = quotation { x }
+ | BARE_DOUBLE_DASH { "--" }
  ;
 
 arguments:

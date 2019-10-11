@@ -163,6 +163,7 @@ let token_is_erraneous tok =
 
 let show_token tok =
    match tok with
+    | BARE_DOUBLE_DASH -> "BARE_DOUBLE_DASH"
     | COLON -> "COLON"
     | COMMENT _ -> "COMMENT"
     | COMMENT_CLOSE -> "COMMENT_CLOSE"
@@ -189,6 +190,7 @@ let show_token tok =
 
 let example_of_token tok =
    match tok with
+    | BARE_DOUBLE_DASH -> Some "--"
     | COLON -> Some ":"
     | COMMENT str -> Some (if str != "" then str else "a comment")
     | COMMENT_CLOSE -> Some "*/"
@@ -218,7 +220,8 @@ let example_tokens =
    (* This weird backflipping, is to avoid *even more* duplication: every possible
       "example token" is consistently encoded only in [example_of_token]. *)
    let ex = example_of_token in
-   [| COLON
+   [| BARE_DOUBLE_DASH
+    ; COLON
     ; COMMENT (COMMENT "" |> ex |> unwrap_exn)
     ; COMMENT_CLOSE
     ; COMMENT_OPEN
@@ -227,6 +230,7 @@ let example_tokens =
     ; EQUALS
     ; IDENTIFIER (IDENTIFIER "" |> ex |> unwrap_exn)
     ; FLAG_LONG_START
+    ; FLAGS_SHORT_START
     ; PAREN_CLOSE
     ; PAREN_OPEN
     ; PIPE
@@ -235,7 +239,6 @@ let example_tokens =
     ; QUOTE_ESCAPE (QUOTE_ESCAPE "" |> ex |> unwrap_exn)
     ; QUOTE_OPEN (QUOTE_OPEN "" |> ex |> unwrap_exn)
     ; SEMICOLON
-    ; FLAGS_SHORT_START
     ; URL_REST (URL_REST "" |> ex |> unwrap_exn)
     ; URL_START (URL_START "" |> ex |> unwrap_exn)
    |]
@@ -595,6 +598,18 @@ and url_finish buf start curr acc =
    (URL_REST (Buffer.contents acc), start, curr)
 
 
+and disambiguate_double_dash buf =
+   let slbuf = sedlex_of_buffer buf in
+   match%sedlex slbuf with
+    | identifier | "\"" | quote_balanced_open ->
+      rollback slbuf ;
+      buf.mode <- MainDisallowingWhitespace ;
+      FLAG_LONG_START |> locate buf
+    | _ ->
+      rollback slbuf ;
+      BARE_DOUBLE_DASH |> locate buf
+
+
 and just_identifier buf =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
@@ -636,9 +651,7 @@ and main ~allow_whitespace buf =
     | '-' ->
       buf.mode <- MainDisallowingWhitespace ;
       FLAGS_SHORT_START |> locate buf
-    | "--" ->
-      buf.mode <- MainDisallowingWhitespace ;
-      FLAG_LONG_START |> locate buf
+    | "--" -> disambiguate_double_dash buf
     | Plus space, '=' ->
       (* FIXME: This is gonna report an error in the wrong place (including the =) *)
       ERR_UNEXPECTED_WHITESPACE "unexpected space before '='" |> locate buf
