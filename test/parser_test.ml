@@ -87,6 +87,8 @@ let tests () =
       "\"test\" --foo \"bar\"" ;
    test_statement "Single dquoted command, flag-esque positional, and positional"
       "\"test\" \"--foo\" \"bar\"" ;
+   test_statement "Bare command, bare-double-dash, and quoted positional"
+      "test -- \"foo bar\"" ;
    test_statement "Bare command, long-flag, flag's name quoted" "test --\"foo\"" ;
    test_statement "Bare command, long-flag, with a space in the flag's name"
       "test --\"foo bar\"" ;

@@ -264,6 +264,14 @@ Parser.statement "\"test\" \"--foo\" \"bar\""
   "args": [ [ "Positional", "--foo" ], [ "Positional", "bar" ] ]
 }
 
+### Bare command, bare-double-dash, and quoted positional:
+Parser.statement "test -- \"foo bar\""
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Positional", "--" ], [ "Positional", "foo bar" ] ]
+}
+
 ### Bare command, long-flag, flag's name quoted:
 Parser.statement "test --\"foo\""
 {
