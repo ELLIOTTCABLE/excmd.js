@@ -32,7 +32,7 @@
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
 %type <AST.statement> unterminated_statement
-%type <string>       command noncommand_word quotation quotation_chunk flag_long flags_short
+%type <string>       command noncommand_word flag_long flags_short quotation quotation_chunk
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
 %type <AST.arg list> arguments nonempty_arguments positional_and_arguments
                         flag_and_arguments
@@ -144,6 +144,16 @@ last_short_flags:
  { List.map (fun x -> Flag {name = x; payload = Absent}) xs }
  ;
 
+flag_long:
+ | FLAG_LONG_START; x = IDENTIFIER { x }
+ | FLAG_LONG_START; x = quotation { x }
+ ;
+
+flags_short:
+ | FLAGS_SHORT_START; x = IDENTIFIER { x }
+ | FLAGS_SHORT_START; x = quotation { x }
+ ;
+
 quotation:
  | xs = rev_nonempty_quotation; QUOTE_CLOSE { List.rev xs |> String.concat "" }
  ;
@@ -172,14 +182,6 @@ rev_nonempty_subquotation:
 quotation_chunk:
  | x = QUOTE_CHUNK { x }
  | x = QUOTE_ESCAPE { x }
- ;
-
-flag_long:
- | FLAG_LONG_START; x = IDENTIFIER { x }
- ;
-
-flags_short:
- | FLAGS_SHORT_START; x = IDENTIFIER { x }
  ;
 
 break:

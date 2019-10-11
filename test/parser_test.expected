@@ -264,6 +264,56 @@ Parser.statement "\"test\" \"--foo\" \"bar\""
   "args": [ [ "Positional", "--foo" ], [ "Positional", "bar" ] ]
 }
 
+### Bare command, long-flag, flag's name quoted:
+Parser.statement "test --\"foo\""
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
+}
+
+### Bare command, long-flag, with a space in the flag's name:
+Parser.statement "test --\"foo bar\""
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [ [ "Flag", { "name": "foo bar", "payload": [ "Absent" ] } ] ]
+}
+
+### Bare command, long-flag w/ space in name, possibly-parameterized:
+Parser.statement "test --\"foo bar\" baz"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo bar", "payload": [ "Unresolved" ] } ],
+    [ "Positional", "baz" ]
+  ]
+}
+
+### Bare command, long-flag w/ space in name, explicitly-parameterized:
+Parser.statement "test --\"foo bar\"=baz"
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [ "Flag", { "name": "foo bar", "payload": [ "Resolved", "baz" ] } ]
+  ]
+}
+
+### Bare command, long-flag w/ space in name, explicit, quoted parameter:
+Parser.statement "test --\"foo bar\"=\"baz widget\""
+{
+  "count": 1,
+  "cmd": "test",
+  "args": [
+    [
+      "Flag",
+      { "name": "foo bar", "payload": [ "Resolved", "baz widget" ] }
+    ]
+  ]
+}
+
 ### Statements separated by semicolons:
 Parser.script "test; 2test; 3test"
 {

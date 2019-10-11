@@ -87,7 +87,15 @@ let tests () =
       "\"test\" --foo \"bar\"" ;
    test_statement "Single dquoted command, flag-esque positional, and positional"
       "\"test\" \"--foo\" \"bar\"" ;
-   test_statement "Bare command, long-flag, only the flag's name quoted" "test --\"foo\"" ;
+   test_statement "Bare command, long-flag, flag's name quoted" "test --\"foo\"" ;
+   test_statement "Bare command, long-flag, with a space in the flag's name"
+      "test --\"foo bar\"" ;
+   test_statement "Bare command, long-flag w/ space in name, possibly-parameterized"
+      "test --\"foo bar\" baz" ;
+   test_statement "Bare command, long-flag w/ space in name, explicitly-parameterized"
+      "test --\"foo bar\"=baz" ;
+   test_statement "Bare command, long-flag w/ space in name, explicit, quoted parameter"
+      "test --\"foo bar\"=\"baz widget\"" ;
 
    (* Simple multi-statement scripts *)
    test_script "Statements separated by semicolons" "test; 2test; 3test" ;
