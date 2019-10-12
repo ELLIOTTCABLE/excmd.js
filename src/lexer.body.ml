@@ -156,7 +156,7 @@ let error_desc_exn = function
 
 
 (* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
-let token_is_erraneous tok =
+let token_is_erroneous tok =
    match tok with
     | ERR_MISSING_DELIM_CLOSE (_, _)
     | ERR_UNEXPECTED_CHARACTER (_, _)
@@ -690,7 +690,7 @@ let next_loc buf =
 
 let next_loc_exn buf =
    let tok = next_loc buf in
-   if token_is_erraneous (token tok) then
+   if token_is_erroneous (token tok) then
       let message = token_error_message (token tok) |> unwrap_exn in
       lexcrash buf message
    else tok

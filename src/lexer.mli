@@ -46,34 +46,34 @@ val example_of_token : Tokens.token -> string option
     of {e one} token. e.g. [example_of_token COMMENT] produces ["comment"], not
     ["/* comment */"]. *)
 
-val token_is_erraneous : Tokens.token -> bool
-(** [token_is_erraneous tok] indicates whether lexing should reasonably be expected to
+val token_is_erroneous : Tokens.token -> bool
+(** [token_is_erroneous tok] indicates whether lexing should reasonably be expected to
     continue after reading [tok].
 
     This lexer will return tokens, instead of raising exceptions, for some common
     failure-states; this allows error-handling to be lifted into the parser, and more
     importantly, allows incremental recovery. In the parser itself, this is handled
-    simply by not handling these erraneous tokens; if you're calling the lexer directly
+    simply by not handling these erroneous tokens; if you're calling the lexer directly
     for any reason, you can use this function to ensure valid output. *)
 
 val token_body : Tokens.token -> string option
 (** [token_body tok] produces [Some string_payload] if the token carries a body-payload,
     and [None] if that type of token has no payload (or in the case of errors - see
-    {!token_is_erraneous}.) e.g. [token_body (IDENTIFIER "hi")] yields ["hi"]. *)
+    {!token_is_erroneous}.) e.g. [token_body (IDENTIFIER "hi")] yields ["hi"]. *)
 
-val token_is_erraneous : Tokens.token -> bool
-(** [token_is_erraneous tok] indicates whether lexing should reasonably be expected to
+val token_is_erroneous : Tokens.token -> bool
+(** [token_is_erroneous tok] indicates whether lexing should reasonably be expected to
     continue after reading [tok].
 
     This lexer will return tokens, instead of raising exceptions, for some common
     failure-states; this allows error-handling to be lifted into the parser, and more
     importantly, allows incremental recovery. In the parser itself, this is handled
-    simply by not handling these erraneous tokens; if you're calling the lexer directly
+    simply by not handling these erroneous tokens; if you're calling the lexer directly
     for any reason, you can use this function to ensure valid output. *)
 
 val token_error_message : Tokens.token -> string option
 (** [token_error_message tok] produces [Some message] if the token represents a
-    lexing-error (see {!token_is_erraneous}), and [None] for all non-erraneous tokens. *)
+    lexing-error (see {!token_is_erroneous}), and [None] for all non-erroneous tokens. *)
 
 val start_lnum : Tokens.token located -> int
 
