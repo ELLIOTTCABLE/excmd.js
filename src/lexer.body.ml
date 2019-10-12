@@ -158,8 +158,10 @@ let error_desc_exn = function
 (* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
 let token_is_erroneous tok =
    match tok with
+    | ERR_MISSING_COMMENT_CLOSE _
     | ERR_MISSING_DELIM_CLOSE (_, _)
     | ERR_UNEXPECTED_CHARACTER (_, _)
+    | ERR_UNEXPECTED_COMMENT_CLOSE _
     | ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
     | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
     | ERR_UNEXPECTED_WHITESPACE _ -> true
@@ -176,8 +178,10 @@ let show_token tok =
     | COUNT _ -> "COUNT"
     | EOF -> "EOF"
     | EQUALS -> "EQUALS"
+    | ERR_MISSING_COMMENT_CLOSE _ -> "ERR_MISSING_COMMENT_CLOSE"
     | ERR_MISSING_DELIM_CLOSE (_, _) -> "ERR_MISSING_DELIM_CLOSE"
     | ERR_UNEXPECTED_CHARACTER (_, _) -> "ERR_UNEXPECTED_CHARACTER"
+    | ERR_UNEXPECTED_COMMENT_CLOSE _ -> "ERR_UNEXPECTED_COMMENT_CLOSE"
     | ERR_UNEXPECTED_QUOTE_CLOSE (_, _) -> "ERR_UNEXPECTED_QUOTE_CLOSE"
     | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _) -> "ERR_UNEXPECTED_QUOTE_ESCAPE"
     | ERR_UNEXPECTED_WHITESPACE _ -> "ERR_UNEXPECTED_WHITESPACE"
@@ -220,8 +224,10 @@ let example_of_token tok =
     | SEMICOLON -> Some ";"
     | URL_REST url -> Some (if url != "" then url else "/search?q=tridactyl")
     | URL_START url -> Some (if url != "" then url else "google.com")
+    | ERR_MISSING_COMMENT_CLOSE _
     | ERR_MISSING_DELIM_CLOSE (_, _)
     | ERR_UNEXPECTED_CHARACTER (_, _)
+    | ERR_UNEXPECTED_COMMENT_CLOSE _
     | ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
     | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
     | ERR_UNEXPECTED_WHITESPACE _ -> None
@@ -260,8 +266,10 @@ let compare_token a b =
    match (a, b) with
     | COUNT _, COUNT _
     | COMMENT _, COMMENT _
+    | ERR_MISSING_COMMENT_CLOSE _, ERR_MISSING_COMMENT_CLOSE _
     | ERR_MISSING_DELIM_CLOSE _, ERR_MISSING_DELIM_CLOSE _
     | ERR_UNEXPECTED_CHARACTER _, ERR_UNEXPECTED_CHARACTER _
+    | ERR_UNEXPECTED_COMMENT_CLOSE _, ERR_UNEXPECTED_COMMENT_CLOSE _
     | ERR_UNEXPECTED_QUOTE_CLOSE _, ERR_UNEXPECTED_QUOTE_CLOSE _
     | ERR_UNEXPECTED_QUOTE_ESCAPE _, ERR_UNEXPECTED_QUOTE_ESCAPE _
     | ERR_UNEXPECTED_WHITESPACE _, ERR_UNEXPECTED_WHITESPACE _
@@ -291,8 +299,10 @@ let token_body tok =
 
 let token_error_message tok =
    match tok with
+    | ERR_MISSING_COMMENT_CLOSE msg
     | ERR_MISSING_DELIM_CLOSE (_, msg)
     | ERR_UNEXPECTED_CHARACTER (_, msg)
+    | ERR_UNEXPECTED_COMMENT_CLOSE msg
     | ERR_UNEXPECTED_QUOTE_CLOSE (_, msg)
     | ERR_UNEXPECTED_QUOTE_ESCAPE (_, msg)
     | ERR_UNEXPECTED_WHITESPACE msg -> Some msg
@@ -357,6 +367,32 @@ let quote_escaping_fail buf delim escape_seq =
          ]
    in
    ERR_UNEXPECTED_QUOTE_ESCAPE (escape_seq, msg) |> locate buf
+
+
+let comment_opening_fail buf opening closing =
+   let msg =
+      String.concat "`"
+         [ "Unmatched closing comment-delimiter "
+         ; closing
+         ; ". (Did you forget a "
+         ; opening
+         ; "?)"
+         ]
+   in
+   ERR_UNEXPECTED_COMMENT_CLOSE msg |> locate buf
+
+
+let comment_closing_fail buf opening closing =
+   let msg =
+      String.concat "`"
+         [ "Unmatched opening comment-delimiter "
+         ; opening
+         ; ". (Reached EOF without finding a matching "
+         ; closing
+         ; "; did you forget one?)"
+         ]
+   in
+   ERR_MISSING_COMMENT_CLOSE msg |> locate buf
 
 
 let url_pop_delim buf closing xs =
@@ -484,9 +520,7 @@ let rec comment_block depth buf =
       let acc = Buffer.create 256 (* 3 lines of 80 chars = ~240 bytes *) in
       Buffer.add_string acc (utf8 buf) ;
       comment_block_continuing buf (start buf) acc
-    | eof ->
-      lexcrash buf
-         "Reached end-of-file without finding a matching block-comment end-delimiter"
+    | eof -> comment_closing_fail buf "/*" "*/"
     | _ -> unreachable "comment_block"
 
 
@@ -499,9 +533,7 @@ and comment_block_continuing buf orig_start acc =
     | '/', Compl '*' | '*', Compl '/' | Plus (Compl ('*' | '/')) ->
       Buffer.add_string acc (utf8 buf) ;
       comment_block_continuing buf orig_start acc
-    | eof ->
-      lexcrash buf
-         "Reached end-of-file without finding a matching block-comment end-delimiter"
+    | eof -> comment_closing_fail buf "/*" "*/"
     | _ -> unreachable "comment_block_continuing"
 
 
@@ -642,7 +674,7 @@ and main ~allow_whitespace buf =
     | "/*" ->
       buf.mode <- CommentBlock 1 ;
       COMMENT_OPEN |> locate buf
-    | "*/" -> lexcrash buf "Unmatched block-comment end-delimiter"
+    | "*/" -> comment_opening_fail buf "/*" "*/"
     | "\"" ->
       buf.mode <- QuoteComplex ;
       QUOTE_OPEN (utf8 buf) |> locate buf

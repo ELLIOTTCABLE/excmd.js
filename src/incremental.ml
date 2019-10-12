@@ -195,9 +195,12 @@ let element_incoming_symbol_desc = function
             ("ERR_UNEXPECTED_QUOTE_ESCAPE", "string * string")
           | I.T Tokens.T_ERR_UNEXPECTED_QUOTE_CLOSE ->
             ("ERR_UNEXPECTED_QUOTE_CLOSE", "string * string")
+          | I.T Tokens.T_ERR_UNEXPECTED_COMMENT_CLOSE ->
+            ("ERR_UNEXPECTED_COMMENT_CLOSE", "string")
           | I.T Tokens.T_ERR_UNEXPECTED_CHARACTER -> ("ERR_UNEXPECTED_CHARACTER", "int * string")
           | I.T Tokens.T_ERR_MISSING_DELIM_CLOSE ->
             ("ERR_MISSING_DELIM_CLOSE", "string * string")
+          | I.T Tokens.T_ERR_MISSING_COMMENT_CLOSE -> ("ERR_MISSING_COMMENT_CLOSE", "string")
           | I.T Tokens.T_COUNT -> ("COUNT", "string")
           | I.T Tokens.T_COMMENT_OPEN -> ("COMMENT_OPEN", "unit")
           | I.T Tokens.T_COMMENT_CLOSE -> ("COMMENT_CLOSE", "unit")

@@ -7,11 +7,6 @@
 %token <string> COUNT
 %token EOF
 %token EQUALS
-%token <string * string> ERR_MISSING_DELIM_CLOSE
-%token <int * string> ERR_UNEXPECTED_CHARACTER
-%token <string * string> ERR_UNEXPECTED_QUOTE_CLOSE
-%token <string * string> ERR_UNEXPECTED_QUOTE_ESCAPE
-%token <string> ERR_UNEXPECTED_WHITESPACE
 %token FLAGS_SHORT_START
 %token FLAG_LONG_START
 %token <string> IDENTIFIER
@@ -28,6 +23,13 @@
 (* %token <bool> BOOL *)
 (* %token <int> NUM10 *)
 (* %token <string> STREL *)
+%token <string> ERR_MISSING_COMMENT_CLOSE
+%token <string * string> ERR_MISSING_DELIM_CLOSE
+%token <int * string> ERR_UNEXPECTED_CHARACTER
+%token <string> ERR_UNEXPECTED_COMMENT_CLOSE
+%token <string * string> ERR_UNEXPECTED_QUOTE_CLOSE
+%token <string * string> ERR_UNEXPECTED_QUOTE_ESCAPE
+%token <string> ERR_UNEXPECTED_WHITESPACE
 
 %start <AST.t> script
 %start <AST.statement> statement

@@ -200,6 +200,52 @@ describe('Lexer', () => {
       expect($Lexer.show_token($Lexer.next($buf))).toBe('COMMENT_CLOSE')
    })
 
+   it('produces an erroneous token on seeing an unmatched closing block-comment delim', () => {
+      const $buf = of_string('bleh */')
+
+      $Lexer.next($buf) // Discard IDENTIFIER
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_UNEXPECTED_COMMENT_CLOSE')
+      expect($Lexer.token_is_erroneous($tok)).toEqual(true)
+      expect($Lexer.token_error_message($tok)).toMatch(
+         /unmatched closing comment-delimiter/i,
+      )
+   })
+
+   it('produces an erroneous token on reaching EOF without seeing a matching closing block-comment delim', () => {
+      const $buf = of_string('/* bleh')
+
+      $Lexer.next($buf) // Discard COMMENT_OPEN
+      $Lexer.next($buf) // Discard IDENTIFIER
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_MISSING_COMMENT_CLOSE')
+      expect($Lexer.token_is_erroneous($tok)).toEqual(true)
+      expect($Lexer.token_error_message($tok)).toMatch(
+         /unmatched opening comment-delimiter/i,
+      )
+   })
+
+   it('produces an erroneous token on reaching EOF without seeing a matching closing block-comment delim, in nested comments', () => {
+      const $buf = of_string('/* foo /* bar')
+
+      $Lexer.next($buf) // Discard COMMENT_OPEN
+      $Lexer.next($buf) // Discard IDENTIFIER
+      $Lexer.next($buf) // Discard COMMENT_OPEN
+      $Lexer.next($buf) // Discard IDENTIFIER
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_MISSING_COMMENT_CLOSE')
+      expect($Lexer.token_is_erroneous($tok)).toEqual(true)
+      expect($Lexer.token_error_message($tok)).toMatch(
+         /unmatched opening comment-delimiter/i,
+      )
+   })
+
    it('lexes medial separators', () => {
       const $buf = of_string('hello-world'),
          $tok = $Lexer.next($buf)
