@@ -78,6 +78,7 @@
    "homepage": "https://github.com/ELLIOTTCABLE/excmd.js#readme",
    "dependencies": {
       "@babel/runtime": "^7.5.5",
+      "@elliottcable/bs-result": "^12.0.0-pre.2",
       "bs-deriving": "^42.1.0",
       "bs-gen": "^0.5.2",
       "bs-platform": "^5.0.6",

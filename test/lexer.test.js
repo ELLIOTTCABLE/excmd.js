@@ -445,14 +445,17 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok2)).toEqual('/ELLIOTTCABLE')
    })
 
-   it('reports a lexing-error on unmatched opening-delimiters in bare URLs', () => {
-      const url = 'github.com/[ELLIOTTCABLE',
-         $buf = of_string(url),
-         _ = $Lexer.next($buf) // Discard one URL_START
+   it('produces an erraneous token on unmatched opening-delimiters in bare URLs', () => {
+      const url = 'github.com/[ELLIOTTCABLE next_word',
+         $buf = of_string(url)
 
-      expect(() => {
-         $Lexer.next($buf)
-      }).toThrowError('Unmatched opening `[`')
+      $Lexer.next($buf) // Discard URL_START
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_MISSING_DELIM_CLOSE')
+      expect($Lexer.token_is_erraneous($tok)).toEqual(true)
+      expect($Lexer.token_error_message($tok)).toMatch(/unmatched opening/i)
    })
 
    it('includes special characters in medial position in bare URLs', () => {
@@ -539,6 +542,20 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('"')
    })
 
+   it('produces an erraneous token at EOF for a missing closing-quotation', () => {
+      const quote = '"hello',
+         $buf = of_string(quote)
+
+      $Lexer.next($buf) // Discard QUOTE_OPEN
+      $Lexer.next($buf) // Discard QUOTE_CHUNK
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_MISSING_DELIM_CLOSE')
+      expect($Lexer.token_is_erraneous($tok)).toEqual(true)
+      expect($Lexer.token_error_message($tok)).toMatch(/unmatched opening-quote/i)
+   })
+
    it('produces complex quotations in chunks, punctuated by escapes', () => {
       // Note that the JavaScript escaping here means that this string is *actually*:
       // "hello \" there"
@@ -577,18 +594,22 @@ describe('Lexer', () => {
       expect($Lexer.token_body($tok)).toEqual('\\')
    })
 
-   it('reserves all unknown escapes for future use by throwing an immediate error', () => {
+   it('reserves all unknown escapes for future use by producing an erraneous token', () => {
       // Note that the JavaScript escaping here means that this string is *actually*:
       // "hello \q there"
       const quote = '"hello \\q there"',
-         $buf = of_string(quote),
-         _ = $Lexer.next($buf), // Discard one QUOTE_OPEN
-         __ = $Lexer.next($buf) // Discard one QUOTE_CHUNK
+         $buf = of_string(quote)
 
-      // FIXME: This should test the actual error type; but my errors are a little weird
-      // right now.
-      // expect(() => $Lexer.next($buf)).toThrowError($Lexer.LexError)
-      expect(() => $Lexer.next($buf)).toThrowError('LexError')
+      $Lexer.next($buf) // Discard QUOTE_OPEN
+      $Lexer.next($buf) // Discard QUOTE_CHUNK
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_UNEXPECTED_QUOTE_ESCAPE')
+      expect($Lexer.token_is_erraneous($tok)).toEqual(true)
+      expect(fromFakeUTF8String($Lexer.token_error_message($tok))).toMatch(
+         /the escape-sequence .* is not understood/i,
+      )
    })
 
    it('lexes the start of a balanced string as its own token', () => {
@@ -665,6 +686,41 @@ describe('Lexer', () => {
       expect(fromFakeUTF8String($Lexer.token_body($tok8))).toEqual('»')
       expect($Lexer.show_token($tok9)).toBe('QUOTE_CLOSE')
       expect(fromFakeUTF8String($Lexer.token_body($tok9))).toEqual('»')
+   })
+
+   it('produces an erraneous token at an unbalanced closing balanced-quote', () => {
+      const quote = 'hi»',
+         $buf = of_string(quote)
+
+      $Lexer.next($buf) // Discard IDENTIFIER
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_UNEXPECTED_QUOTE_CLOSE')
+      expect($Lexer.token_is_erraneous($tok)).toEqual(true)
+      expect(fromFakeUTF8String($Lexer.token_error_message($tok))).toMatch(
+         /unmatched closing-quote/i,
+      )
+   })
+
+   it('produces an erraneous token at EOF for a missing closing balanced-quote', () => {
+      const quote = '«oh-oh, I «missed» one',
+         $buf = of_string(quote)
+
+      $Lexer.next($buf) // Discard QUOTE_OPEN
+      $Lexer.next($buf) // Discard QUOTE_CHUNK
+      $Lexer.next($buf) // Discard QUOTE_OPEN
+      $Lexer.next($buf) // Discard QUOTE_CHUNK
+      $Lexer.next($buf) // Discard QUOTE_CLOSE
+      $Lexer.next($buf) // Discard QUOTE_CHUNK
+
+      const $tok = $Lexer.next($buf)
+
+      expect($Lexer.show_token($tok)).toEqual('ERR_MISSING_DELIM_CLOSE')
+      expect($Lexer.token_is_erraneous($tok)).toEqual(true)
+      expect(fromFakeUTF8String($Lexer.token_error_message($tok))).toMatch(
+         /unmatched opening-quote/i,
+      )
    })
 
    it('produces double-dash as a BARE_DOUBLE_DASH when followed by spacing', () => {

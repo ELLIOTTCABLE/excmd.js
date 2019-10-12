@@ -1,5 +1,6 @@
 (* This file is appended to uAX31.ml, the output of the Unicode classifier in pkg/. *)
 
+open Result
 open Tokens
 open Sedlexing
 
@@ -157,7 +158,11 @@ let error_desc_exn = function
 (* FIXME: I really need ppx_deriving or something to DRY all this mess up. Sigh, bsb. *)
 let token_is_erraneous tok =
    match tok with
-    | ERR_UNEXPECTED_CHARACTER (_, _) | ERR_UNEXPECTED_WHITESPACE _ -> true
+    | ERR_MISSING_DELIM_CLOSE (_, _)
+    | ERR_UNEXPECTED_CHARACTER (_, _)
+    | ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
+    | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
+    | ERR_UNEXPECTED_WHITESPACE _ -> true
     | _ -> false
 
 
@@ -171,7 +176,10 @@ let show_token tok =
     | COUNT _ -> "COUNT"
     | EOF -> "EOF"
     | EQUALS -> "EQUALS"
+    | ERR_MISSING_DELIM_CLOSE (_, _) -> "ERR_MISSING_DELIM_CLOSE"
     | ERR_UNEXPECTED_CHARACTER (_, _) -> "ERR_UNEXPECTED_CHARACTER"
+    | ERR_UNEXPECTED_QUOTE_CLOSE (_, _) -> "ERR_UNEXPECTED_QUOTE_CLOSE"
+    | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _) -> "ERR_UNEXPECTED_QUOTE_ESCAPE"
     | ERR_UNEXPECTED_WHITESPACE _ -> "ERR_UNEXPECTED_WHITESPACE"
     | IDENTIFIER _ -> "IDENTIFIER"
     | FLAG_LONG_START -> "FLAG_LONG_START"
@@ -198,8 +206,6 @@ let example_of_token tok =
     | COUNT str -> Some (if str != "" then str else "2")
     | EOF -> None
     | EQUALS -> Some "="
-    | ERR_UNEXPECTED_CHARACTER (_, _) -> None
-    | ERR_UNEXPECTED_WHITESPACE _ -> None
     | IDENTIFIER str -> Some (if str != "" then str else "ident")
     | FLAG_LONG_START -> Some "--"
     | FLAGS_SHORT_START -> Some "-"
@@ -214,6 +220,11 @@ let example_of_token tok =
     | SEMICOLON -> Some ";"
     | URL_REST url -> Some (if url != "" then url else "/search?q=tridactyl")
     | URL_START url -> Some (if url != "" then url else "google.com")
+    | ERR_MISSING_DELIM_CLOSE (_, _)
+    | ERR_UNEXPECTED_CHARACTER (_, _)
+    | ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
+    | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
+    | ERR_UNEXPECTED_WHITESPACE _ -> None
 
 
 let example_tokens =
@@ -249,7 +260,10 @@ let compare_token a b =
    match (a, b) with
     | COUNT _, COUNT _
     | COMMENT _, COMMENT _
+    | ERR_MISSING_DELIM_CLOSE _, ERR_MISSING_DELIM_CLOSE _
     | ERR_UNEXPECTED_CHARACTER _, ERR_UNEXPECTED_CHARACTER _
+    | ERR_UNEXPECTED_QUOTE_CLOSE _, ERR_UNEXPECTED_QUOTE_CLOSE _
+    | ERR_UNEXPECTED_QUOTE_ESCAPE _, ERR_UNEXPECTED_QUOTE_ESCAPE _
     | ERR_UNEXPECTED_WHITESPACE _, ERR_UNEXPECTED_WHITESPACE _
     | IDENTIFIER _, IDENTIFIER _
     | QUOTE_CHUNK _, QUOTE_CHUNK _
@@ -277,7 +291,10 @@ let token_body tok =
 
 let token_error_message tok =
    match tok with
-    | ERR_UNEXPECTED_CHARACTER (_int, msg) -> Some msg
+    | ERR_MISSING_DELIM_CLOSE (_, msg)
+    | ERR_UNEXPECTED_CHARACTER (_, msg)
+    | ERR_UNEXPECTED_QUOTE_CLOSE (_, msg)
+    | ERR_UNEXPECTED_QUOTE_ESCAPE (_, msg)
     | ERR_UNEXPECTED_WHITESPACE msg -> Some msg
     | _ -> None
 
@@ -293,67 +310,64 @@ let string_of_position pos =
    Printf.sprintf "%u:%u" pos_lnum pos_cnum
 
 
-let url_opening_fail buf opening closing =
-   lexcrash buf
-      (String.concat "`"
-          [ "Unmatched closing "
-          ; closing
-          ; " in a bare URL - delimiters must be balanced. (Did you forget a "
-          ; opening
-          ; "? If not, try enclosing the URL in quotes.)"
-          ])
-
-
 let url_closing_fail buf opening closing =
-   lexcrash buf
-      (String.concat "`"
-          [ "Unmatched opening "
-          ; opening
-          ; " in bare URL - delimiters must be balanced. (Did you forget a "
-          ; closing
-          ; "? If not, try enclosing the URL in quotes.)"
-          ])
+   let msg =
+      String.concat "`"
+         [ "Unmatched opening "
+         ; opening
+         ; " in bare URL - delimiters must be balanced. (Did you forget a "
+         ; closing
+         ; "? If not, try enclosing the URL in quotes.)"
+         ]
+   in
+   ERR_MISSING_DELIM_CLOSE (opening, msg) |> locate buf
 
 
 let quote_opening_fail buf opening closing =
-   lexcrash buf
-      (String.concat "`"
-          [ "Unmatched closing-quote "; closing; ". (Did you forget a "; opening; "?)" ])
+   let msg =
+      String.concat "`"
+         [ "Unmatched closing-quote "; closing; ". (Did you forget a "; opening; "?)" ]
+   in
+   ERR_UNEXPECTED_QUOTE_CLOSE (closing, msg) |> locate buf
 
 
 let quote_closing_fail buf opening closing =
-   lexcrash buf
-      (String.concat "`"
-          [ "Unmatched opening-quote "
-          ; opening
-          ; ". (Reached EOF without finding a matching "
-          ; closing
-          ; "; did you forget one?)"
-          ])
+   let msg =
+      String.concat "`"
+         [ "Unmatched opening-quote "
+         ; opening
+         ; ". (Reached EOF without finding a matching "
+         ; closing
+         ; "; did you forget one?)"
+         ]
+   in
+   ERR_MISSING_DELIM_CLOSE (opening, msg) |> locate buf
 
 
 let quote_escaping_fail buf delim escape_seq =
-   lexcrash buf
-      (String.concat "`"
-          [ "The escape-sequence"
-          ; escape_seq
-          ; " is not understood in "
-          ; delim
-          ; " strings. (Did you forget to escape a backslash? Try "
-          ; "\\" ^ escape_seq
-          ; " instead.)"
-          ])
+   let msg =
+      String.concat "`"
+         [ "The escape-sequence "
+         ; escape_seq
+         ; " is not understood in "
+         ; delim
+         ; " strings. (Did you forget to escape a backslash? Try "
+         ; "\\" ^ escape_seq
+         ; " instead.)"
+         ]
+   in
+   ERR_UNEXPECTED_QUOTE_ESCAPE (escape_seq, msg) |> locate buf
 
 
 let url_pop_delim buf closing xs =
    let opening = List.assoc closing opening_for in
    match xs with
-    | [] -> url_opening_fail buf opening closing
+    | [] -> unreachable "url_pop_delim"
     | hd :: tl ->
       if hd != opening then
          let missing_closing = List.assoc hd closing_for in
-         url_closing_fail buf hd missing_closing
-      else tl
+         Error (url_closing_fail buf hd missing_closing)
+      else Ok tl
 
 
 (* {2 Regular expressions } *)
@@ -458,7 +472,6 @@ let urlbody_continue_char =
 
 (* Wow. This is a monstrosity. *)
 let rec comment_block depth buf =
-   (* Js.log "token (mode: CommentBlock)"; *)
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
     | "*/" ->
@@ -526,7 +539,6 @@ and quote_complex buf =
 
 and known_scheme_or_identifier buf =
    let str = utf8 buf in
-   (* Js.log ("token: possibly known scheme, " ^ str); *)
    (* If this isn't a known scheme, we don't want to create an infinite loop by returning
       [buf] to [main]; so we fast-forward to producing only the [IDENTIFIER] portion of
       this non-scheme word. *)
@@ -542,7 +554,6 @@ and url_start buf =
 
 
 and url_rest buf =
-   (* Js.log "token (mode: BareURL)"; *)
    (* 99.5th% confidence interval for URLs is 218 chars.
       <https://stackoverflow.com/a/31758386/31897> *)
    let acc = Buffer.create 256 in
@@ -582,8 +593,9 @@ and url_inside_delims buf orig_start acc open_delims =
           let delim = utf8 buf in
           Buffer.add_string acc delim ;
           match url_pop_delim buf delim open_delims with
-           | [] -> url_no_delim buf orig_start (curr buf) acc
-           | remaining -> url_inside_delims buf orig_start acc remaining )
+           | Ok [] -> url_no_delim buf orig_start (curr buf) acc
+           | Ok remaining -> url_inside_delims buf orig_start acc remaining
+           | Error err_tok -> err_tok )
     (* These cases are identical; but Sedlex demands that the last case stand alone. |
        urlbody_illegal_char -> *)
     | _ ->
