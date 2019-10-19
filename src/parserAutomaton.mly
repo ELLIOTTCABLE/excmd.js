@@ -32,11 +32,11 @@
 %token <string> ERR_UNEXPECTED_WHITESPACE
 
 %start <AST.t> script
-%start <AST.statement> statement
+%start <AST.expression> expression
 
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
-%type <AST.statement> unterminated_statement
+%type <AST.expression> unterminated_expression
 %type <string>       command noncommand_word flag_long flags_short quotation quotation_chunk
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
 %type <AST.arg list> arguments nonempty_arguments positional_and_arguments
@@ -48,8 +48,8 @@
 
 
 (* These type-clarifications were demanded by the Menhir CLI. Ugly, but whatever. *)
-%type <AST.statement list> optterm_nonempty_list(break, unterminated_statement)
-                              optterm_list(break, unterminated_statement)
+%type <AST.expression list> optterm_nonempty_list(break, unterminated_expression)
+                              optterm_list(break, unterminated_expression)
 %type <unit option> option(break)
 %type <string option> option(COUNT)
 %type <unit list> list(COLON)
@@ -60,16 +60,16 @@
 (* {2 Rules } *)
 
 script:
- | xs = optterm_list(break, unterminated_statement); EOF { {statements = Array.of_list xs} }
+ | xs = optterm_list(break, unterminated_expression); EOF { {expressions = Array.of_list xs} }
  ;
 
-statement:
- | x = unterminated_statement; break?; EOF { x }
+expression:
+ | x = unterminated_expression; break?; EOF { x }
  ;
 
-unterminated_statement:
+unterminated_expression:
  | COLON*; count = COUNT?; cmd = command; args = arguments
- { make_statement ?count ~cmd ~args }
+ { make_expression ?count ~cmd ~args }
  ;
 
 command:

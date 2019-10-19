@@ -22,7 +22,7 @@ let string_of_parsing_error = function
 
 let script_automaton = ParserAutomaton.script
 
-let statement_automaton = ParserAutomaton.statement
+let expression_automaton = ParserAutomaton.expression
 
 let parse ?(exn = true) buf p =
    let parser = MenhirLib.Convert.Simplified.traditional2revised p in
@@ -47,13 +47,13 @@ let script ?exn buf = parse ?exn buf script_automaton
 
 let script_of_string ?exn str = parse_string ?exn str script_automaton
 
-let statement ?exn buf =
-   match parse ?exn buf statement_automaton with
-    | Some stmt -> Some (Statement.dehydrate stmt)
+let expression ?exn buf =
+   match parse ?exn buf expression_automaton with
+    | Some expr -> Some (Expression.dehydrate expr)
     | None -> None
 
 
-let statement_of_string ?exn str =
-   match parse_string ?exn str statement_automaton with
-    | Some stmt -> Some (Statement.dehydrate stmt)
+let expression_of_string ?exn str =
+   match parse_string ?exn str expression_automaton with
+    | Some expr -> Some (Expression.dehydrate expr)
     | None -> None

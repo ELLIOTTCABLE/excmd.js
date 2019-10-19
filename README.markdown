@@ -64,7 +64,7 @@ native OCaml, and evaluated by Dune:
 Finally, the test-executable can interrogate arbitrary input, dumping the result in the same
 JSON-format as the tests use:
 
-    dune exec test/parser_test.exe statement "hello"
+    dune exec test/parser_test.exe expression "hello"
     dune exec test/parser_test.exe script "hello; there; friend"
 
 Notes:
@@ -96,7 +96,7 @@ To debug OCaml implementation-code, it's useful to know that BuckleScript has a 
 that vastly improves the inspector output for data-structures. One thing those docs *do not*
 mention, however, is that you only need to add `[%%debugger.chrome]` to a single ML file in the
 current code-path — this is useful information when debugging a JavaScript interface like ours.
-(i.e. add the `[%%debugger.chrome]` statement to `Parser.ml`, even if you're debugging
+(i.e. add the `[%%debugger.chrome]` expression to `Parser.ml`, even if you're debugging
 `interface.js` that includes `Parser.bs.js`.)
 
    [debugging mode]: <https://bucklescript.github.io/docs/en/better-data-structures-printing-debug-mode.html>

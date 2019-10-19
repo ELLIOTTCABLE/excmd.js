@@ -7,17 +7,17 @@ type element = ParserAutomaton.MenhirInterpreter.element
 
 val script : Lexer.buffer -> AST.t checkpoint
 (** Start the incremental Excmd parser with intent to consume, and produce, a single
-    Excmd {!Statement.t}. *)
+    Excmd {!Expression.t}. *)
 
 val script_of_string : string -> AST.t checkpoint
-(** Helper to invoke {!val:statement} with a [string]. *)
+(** Helper to invoke {!val:expression} with a [string]. *)
 
-val statement : Lexer.buffer -> AST.statement checkpoint
+val expression : Lexer.buffer -> AST.expression checkpoint
 (** Start the incremental Excmd parser with intent to consume, and produce, a single
-    Excmd {!Statement.t}. *)
+    Excmd {!Expression.t}. *)
 
-val statement_of_string : string -> AST.statement checkpoint
-(** Helper to invoke {!val:statement} with a [string]. *)
+val expression_of_string : string -> AST.expression checkpoint
+(** Helper to invoke {!val:expression} with a [string]. *)
 
 (** {2 Incremental actions} *)
 
@@ -52,8 +52,8 @@ val acceptable_tokens : 'a checkpoint -> Tokens.token array
 
 val current_command : 'a checkpoint -> string option
 (** [current_command cp] will, if the automaton has already accepted a IDENTIFIER token
-    that will eventually become the [Statement.command] of the current statement, produce
-    the name of that accepted command. If the parser is not in a state where a
+    that will eventually become the [Expression.command] of the current expression,
+    produce the name of that accepted command. If the parser is not in a state where a
     command-name has been accepted, then this will produce [None].
 
     JavaScript interface: [Checkpoint::command]. *)
@@ -102,8 +102,8 @@ val element_incoming_symbol_str : element -> string
 
 val incoming_symbol_str : 'a checkpoint -> string option
 (** [incoming_symbol_str cp] returns a string describing the current symbol (that on top
-    of the automaton's stack); e.g. ["unterminated_statement"] or ["EQUALS"]. If the stack
-    is empty, this will produce [None].
+    of the automaton's stack); e.g. ["unterminated_expression"] or ["EQUALS"]. If the
+    stack is empty, this will produce [None].
 
     This will raise an exception if called on [Accepted] or [Rejected] checkpoints.
 

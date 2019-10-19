@@ -6,7 +6,7 @@ import {
 
 import $Lexer from './lexer.bs'
 import $Parser from './parser.bs'
-import $Statement from './statement.bs'
+import $Expression from './expression.bs'
 import $Incremental from './incremental.bs'
 
 // A hack to ape nominal typing.
@@ -34,8 +34,8 @@ type $token_located = Nominal<object, 'Tokens.token located'>
 type $position = Nominal<object, 'Lexing.position'>
 
 type $ASTt = Nominal<object, 'AST.t'>
-type $Statementt = Nominal<object, 'Statement.t'>
-type $flag_payload = Nominal<object, 'Statement.flag_payload'>
+type $Expressiont = Nominal<object, 'Expression.t'>
+type $flag_payload = Nominal<object, 'Expression.flag_payload'>
 
 type $checkpoint = Nominal<object, 'Incremental.checkpoint'>
 type $element = Nominal<object, 'MenhirInterpreter.element'>
@@ -64,16 +64,16 @@ type $element = Nominal<object, 'MenhirInterpreter.element'>
 
 //declare class $Parser {
 //   static script(exn: boolean | undefined, buf: $buffer): $ASTt | undefined
-//   static statement(exn: boolean | undefined, buf: $buffer): $Statementt | undefined
+//   static expression(exn: boolean | undefined, buf: $buffer): $Expressiont | undefined
 //}
 
-//declare class $Statement {
-//   static from_script($scpt: $ASTt): $Statementt[]
-//   static count($stmt: $Statementt): number
-//   static command($stmt: $Statementt): $string
-//   static mem($flag: $string, $stmt: $Statementt): boolean
-//   static positionals($stmt: $Statementt): $string[]
-//   static flag($flag: $string, $stmt: $Statementt): $flag_payload | undefined
+//declare class $Expression {
+//   static from_script($scpt: $ASTt): $Expressiont[]
+//   static count($expr: $Expressiont): number
+//   static command($expr: $Expressiont): $string
+//   static mem($flag: $string, $expr: $Expressiont): boolean
+//   static positionals($expr: $Expressiont): $string[]
+//   static flag($flag: $string, $expr: $Expressiont): $flag_payload | undefined
 //   static payload_to_opt($fp: $flag_payload): $string | undefined
 //}
 
@@ -199,7 +199,7 @@ function mapExposedFunctionsThruErrorTrampoline($module) {
    }
 }
 
-;[$Lexer, $Parser, $Statement, $Incremental].forEach(
+;[$Lexer, $Parser, $Expression, $Incremental].forEach(
    mapExposedFunctionsThruErrorTrampoline,
 )
 
@@ -216,7 +216,7 @@ function fromFlagPayloadOption($payloadOpt: $flag_payload | undefined) {
       // `None`
       return undefined
    } else {
-      const $payload = $Statement.payload_to_opt($payloadOpt)
+      const $payload = $Expression.payload_to_opt($payloadOpt)
 
       if (typeof $payload === 'undefined') {
          // `Some Empty`
@@ -258,32 +258,32 @@ function startScriptWithString(str: string) {
    return startScript(lexbuf)
 }
 
-function statement(lexbuf: LexBuffer, options: ParseOptions = {}) {
+function expression(lexbuf: LexBuffer, options: ParseOptions = {}) {
    console.assert(lexbuf instanceof LexBuffer)
-   const $stmt = $Parser.statement(options.throwException, lexbuf.$buf)
-   if (typeof $stmt === 'undefined') {
+   const $expr = $Parser.expression(options.throwException, lexbuf.$buf)
+   if (typeof $expr === 'undefined') {
       return undefined
    } else {
-      return new Statement(INTERNAL, $stmt)
+      return new Expression(INTERNAL, $expr)
    }
 }
 
-function statementOfString(str: string, options: ParseOptions = {}) {
+function expressionOfString(str: string, options: ParseOptions = {}) {
    const lexbuf = LexBuffer.ofString(str)
-   return statement(lexbuf, options)
+   return expression(lexbuf, options)
 }
 
 // Wrapper for Incremental.script
-function startStatement(lexbuf: LexBuffer) {
+function startExpression(lexbuf: LexBuffer) {
    console.assert(lexbuf instanceof LexBuffer)
-   const $cp: $checkpoint = $Incremental.statement(lexbuf.$buf)
-   return new Checkpoint(INTERNAL, $cp, 'statement')
+   const $cp: $checkpoint = $Incremental.expression(lexbuf.$buf)
+   return new Checkpoint(INTERNAL, $cp, 'expression')
 }
 
 // Equivalent of Incremental.script_of_string
-function startStatementWithString(str: string) {
+function startExpressionWithString(str: string) {
    const lexbuf = LexBuffer.ofString(str)
-   return startStatement(lexbuf)
+   return startExpression(lexbuf)
 }
 
 export const Parser = {
@@ -291,16 +291,16 @@ export const Parser = {
    scriptOfString,
    startScript,
    startScriptWithString,
-   statement,
-   statementOfString,
-   startStatement,
-   startStatementWithString,
+   expression,
+   expressionOfString,
+   startExpression,
+   startExpressionWithString,
 }
 
 // Wrapper for `AST.t`.
 export class Script {
    $scpt: $ASTt
-   $statements: $Statementt[]
+   $expressions: $Expressiont[]
 
    constructor(isInternal: sentinel, $scpt: $ASTt) {
       if (isInternal !== INTERNAL)
@@ -309,55 +309,55 @@ export class Script {
          )
 
       this.$scpt = $scpt
-      this.$statements = $Statement.from_script(this.$scpt)
+      this.$expressions = $Expression.from_script(this.$scpt)
    }
 
-   get statements() {
-      return this.$statements.map($stmt => new Statement(INTERNAL, $stmt))
+   get expressions() {
+      return this.$expressions.map($expr => new Expression(INTERNAL, $expr))
    }
 }
 
-// Wrapper for `Statement.t`.
-export class Statement {
-   $stmt: $Statementt
+// Wrapper for `Expression.t`.
+export class Expression {
+   $expr: $Expressiont
 
-   constructor(isInternal: sentinel, $stmt: $Statementt) {
+   constructor(isInternal: sentinel, $expr: $Expressiont) {
       if (isInternal !== INTERNAL)
          throw new Error(
-            '`Statement` can only be constructed by `Excmd.script()` and friends.',
+            '`Expression` can only be constructed by `Excmd.script()` and friends.',
          )
 
-      this.$stmt = $stmt
+      this.$expr = $expr
    }
 
    get count(): number {
-      return $Statement.count(this.$stmt)
+      return $Expression.count(this.$expr)
    }
 
    get command(): string {
-      let $command = $Statement.command(this.$stmt)
+      let $command = $Expression.command(this.$expr)
       return fromFakeUTF8String($command)
    }
 
-   // Wrapper for `Statement.mem`
+   // Wrapper for `Expression.mem`
    hasFlag(flag: string): boolean {
       console.assert(typeof flag === 'string')
       let $flag = toFakeUTF8String(flag)
-      return $Statement.mem($flag, this.$stmt)
+      return $Expression.mem($flag, this.$expr)
    }
 
    get flags(): string[] {
-      return $Statement.flags(this.$stmt).map(fromFakeUTF8String)
+      return $Expression.flags(this.$expr).map(fromFakeUTF8String)
    }
 
    // The rest are intentionally not native JavaScript ‘getters’, as they may cause mutation.
 
-   // Wrapper for `Statement.positionals`
+   // Wrapper for `Expression.positionals`
    getPositionals(): string[] {
-      return $Statement.positionals(this.$stmt).map(fromFakeUTF8String)
+      return $Expression.positionals(this.$expr).map(fromFakeUTF8String)
    }
 
-   // Wrapper for `Statement.iter`
+   // Wrapper for `Expression.iter`
    forEachFlag(
       f: (name: string, payload: string | undefined, idx: number) => void,
    ): void {
@@ -371,14 +371,14 @@ export class Statement {
 
          f(name, payload, idx)
       }
-      $Statement.iteri(stringMapper, this.$stmt)
+      $Expression.iteri(stringMapper, this.$expr)
    }
 
-   // Wrapper for `Statement.flag`
+   // Wrapper for `Expression.flag`
    getFlag(flag: string) {
       console.assert(typeof flag === 'string')
       const $flag = toFakeUTF8String(flag),
-         $payloadOpt = $Statement.flag($flag, this.$stmt)
+         $payloadOpt = $Expression.flag($flag, this.$expr)
 
       return fromFlagPayloadOption($payloadOpt)
    }
@@ -507,7 +507,7 @@ export class Token {
 
 interface SemanticMap {
    script: Script
-   statement: Statement
+   expression: Expression
 }
 
 type SemanticDiscriminator = keyof SemanticMap
@@ -531,8 +531,8 @@ export class Checkpoint<D extends SemanticDiscriminator> {
       return this.type === 'script'
    }
 
-   producesStatement(): this is Checkpoint<'statement'> {
-      return this.type === 'statement'
+   producesExpression(): this is Checkpoint<'expression'> {
+      return this.type === 'expression'
    }
 
    continue<T>(
@@ -552,10 +552,10 @@ export class Checkpoint<D extends SemanticDiscriminator> {
             return onAccept(scpt)
          }
       else
-         acceptMapper = function wrapStatement($stmt: $Statementt) {
-            const stmt = new Statement(INTERNAL, $stmt),
-               onAccept = opts.onAccept as (Statement) => T
-            return onAccept(stmt)
+         acceptMapper = function wrapExpression($expr: $Expressiont) {
+            const expr = new Expression(INTERNAL, $expr),
+               onAccept = opts.onAccept as (Expression) => T
+            return onAccept(expr)
          }
 
       let failMapper
@@ -674,7 +674,7 @@ export default {
    LexError,
    Parser,
    Script,
-   Statement,
+   Expression,
    LexBuffer,
    LocatedToken,
    Token,

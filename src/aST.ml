@@ -31,17 +31,17 @@ let tOfJs _ = unavailable_on `Native "tOfJs"
 
 let tToJs _ = unavailable_on `Native "tToJs"
 
-let statementOfJs _ = unavailable_on `Native "statementOfJs"
+let expressionOfJs _ = unavailable_on `Native "expressionOfJs"
 
-let statementToJs _ = unavailable_on `Native "statementToJs"
+let expressionToJs _ = unavailable_on `Native "expressionToJs"
 
 let to_yojson _ = unavailable_on `JavaScript "to_yojson"
 
 let of_yojson _ = unavailable_on `JavaScript "of_yojson"
 
-let statement_to_yojson _ = unavailable_on `JavaScript "statement_to_yojson"
+let expression_to_yojson _ = unavailable_on `JavaScript "expression_to_yojson"
 
-let statement_of_yojson _ = unavailable_on `JavaScript "statement_of_yojson"
+let expression_of_yojson _ = unavailable_on `JavaScript "expression_of_yojson"
 
 type 'a unresolved = Unresolved | Resolved of 'a | Absent
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
@@ -52,13 +52,13 @@ type flag = { name : string; mutable payload : string unresolved }
 type arg = Positional of string | Flag of flag
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-type statement = { count : int; cmd : string; mutable args : arg array }
+type expression = { count : int; cmd : string; mutable args : arg array }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-type t = { statements : statement array }
+type t = { expressions : expression array }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-let make_statement ?count ~cmd ~args =
+let make_expression ?count ~cmd ~args =
    { count =
         ( match count with
           | Some c -> int_of_string c
@@ -81,16 +81,16 @@ let pp_native ast =
 
 let pp ast = try pp_bs ast with WrongPlatform (`Native, _) -> pp_native ast
 
-let pp_statement_bs stmt =
-   let obj = statementToJs stmt in
+let pp_expression_bs expr =
+   let obj = expressionToJs expr in
    Js.Json.stringifyAny obj |> Js.log
 
 
-let pp_statement_native stmt =
-   let json = statement_to_yojson stmt in
+let pp_expression_native expr =
+   let json = expression_to_yojson expr in
    let out = Format.formatter_of_out_channel stdout in
    Yojson.Safe.pretty_print out json
 
 
-let pp_statement ast =
-   try pp_statement_bs ast with WrongPlatform (`Native, _) -> pp_statement_native ast
+let pp_expression ast =
+   try pp_expression_bs ast with WrongPlatform (`Native, _) -> pp_expression_native ast

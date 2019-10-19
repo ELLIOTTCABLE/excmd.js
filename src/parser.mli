@@ -17,20 +17,20 @@ val script : ?exn:bool -> Lexer.buffer -> script option
 val script_of_string : ?exn:bool -> string -> script option
 (** Helper to invoke {!val:script} with a [string]. *)
 
-val statement : ?exn:bool -> Lexer.buffer -> Statement.t option
+val expression : ?exn:bool -> Lexer.buffer -> Expression.t option
 (** Invoke the Excmd parser with intent to consume, and produce, a single Excmd
-    {!Statement.t}. *)
+    {!Expression.t}. *)
 
-val statement_of_string : ?exn:bool -> string -> Statement.t option
-(** Helper to invoke {!val:statement} with a [string]. *)
+val expression_of_string : ?exn:bool -> string -> Expression.t option
+(** Helper to invoke {!val:expression} with a [string]. *)
 
 (** {2 Menhir-generated parsing automata} *)
 
 val script_automaton : AST.t t
 (** Alias to {!val:ParserAutomaton.script}. *)
 
-val statement_automaton : AST.statement t
-(** Alias to {!val:ParserAutomaton.statement}. *)
+val expression_automaton : AST.expression t
+(** Alias to {!val:ParserAutomaton.expression}. *)
 
 (** {2 Helpers} *)
 

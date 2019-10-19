@@ -23,6 +23,6 @@ set searchurls.julia https://www.google.com/search?q=site:http://docs.julialang.
 
 {2 Usage }
 
-Get started with {!Excmd.Parser.statement_of_string}, and the functions of {!Excmd.Statement}.
+Get started with {!Excmd.Parser.expression_of_string}, and the functions of {!Excmd.Expression}.
 
 TODO: NYW

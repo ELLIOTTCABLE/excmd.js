@@ -1,20 +1,20 @@
 open AST
 
-type t = statement
+type t = expression
 
 type flag_payload = Empty | Payload of string
 
-let hydrate st = st
+let hydrate expr = expr
 
-let dehydrate st = st
+let dehydrate expr = expr
 
-let from_script scpt = scpt.statements
+let from_script scpt = scpt.expressions
 
-let pp st = AST.pp_statement st
+let pp expr = AST.pp_expression expr
 
-let count st = st.count
+let count expr = expr.count
 
-let command st = st.cmd
+let command expr = expr.cmd
 
 let payload_to_opt = function
    | Empty -> None
@@ -25,17 +25,17 @@ let payload_to_opt = function
  * library is targeting JavaScript, at the end of the day. This is all wrapped in a JavaScript class
  * that appears to wrap a mutable parse-result; so it might as well be *actually* mutable, no? *)
 
-let mem key st =
+let mem key expr =
    let is_matching_key = function
       | Positional _ -> false
       | Flag f -> f.name == key
    in
    (* FIXME: This is slow, but Array.exists isn't available until OCaml 4.03, and I am
       lazy. *)
-   List.exists is_matching_key (Array.to_list st.args)
+   List.exists is_matching_key (Array.to_list expr.args)
 
 
-let is_resolved key st =
+let is_resolved key expr =
    let is_matching_resolved_key = function
       | Positional _ -> false
       | Flag f -> (
@@ -47,10 +47,10 @@ let is_resolved key st =
    in
    (* FIXME: This is slow, but Array.exists isn't available until OCaml 4.03, and I am
       lazy. *)
-   List.exists is_matching_resolved_key (Array.to_list st.args)
+   List.exists is_matching_resolved_key (Array.to_list expr.args)
 
 
-let has_payload key st =
+let has_payload key expr =
    let is_matching_resolved_key_with_payload = function
       | Positional _ -> false
       | Flag f -> (
@@ -62,11 +62,11 @@ let has_payload key st =
    in
    (* FIXME: This is slow, but Array.exists isn't available until OCaml 4.03, and I am
       lazy. *)
-   List.exists is_matching_resolved_key_with_payload (Array.to_list st.args)
+   List.exists is_matching_resolved_key_with_payload (Array.to_list expr.args)
 
 
 (* FIXME: Jesus Christ. *)
-let flag key st =
+let flag key expr =
    let consuming_flag = ref None in
    let result = ref None in
    let iterator arg =
@@ -95,7 +95,7 @@ let flag key st =
    in
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
-   st.args <- Array.of_list (List.filter iterator (Array.to_list st.args)) ;
+   expr.args <- Array.of_list (List.filter iterator (Array.to_list expr.args)) ;
    match !result with
     | None -> None
     | Some fl -> (
@@ -105,7 +105,7 @@ let flag key st =
            | Unresolved -> failwith "Unreachable" )
 
 
-let resolve_all_flags st =
+let resolve_all_flags expr =
    let consuming_flag = ref None in
    let iterator arg =
       match arg with
@@ -125,11 +125,11 @@ let resolve_all_flags st =
    in
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
-   st.args <- Array.of_list (List.filter iterator (Array.to_list st.args))
+   expr.args <- Array.of_list (List.filter iterator (Array.to_list expr.args))
 
 
-let iteri f st =
-   resolve_all_flags st ;
+let iteri f expr =
+   resolve_all_flags expr ;
    let iterator i = function
       | Positional _ -> ()
       | Flag flag -> (
@@ -138,15 +138,15 @@ let iteri f st =
              | Resolved value -> f i flag.name (Payload value)
              | Unresolved -> failwith "Unreachable" )
    in
-   Array.iteri iterator st.args
+   Array.iteri iterator expr.args
 
 
-let iter f st =
+let iter f expr =
    let f _i a b = f a b in
-   iteri f st
+   iteri f expr
 
 
-let positionals st =
+let positionals expr =
    let filter = function
       | Positional _ -> true
       | Flag flag -> (
@@ -161,10 +161,10 @@ let positionals st =
    in
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
-   List.filter filter (Array.to_list st.args) |> List.map map |> Array.of_list
+   List.filter filter (Array.to_list expr.args) |> List.map map |> Array.of_list
 
 
-let flags st =
+let flags expr =
    let filter = function
       | Flag _flag -> true
       | Positional _ -> false
@@ -174,4 +174,4 @@ let flags st =
    in
    (* FIXME: This is slow, but Array.filter doesn't exist, I already wrote this, and I am
       lazy. *)
-   List.filter filter (Array.to_list st.args) |> List.map map |> Array.of_list
+   List.filter filter (Array.to_list expr.args) |> List.map map |> Array.of_list

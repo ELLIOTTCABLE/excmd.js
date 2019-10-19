@@ -1,7 +1,7 @@
 import $Lexer from '../src/lexer.bs'
 import $Tokens from '../src/tokens.bs'
 import $Parser from '../src/parser.bs'
-import $Statement from '../src/statement.bs'
+import $Expression from '../src/expression.bs'
 import {LexBuffer, Token, Parser, ParseError} from '../src/interface'
 import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 
@@ -18,19 +18,19 @@ describe('Parser', () => {
    it("doesn't throw on a simple parse", () => {
       const $buf = of_string('hello')
 
-      expect(() => $Parser.statement(true, $buf)).not.toThrow()
+      expect(() => $Parser.expression(true, $buf)).not.toThrow()
    })
 
    it('parses a single command', () => {
       const $buf = of_string('hello'),
-         $stmt = $Parser.statement(true, $buf)
+         $expr = $Parser.expression(true, $buf)
 
-      expect($Statement.command($stmt)).toBe('hello')
+      expect($Expression.command($expr)).toBe('hello')
    })
 
    it('throws natual JavaScript ParseErrors, not BuckleScript exn reps', () => {
       const $buf = of_string('hello-')
 
-      expect(() => $Parser.statement(true, $buf)).toThrow(ParseError)
+      expect(() => $Parser.expression(true, $buf)).toThrow(ParseError)
    })
 })

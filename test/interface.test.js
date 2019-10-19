@@ -1,4 +1,4 @@
-import {Parser, LexBuffer, Script, Statement} from '../src/interface'
+import {Parser, LexBuffer, Script, Expression} from '../src/interface'
 
 describe('JavaScript interface', () => {
    describe('Parser.script()', () => {
@@ -17,108 +17,108 @@ describe('JavaScript interface', () => {
          })
       })
 
-      describe('#statement entry-point', () => {
-         it('returns an instance of the Statement interface', () => {
+      describe('#expression entry-point', () => {
+         it('returns an instance of the Expression interface', () => {
             const buf = LexBuffer.ofString('test'),
-               statement = Parser.statement(buf)
+               expression = Parser.expression(buf)
 
-            expect(statement).toBeInstanceOf(Statement)
+            expect(expression).toBeInstanceOf(Expression)
          })
 
-         it('can be invoked as #statementOfString', () => {
-            const statement = Parser.statementOfString('test')
+         it('can be invoked as #expressionOfString', () => {
+            const expression = Parser.expressionOfString('test')
 
-            expect(statement).toBeInstanceOf(Statement)
+            expect(expression).toBeInstanceOf(Expression)
          })
       })
    }) // Parser.script()
 
    describe('Script (objective wrapper)', () => {
-      describe('#statements', () => {
-         it('produces an array of objective `Statement`-proxies', () => {
+      describe('#expressions', () => {
+         it('produces an array of objective `Expression`-proxies', () => {
             const script = Parser.scriptOfString('foo; bar')
 
-            expect(script.statements[0]).toBeInstanceOf(Statement)
+            expect(script.expressions[0]).toBeInstanceOf(Expression)
          })
 
          it('produces an array of the correct length', () => {
             const script = Parser.scriptOfString('foo; bar')
 
-            expect(script.statements).toHaveLength(2)
+            expect(script.expressions).toHaveLength(2)
          })
       })
    }) // Script
 
-   describe('Statement (objective wrapper)', () => {
-      describe('#statements', () => {
-         it('produces an array of objective `Statement`-proxies', () => {
+   describe('Expression (objective wrapper)', () => {
+      describe('#expressions', () => {
+         it('produces an array of objective `Expression`-proxies', () => {
             const script = Parser.scriptOfString('foo; bar')
 
-            expect(script.statements[0]).toBeInstanceOf(Statement)
+            expect(script.expressions[0]).toBeInstanceOf(Expression)
          })
 
          it('produces an array of the correct length', () => {
             const script = Parser.scriptOfString('foo; bar')
 
-            expect(script.statements).toHaveLength(2)
+            expect(script.expressions).toHaveLength(2)
          })
       })
 
       describe('Simple accessors', () => {
          it('#count', () => {
-            const stmt = Parser.statementOfString('2test')
+            const expr = Parser.expressionOfString('2test')
 
-            expect(stmt.count).toBe(2)
+            expect(expr.count).toBe(2)
          })
 
          it('#command', () => {
-            const stmt = Parser.statementOfString('2test')
+            const expr = Parser.expressionOfString('2test')
 
-            expect(stmt.command).toBe('test')
+            expect(expr.command).toBe('test')
          })
       })
 
       describe('Argument-list processing', () => {
          it('#hasFlag checks for presence or absences of a flag', () => {
-            const stmt = Parser.statementOfString('foo --bar')
+            const expr = Parser.expressionOfString('foo --bar')
 
-            expect(stmt.hasFlag('bar')).toBe(true)
-            expect(stmt.hasFlag('widget')).toBe(false)
+            expect(expr.hasFlag('bar')).toBe(true)
+            expect(expr.hasFlag('widget')).toBe(false)
          })
 
          it('#getPositionals returns an array of positional arguments', () => {
-            const stmt = Parser.statementOfString('foo qux quux'),
-               positionals = stmt.getPositionals()
+            const expr = Parser.expressionOfString('foo qux quux'),
+               positionals = expr.getPositionals()
 
             expect(positionals).toBeInstanceOf(Array)
             expect(positionals).toEqual(['qux', 'quux'])
          })
 
          it('#getPositionals prevents a subsequent getFlag from resolving a consumed arg', () => {
-            const stmt = Parser.statementOfString('foo --bar qux quux'),
-               positionals = stmt.getPositionals(),
-               payload = stmt.getFlag('bar')
+            const expr = Parser.expressionOfString('foo --bar qux quux'),
+               positionals = expr.getPositionals(),
+               payload = expr.getFlag('bar')
 
             expect(positionals).toEqual(['qux', 'quux'])
             expect(payload).not.toBe('qux')
          })
 
          it('#getFlag returns a string payload for a present argument', () => {
-            const stmt = Parser.statementOfString('foo --bar=baz'),
-               payload = stmt.getFlag('bar')
+            const expr = Parser.expressionOfString('foo --bar=baz'),
+               payload = expr.getFlag('bar')
 
             expect(typeof payload).toBe('string')
             expect(payload).toEqual('baz')
          })
 
          it('#getFlag prevents a subsequent getPositionals from resolving a consumed arg', () => {
-            const stmt = Parser.statementOfString('foo --bar qux quux'),
-               payload = stmt.getFlag('bar'),
-               positionals = stmt.getPositionals()
+            const expr = Parser.expressionOfString('foo --bar qux quux'),
+               payload = expr.getFlag('bar'),
+               positionals = expr.getPositionals()
 
             expect(payload).toBe('qux')
             expect(positionals).not.toContain('qux')
          })
       })
-   }) // Statement
+   }) // Expression
 })

@@ -28,15 +28,15 @@ let script_of_string s =
    { buf; status = Incremental.script curr }
 
 
-let statement buf =
+let expression buf =
    let _start, curr = Sedlexing.lexing_positions (Lexer.sedlex_of_buffer buf) in
-   { buf; status = Incremental.statement curr }
+   { buf; status = Incremental.expression curr }
 
 
-let statement_of_string s =
+let expression_of_string s =
    let buf = Lexer.buffer_of_string s in
    let _start, curr = Sedlexing.lexing_positions (Lexer.sedlex_of_buffer buf) in
-   { buf; status = Incremental.statement curr }
+   { buf; status = Incremental.expression curr }
 
 
 exception Break
@@ -143,8 +143,8 @@ let incoming_symbol_category_str cp =
 let element_incoming_symbol_desc = function
    | I.Element (lr1state, _valu, _startp, _endp) -> (
          match I.incoming_symbol lr1state with
-          | I.N I.N_unterminated_statement -> ("unterminated_statement", "AST.statement")
-          | I.N I.N_statement -> ("statement", "AST.statement")
+          | I.N I.N_unterminated_expression -> ("unterminated_expression", "AST.expression")
+          | I.N I.N_expression -> ("expression", "AST.expression")
           | I.N I.N_short_flags_before_positional ->
             ("short_flags_before_positional", "AST.arg list")
           | I.N I.N_short_flags_before_flag -> ("short_flags_before_flag", "AST.arg list")
@@ -155,10 +155,10 @@ let element_incoming_symbol_desc = function
           | I.N I.N_quotation_chunk -> ("quotation_chunk", "string")
           | I.N I.N_quotation -> ("quotation", "string")
           | I.N I.N_positional_and_arguments -> ("positional_and_arguments", "AST.arg list")
-          | I.N I.N_optterm_nonempty_list_break_unterminated_statement_ ->
-            ("optterm_nonempty_list_break_unterminated_statement_", "AST.statement list")
-          | I.N I.N_optterm_list_break_unterminated_statement_ ->
-            ("optterm_list_break_unterminated_statement_", "AST.statement list")
+          | I.N I.N_optterm_nonempty_list_break_unterminated_expression_ ->
+            ("optterm_nonempty_list_break_unterminated_expression_", "AST.expression list")
+          | I.N I.N_optterm_list_break_unterminated_expression_ ->
+            ("optterm_list_break_unterminated_expression_", "AST.expression list")
           | I.N I.N_option_break_ -> ("option_break_", "unit option")
           | I.N I.N_option_COUNT_ -> ("option_COUNT_", "string option")
           | I.N I.N_nonempty_arguments -> ("nonempty_arguments", "AST.arg list")

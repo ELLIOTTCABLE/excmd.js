@@ -4,11 +4,11 @@ import Excmd from '../'
 
 const term = termkit.terminal
 
-function describeStatement(output: ScreenBuffer, stmt: Statement) {
-   output.put({markup: true, y: 1, x: 0}, `Count: ^_${stmt.count}^:`)
-   output.put({markup: true, y: 2, x: 0}, `Command: ^_${stmt.command}^:`)
+function describeExpression(output: ScreenBuffer, expr: Expression) {
+   output.put({markup: true, y: 1, x: 0}, `Count: ^_${expr.count}^:`)
+   output.put({markup: true, y: 2, x: 0}, `Command: ^_${expr.command}^:`)
 
-   const positionals = stmt.getPositionals()
+   const positionals = expr.getPositionals()
    if (positionals.length) {
       output.put({y: 4, x: 0}, `Positionals (including ambiguous flag-payloads):`)
 
@@ -20,10 +20,10 @@ function describeStatement(output: ScreenBuffer, stmt: Statement) {
    const flagsStart = positionals.length ? 7 + positionals.length : 5
 
    // TODO: Hmm, I wonder if I should add a more efficient ‘are there any flags at all’ test ...
-   if (stmt.flags.length) {
+   if (expr.flags.length) {
       output.put({y: flagsStart - 1, x: 0}, `Flags:`)
 
-      stmt.forEachFlag(function(flag, payload, idx) {
+      expr.forEachFlag(function(flag, payload, idx) {
          if (payload)
             output.put(
                {markup: true, y: flagsStart + idx, x: 0},
@@ -81,15 +81,15 @@ function displayStack(output: ScreenBuffer, cp: Checkpoint) {
 
 function onChange(input: TextBuffer, output: ScreenBuffer) {
    const textContent = input.getText()
-   const start: Excmd.Checkpoint = Excmd.Parser.startStatementWithString(textContent)
+   const start: Excmd.Checkpoint = Excmd.Parser.startExpressionWithString(textContent)
 
    output.fill({char: ' '})
    output.moveTo(0, 0)
 
    start.continue({
-      onAccept: function(stmt) {
+      onAccept: function(expr) {
          output.put({}, 'Input accepted!\n')
-         describeStatement(output, stmt)
+         describeExpression(output, expr)
       },
       onFail: function(lastGood, errorAt) {
          displayStack(output, lastGood)
