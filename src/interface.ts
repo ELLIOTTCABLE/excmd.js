@@ -203,7 +203,7 @@ function mapExposedFunctionsThruErrorTrampoline($module) {
    mapExposedFunctionsThruErrorTrampoline,
 )
 
-function fromFakeUTF8StringOption($str: string_as_utf_8_buffer | undefined): string {
+function fromFakeUTF8StringOption($str: string_as_utf_8_buffer | undefined): string | undefined {
    if (typeof $str === 'undefined') {
       return undefined
    } else {
@@ -426,7 +426,7 @@ export class Position {
 
    get filename(): string {
       const $fname = $Lexer.position_fname(this.$pos)
-      return fromFakeUTF8StringOption($fname)
+      return fromFakeUTF8String($fname)
    }
 
    get line(): number {
@@ -548,24 +548,26 @@ export class Checkpoint<D extends SemanticDiscriminator> {
       else if (this.producesScript())
          acceptMapper = function wrapScript($scpt: $ASTt) {
             const scpt = new Script(INTERNAL, $scpt),
-               onAccept = opts.onAccept as (Script) => T
+               onAccept = opts.onAccept as (arg0: Script) => T
             return onAccept(scpt)
          }
       else
          acceptMapper = function wrapExpression($expr: $Expressiont) {
             const expr = new Expression(INTERNAL, $expr),
-               onAccept = opts.onAccept as (Expression) => T
+               onAccept = opts.onAccept as (arg0: Expression) => T
             return onAccept(expr)
          }
 
+      const onFail = opts.onFail
+
       let failMapper
-      if (typeof opts.onFail === 'undefined') failMapper = function() {}
+      if (typeof onFail === 'undefined') failMapper = function() {}
       else
          failMapper = function($lastGood: $checkpoint, $errorAt: $checkpoint) {
             const lastGood = new Checkpoint(INTERNAL, $lastGood, self.type),
                errorAt = new Checkpoint(INTERNAL, $errorAt, self.type)
 
-            return opts.onFail(lastGood, errorAt)
+            return onFail(lastGood, errorAt)
          }
 
       // (BuckleScript mangles `continue` due to that being a reserved word in JavaScript.)
