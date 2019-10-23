@@ -100,7 +100,7 @@ let tests () =
    test_expression "Bare command, long-flag w/ space in name, explicit, quoted parameter"
       "test --\"foo bar\"=\"baz widget\"" ;
 
-   (* Subexpressions *)
+   (* Parenthetical subexpressions *)
    test_expression "Subexpression in command-position" "2(echo test)" ;
    test_expression "Subexpression in command-position with command-quotation"
       "2(\"echo test\")" ;
@@ -110,8 +110,13 @@ let tests () =
    test_expression "Subexpression-positional after explicit flag payload"
       "defer --foo=bar (echo test)" ;
    test_expression "Nested subexpressions" "a ( b (c) d ) e" ;
+
+   (* Piped subexpressions *)
+   test_expression "Piped command" "echo test | echo" ;
+   test_expression "Piped command with parenthetical subexpr" "echo test | (determine_command)" ;
+   test_expression "Subexpression with piped command" "foo (bar baz | widget)" ;
    test_expression "Complex subexpressions, with flags and quotation"
-      "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\"))" ;
+      "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\") | do_a_thing)" ;
 
    (* Simple multi-expression scripts *)
    test_script "Expressions separated by semicolons" "test; 2test; 3test" ;

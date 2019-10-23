@@ -528,8 +528,83 @@ Parser.expression "a ( b (c) d ) e"
   ]
 }
 
+### Piped command:
+Parser.expression "echo test | echo"
+{
+  "count": 1,
+  "cmd": [ "Literal", "echo" ],
+  "rev_args": [
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 1,
+          "cmd": [ "Literal", "echo" ],
+          "rev_args": [ [ "Positional", [ "Literal", "test" ] ] ]
+        }
+      ]
+    ]
+  ]
+}
+
+### Piped command with parenthetical subexpr:
+Parser.expression "echo test | (determine_command)"
+{
+  "count": 1,
+  "cmd": [
+    "Sub",
+    { "count": 1, "cmd": [ "Literal", "determine_command" ], "rev_args": [] }
+  ],
+  "rev_args": [
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 1,
+          "cmd": [ "Literal", "echo" ],
+          "rev_args": [ [ "Positional", [ "Literal", "test" ] ] ]
+        }
+      ]
+    ]
+  ]
+}
+
+### Subexpression with piped command:
+Parser.expression "foo (bar baz | widget)"
+{
+  "count": 1,
+  "cmd": [ "Literal", "foo" ],
+  "rev_args": [
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 1,
+          "cmd": [ "Literal", "widget" ],
+          "rev_args": [
+            [
+              "Positional",
+              [
+                "Sub",
+                {
+                  "count": 1,
+                  "cmd": [ "Literal", "bar" ],
+                  "rev_args": [ [ "Positional", [ "Literal", "baz" ] ] ]
+                }
+              ]
+            ]
+          ]
+        }
+      ]
+    ]
+  ]
+}
+
 ### Complex subexpressions, with flags and quotation:
-Parser.expression "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\"))"
+Parser.expression "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\") | do_a_thing)"
 {
   "count": 1,
   "cmd": [ "Literal", "defer" ],
@@ -539,30 +614,42 @@ Parser.expression "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\
       [
         "Sub",
         {
-          "count": 2,
-          "cmd": [ "Literal", "echo" ],
+          "count": 1,
+          "cmd": [ "Literal", "do_a_thing" ],
           "rev_args": [
             [
               "Positional",
               [
                 "Sub",
                 {
-                  "count": 1,
-                  "cmd": [ "Literal", "bookmark_get" ],
+                  "count": 2,
+                  "cmd": [ "Literal", "echo" ],
                   "rev_args": [
-                    [ "Positional", [ "Literal", "sommat else" ] ]
+                    [
+                      "Positional",
+                      [
+                        "Sub",
+                        {
+                          "count": 1,
+                          "cmd": [ "Literal", "bookmark_get" ],
+                          "rev_args": [
+                            [ "Positional", [ "Literal", "sommat else" ] ]
+                          ]
+                        }
+                      ]
+                    ],
+                    [
+                      "Flag",
+                      {
+                        "name": "sep",
+                        "payload": [ "Resolved", [ "Literal", "\n - " ] ]
+                      }
+                    ],
+                    [ "Flag", { "name": "n", "payload": [ "Absent" ] } ]
                   ]
                 }
               ]
-            ],
-            [
-              "Flag",
-              {
-                "name": "sep",
-                "payload": [ "Resolved", [ "Literal", "\n - " ] ]
-              }
-            ],
-            [ "Flag", { "name": "n", "payload": [ "Absent" ] } ]
+            ]
           ]
         }
       ]

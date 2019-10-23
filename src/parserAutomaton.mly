@@ -36,7 +36,7 @@
 
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
-%type <AST.expression> subexpression unterminated_expression
+%type <AST.expression> expression_chain subexpression unterminated_expression
 %type <string AST.or_subexpr> command noncommand_word
 %type <string>       _flag_long _flags_short quotation quotation_chunk
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
@@ -47,8 +47,8 @@
 
 
 (* These type-clarifications were demanded by the Menhir CLI. Ugly, but whatever. *)
-%type <AST.expression list> optterm_nonempty_list(break, unterminated_expression)
-                              optterm_list(break, unterminated_expression)
+%type <AST.expression list> optterm_nonempty_list(break, expression_chain)
+                              optterm_list(break, expression_chain)
 %type <unit option> option(break)
 %type <string option> option(COUNT)
 %type <unit list> list(COLON)
@@ -59,15 +59,23 @@
 (* {2 Rules } *)
 
 script:
- | xs = optterm_list(break, unterminated_expression); EOF { {expressions = Array.of_list xs} }
+ | xs = optterm_list(break, expression_chain); EOF { {expressions = Array.of_list xs} }
  ;
 
 expression:
- | x = unterminated_expression; break?; EOF { x }
+ | x = expression_chain; break?; EOF { x }
+ ;
+
+expression_chain:
+ | x = unterminated_expression { x }
+ | from = expression_chain; PIPE; into = unterminated_expression
+ {
+    AST.pipe_last ~from ~into
+ }
  ;
 
 subexpression:
- | PAREN_OPEN; x = unterminated_expression; PAREN_CLOSE { x }
+ | PAREN_OPEN; x = expression_chain; PAREN_CLOSE { x }
 
 unterminated_expression:
  | COLON*; count = COUNT?; cmd = command; rev_args = rev_arguments
