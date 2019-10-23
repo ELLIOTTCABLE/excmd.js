@@ -1,3 +1,4 @@
+import $AST from '../src/aST.bs'
 import $Lexer from '../src/lexer.bs'
 import $Tokens from '../src/tokens.bs'
 import $Parser from '../src/parser.bs'
@@ -23,9 +24,11 @@ describe('Parser', () => {
 
    it('parses a single command', () => {
       const $buf = of_string('hello'),
-         $expr = $Parser.expression(true, $buf)
+         $expr = $Parser.expression(true, $buf),
+         $command = $Expression.command($expr)
 
-      expect($Expression.command($expr)).toBe('hello')
+      expect($AST.is_literal($command)).toBe(true)
+      expect($AST.get_literal_exn($command)).toBe('hello')
    })
 
    it('throws natual JavaScript ParseErrors, not BuckleScript exn reps', () => {

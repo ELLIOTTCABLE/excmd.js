@@ -46,13 +46,16 @@ let expression_of_yojson _ = unavailable_on `JavaScript "expression_of_yojson"
 type 'a unresolved = Unresolved | Resolved of 'a | Absent
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-type flag = { name : string; mutable payload : string unresolved }
+type 'a or_subexpr = Sub of expression | Literal of 'a
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-type arg = Positional of string | Flag of flag
+and flag = { name : string; mutable payload : string or_subexpr unresolved }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-type expression = { count : int; cmd : string; mutable args : arg array }
+and arg = Positional of string or_subexpr | Flag of flag
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
+
+and expression = { count : int; cmd : string or_subexpr; mutable args : arg array }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 type t = { expressions : expression array }
@@ -67,6 +70,37 @@ let make_expression ?count ~cmd ~args =
    ; args = Array.of_list args
    }
 
+
+let rec copy_string_or_subexpr sos =
+   match sos with
+    | Literal str -> Literal (String.copy str)
+    | Sub expr -> Sub (copy_expression expr)
+
+
+and copy_flag flg =
+   { flg with
+      payload =
+         ( match flg.payload with
+           | Unresolved -> Unresolved
+           | Resolved v -> Resolved (copy_string_or_subexpr v)
+           | Absent -> Absent )
+   }
+
+
+and copy_arg arg =
+   match arg with
+    | Positional sos -> Positional (copy_string_or_subexpr sos)
+    | Flag flg -> Flag (copy_flag flg)
+
+
+and copy_expression expr =
+   { expr with
+      cmd = copy_string_or_subexpr expr.cmd
+    ; args = Array.copy expr.args |> Array.map copy_arg
+   }
+
+
+let copy ast = { expressions = Array.map copy_expression ast.expressions }
 
 let pp_bs ast =
    let obj = tToJs ast in
@@ -94,3 +128,20 @@ let pp_expression_native expr =
 
 let pp_expression ast =
    try pp_expression_bs ast with WrongPlatform (`Native, _) -> pp_expression_native ast
+
+
+(**/**)
+
+let is_literal = function
+   | Literal _ -> true
+   | Sub _ -> false
+
+
+let get_literal_exn = function
+   | Literal x -> x
+   | Sub _ -> raise Not_found
+
+
+let get_sub_exn = function
+   | Literal _ -> raise Not_found
+   | Sub x -> x

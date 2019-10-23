@@ -2,7 +2,7 @@ open AST
 
 type t = expression
 
-type flag_payload = Empty | Payload of string
+type flag_payload = Empty | Payload of string AST.or_subexpr
 
 let hydrate expr = expr
 

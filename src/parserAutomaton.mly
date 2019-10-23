@@ -69,7 +69,7 @@ expression:
 
 unterminated_expression:
  | COLON*; count = COUNT?; cmd = command; args = arguments
- { make_expression ?count ~cmd ~args }
+ { make_expression ?count ~cmd:(Literal cmd) ~args }
  ;
 
 command:
@@ -95,8 +95,8 @@ nonempty_arguments:
  ;
 
 positional_and_arguments:
- | x = noncommand_word { [Positional x] }
- | x = noncommand_word; xs = nonempty_arguments { (Positional x) :: xs }
+ | x = noncommand_word { [Positional (Literal x)] }
+ | x = noncommand_word; xs = nonempty_arguments { (Positional (Literal x)) :: xs }
  ;
 
 flag_and_arguments:
@@ -113,7 +113,7 @@ flag_and_arguments:
 long_flag_before_positional:
  | name = flag_long  { Flag {name; payload = Unresolved} }
  | name = flag_long; EQUALS; payload = noncommand_word
- { Flag {name; payload = Resolved payload} }
+ { Flag {name; payload = Resolved (Literal payload)} }
  ;
 
 long_flag_before_flag:
@@ -123,7 +123,7 @@ long_flag_before_flag:
 last_long_flag:
  | name = flag_long  { Flag {name; payload = Absent} }
  | name = flag_long; EQUALS; payload = noncommand_word
- { Flag {name; payload = Resolved payload} }
+ { Flag {name; payload = Resolved (Literal payload)} }
  ;
 
 

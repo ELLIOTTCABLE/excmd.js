@@ -64,6 +64,50 @@ describe('JavaScript interface', () => {
          })
       })
 
+      describe('Copying', () => {
+         it('#clone creates a copy of an Expression', () => {
+            const orig = Parser.expressionOfString('2test'),
+               nuevo = orig.clone()
+
+            expect(nuevo.count).toBe(2)
+            expect(nuevo.command.value).toBe('test')
+         })
+
+         it("#clone produces a *new* Expression that doesn't mutate the original", () => {
+            // An expression that requires mutation to access
+            const orig = Parser.expressionOfString('cmd --flg mby fosho'),
+               nuevo = orig.clone()
+
+            // Mutate the clone,
+            expect(nuevo.getPositionals()).toContainEqual({type: 'literal', value: 'mby'})
+            // then check the original
+            expect(orig.getFlag('flg')).toEqual({type: 'literal', value: 'mby'})
+         })
+      })
+
+      describe('Recursive evaluation', () => {
+         it('#cloneWithEvaluator creates a recursively-evaluating copy of an expression', () => {
+            const orig = Parser.expressionOfString('2test'),
+               noop = jest.fn(() => ''),
+               nuevo = orig.cloneWithEvaluator(noop)
+
+            expect(nuevo.count).toBe(2)
+            expect(nuevo.command).toBe('test')
+         })
+
+         it("#cloneWithEvaluator produces a *new* ExpressionEval that doesn't mutate the original", () => {
+            // An expression that requires mutation to access
+            const orig = Parser.expressionOfString('cmd --flg mby fosho'),
+               noop = jest.fn(() => ''),
+               nuevo = orig.cloneWithEvaluator(noop)
+
+            // Mutate the clone,
+            expect(nuevo.getPositionals()).toContain('mby')
+            // then check the original
+            expect(orig.getFlag('flg')).toEqual({type: 'literal', value: 'mby'})
+         })
+      })
+
       describe('Simple accessors', () => {
          it('#count', () => {
             const expr = Parser.expressionOfString('2test')
@@ -71,10 +115,19 @@ describe('JavaScript interface', () => {
             expect(expr.count).toBe(2)
          })
 
-         it('#command', () => {
+         it('#command, unevaluated, produces a literal', () => {
             const expr = Parser.expressionOfString('2test')
 
-            expect(expr.command).toBe('test')
+            expect(expr.command.type).toBe('literal')
+            expect(expr.command.value).toBe('test')
+         })
+
+         it('#evalCommand reduces a literal to a string', () => {
+            const expr = Parser.expressionOfString('2test'),
+               noop = jest.fn(() => '')
+
+            expect(expr.evalCommand(noop)).toBe('test')
+            expect(noop).not.toBeCalled()
          })
       })
 
@@ -86,39 +139,73 @@ describe('JavaScript interface', () => {
             expect(expr.hasFlag('widget')).toBe(false)
          })
 
-         it('#getPositionals returns an array of positional arguments', () => {
+         it('#getPositionals, unevaluated, returns an array of positional-argument literals', () => {
             const expr = Parser.expressionOfString('foo qux quux'),
                positionals = expr.getPositionals()
 
             expect(positionals).toBeInstanceOf(Array)
-            expect(positionals).toEqual(['qux', 'quux'])
+            expect(positionals).toEqual([
+               {type: 'literal', value: 'qux'},
+               {type: 'literal', value: 'quux'},
+            ])
          })
 
-         it('#getPositionals prevents a subsequent getFlag from resolving a consumed arg', () => {
-            const expr = Parser.expressionOfString('foo --bar qux quux'),
-               positionals = expr.getPositionals(),
+         it('#evalPositionals returns an array of positional arguments evaluated into strings', () => {
+            const expr = Parser.expressionOfString('foo qux quux'),
+               noop = jest.fn(() => ''),
+               positionals = expr.evalPositionals(noop)
+
+            expect(positionals).toBeInstanceOf(Array)
+            expect(positionals).toEqual(['qux', 'quux'])
+            expect(noop).not.toBeCalled()
+         })
+
+         it('#getFlag returns an undefined payload for an absent argument', () => {
+            const expr = Parser.expressionOfString('foo --bar'),
                payload = expr.getFlag('bar')
 
-            expect(positionals).toEqual(['qux', 'quux'])
-            expect(payload).not.toBe('qux')
+            expect(typeof payload).toBe('undefined')
          })
 
-         it('#getFlag returns a string payload for a present argument', () => {
+         it('#getFlag, unevaluated, returns a literal payload for a present argument', () => {
             const expr = Parser.expressionOfString('foo --bar=baz'),
                payload = expr.getFlag('bar')
+
+            expect(typeof payload).toBe('object')
+            expect(payload).toEqual({type: 'literal', value: 'baz'})
+         })
+
+         it('#evalFlag returns a string payload for a present argument', () => {
+            const expr = Parser.expressionOfString('foo --bar=baz'),
+               noop = jest.fn(() => ''),
+               payload = expr.evalFlag(noop, 'bar')
 
             expect(typeof payload).toBe('string')
             expect(payload).toEqual('baz')
          })
 
          it('#getFlag prevents a subsequent getPositionals from resolving a consumed arg', () => {
-            const expr = Parser.expressionOfString('foo --bar qux quux'),
-               payload = expr.getFlag('bar'),
-               positionals = expr.getPositionals()
+            const expr = Parser.expressionOfString('foo --bar qux quux')
 
-            expect(payload).toBe('qux')
-            expect(positionals).not.toContain('qux')
+            expect(expr.getFlag('bar')).toEqual({type: 'literal', value: 'qux'})
+            expect(expr.getPositionals()).not.toContainEqual({
+               type: 'literal',
+               value: 'qux',
+            })
+         })
+
+         it('#getPositionals prevents a subsequent getFlag from resolving a consumed arg', () => {
+            const expr = Parser.expressionOfString('foo --bar qux quux')
+
+            expect(expr.getPositionals()).toEqual([
+               {type: 'literal', value: 'qux'},
+               {type: 'literal', value: 'quux'},
+            ])
+            expect(expr.getFlag('bar')).toBe(undefined)
          })
       })
+      // TODO: Excercise the passing of recursive ExpressionEvals to the evaluators given to an
+      //       ExpressionEval, i.e. that you don't nned to use .evalFlag() inside the body of an
+      //       evaluator. (pending subexpression impl.)
    }) // Expression
 })

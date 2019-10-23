@@ -4,6 +4,7 @@ import {
    string_as_utf_8_buffer,
 } from 'ocaml-string-convert'
 
+import $AST from './aST.bs'
 import $Lexer from './lexer.bs'
 import $Parser from './parser.bs'
 import $Expression from './expression.bs'
@@ -34,6 +35,7 @@ type $token_located = Nominal<object, 'Tokens.token located'>
 type $position = Nominal<object, 'Lexing.position'>
 
 type $ASTt = Nominal<object, 'AST.t'>
+type $or_subexpr = Nominal<object, 'AST.or_subexpr'>
 type $Expressiont = Nominal<object, 'Expression.t'>
 type $flag_payload = Nominal<object, 'Expression.flag_payload'>
 
@@ -199,11 +201,13 @@ function mapExposedFunctionsThruErrorTrampoline($module) {
    }
 }
 
-;[$Lexer, $Parser, $Expression, $Incremental].forEach(
+;[$AST, $Lexer, $Parser, $Expression, $Incremental].forEach(
    mapExposedFunctionsThruErrorTrampoline,
 )
 
-function fromFakeUTF8StringOption($str: string_as_utf_8_buffer | undefined): string | undefined {
+function fromFakeUTF8StringOption(
+   $str: string_as_utf_8_buffer | undefined,
+): string | undefined {
    if (typeof $str === 'undefined') {
       return undefined
    } else {
@@ -211,7 +215,10 @@ function fromFakeUTF8StringOption($str: string_as_utf_8_buffer | undefined): str
    }
 }
 
-function fromFlagPayloadOption($payloadOpt: $flag_payload | undefined) {
+// Yes, this is basically a no-op; but I like to be explicit. >,>
+function fromFlagPayloadOption(
+   $payloadOpt: $flag_payload | undefined,
+): $or_subexpr | undefined {
    if (typeof $payloadOpt === 'undefined') {
       // `None`
       return undefined
@@ -222,9 +229,59 @@ function fromFlagPayloadOption($payloadOpt: $flag_payload | undefined) {
          // `Some Empty`
          return undefined
       } else {
-         // `Some (Payload str)`
-         return fromFakeUTF8String($payload)
+         // `Some (Payload (string or_subexpr))`
+         return $payload
       }
+   }
+}
+
+interface Literal {
+   type: 'literal'
+   value: string
+}
+
+interface Sub<T> {
+   type: 'subexpression'
+   expr: T
+}
+
+// The signature of a function
+type evaluator = (expr: ExpressionEval) => string
+
+// Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`
+function fromOrSubexpr($x: $or_subexpr): Literal | Sub<Expression> {
+   if ($AST.is_literal($x)) {
+      let $val = $AST.get_literal_exn($x)
+      return {type: 'literal', value: fromFakeUTF8String($val)}
+   } else {
+      let $expr = $AST.get_sub_exn($x)
+      return {type: 'subexpression', expr: new Expression(INTERNAL, $expr)}
+   }
+}
+
+// Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`, as `fromOrSubexpr`; but
+// producing `ExpressionEval`s instead of `Expression`s for subexpressions.
+function fromOrSubexprWithEval(
+   evl: evaluator,
+   $x: $or_subexpr,
+): Literal | Sub<ExpressionEval> {
+   if ($AST.is_literal($x)) {
+      let $val = $AST.get_literal_exn($x)
+      return {type: 'literal', value: fromFakeUTF8String($val)}
+   } else {
+      let $expr = $AST.get_sub_exn($x)
+      return {type: 'subexpression', expr: new ExpressionEval(INTERNAL, $expr, evl)}
+   }
+}
+
+function reduceOrSubexprWithEval(evl: evaluator, $x: $or_subexpr): string {
+   if ($AST.is_literal($x)) {
+      let $val = $AST.get_literal_exn($x)
+      return fromFakeUTF8String($val)
+   } else {
+      let $expr = $AST.get_sub_exn($x),
+         expr = new ExpressionEval(INTERNAL, $expr, evl)
+      return evl.call(null, expr)
    }
 }
 
@@ -317,8 +374,7 @@ export class Script {
    }
 }
 
-// Wrapper for `Expression.t`.
-export class Expression {
+class ExpressionCommon {
    $expr: $Expressiont
 
    constructor(isInternal: sentinel, $expr: $Expressiont) {
@@ -334,9 +390,8 @@ export class Expression {
       return $Expression.count(this.$expr)
    }
 
-   get command(): string {
-      let $command = $Expression.command(this.$expr)
-      return fromFakeUTF8String($command)
+   get flags(): string[] {
+      return $Expression.flags(this.$expr).map(fromFakeUTF8String)
    }
 
    // Wrapper for `Expression.mem`
@@ -345,42 +400,155 @@ export class Expression {
       let $flag = toFakeUTF8String(flag)
       return $Expression.mem($flag, this.$expr)
    }
+}
 
-   get flags(): string[] {
-      return $Expression.flags(this.$expr).map(fromFakeUTF8String)
+// Wrapper for `Expression.t`.
+export class Expression extends ExpressionCommon {
+   clone(): Expression {
+      let $new = $AST.copy_expression(this.$expr)
+      return new Expression(INTERNAL, $new)
    }
 
-   // The rest are intentionally not native JavaScript ‘getters’, as they may cause mutation.
+   cloneWithEvaluator(handleSubexpr: evaluator): ExpressionEval {
+      let $new = $AST.copy_expression(this.$expr)
+      return new ExpressionEval(INTERNAL, $new, handleSubexpr)
+   }
+
+   get command(): Literal | Sub<Expression> {
+      let $command = $Expression.command(this.$expr)
+      return fromOrSubexpr($command)
+   }
+
+   evalCommand(handleSubexpr: evaluator): string {
+      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      return ee.command
+   }
+
+   // Wrapper for `Expression.positionals`
+   getPositionals(): (Literal | Sub<Expression>)[] {
+      let $positionals = $Expression.positionals(this.$expr)
+      return $positionals.map(fromOrSubexpr)
+   }
+
+   evalPositionals(handleSubexpr: evaluator): string[] {
+      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      return ee.getPositionals()
+   }
+
+   // Wrapper for `Expression.iter`
+   forEachFlag(
+      f: (
+         name: string,
+         payload: Literal | Sub<Expression> | undefined,
+         idx: number,
+      ) => void,
+   ): void {
+      const flagMapper = function(
+         idx: number,
+         $name: $string,
+         $payloadOpt: $flag_payload | undefined,
+      ) {
+         const name = fromFakeUTF8String($name),
+            $payload = fromFlagPayloadOption($payloadOpt),
+            payload =
+               typeof $payload === 'undefined' ? undefined : fromOrSubexpr($payload)
+
+         f.call(null, name, payload, idx)
+      }
+      $Expression.iteri(flagMapper, this.$expr)
+   }
+
+   evalEachFlag(
+      handleSubexpr: evaluator,
+      f: (name: string, payload: string | undefined, idx: number) => void,
+   ): void {
+      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      return ee.forEachFlag(f)
+   }
+
+   // Wrapper for `Expression.flag`
+   getFlag(flag: string): Literal | Sub<Expression> | undefined {
+      console.assert(typeof flag === 'string')
+      const $flag = toFakeUTF8String(flag),
+         $payloadOpt = $Expression.flag($flag, this.$expr),
+         $payload = fromFlagPayloadOption($payloadOpt)
+
+      return typeof $payload === 'undefined' ? undefined : fromOrSubexpr($payload)
+   }
+
+   evalFlag(handleSubexpr: evaluator, flag: string): string | undefined {
+      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      return ee.getFlag(flag)
+   }
+}
+
+// `Expression.t`, with recursive evaluation of subexpressions
+export class ExpressionEval extends ExpressionCommon {
+   $expr: $Expressiont
+   evaluator: evaluator
+
+   constructor(isInternal: sentinel, $expr: $Expressiont, handleSubexpr: evaluator) {
+      if (isInternal !== INTERNAL)
+         throw new Error(
+            '`ExpressionEval` can only be constructed by `Expression#evalPositionals()` and similar.',
+         )
+
+      super(isInternal, $expr)
+
+      console.assert(typeof handleSubexpr === 'function')
+      this.evaluator = handleSubexpr
+   }
+
+   clone(): ExpressionEval {
+      let $new = $AST.copy_expression(this.$expr)
+      return new ExpressionEval(INTERNAL, $new, this.evaluator)
+   }
+
+   get command(): string {
+      let $command = $Expression.command(this.$expr)
+      return reduceOrSubexprWithEval(this.evaluator, $command)
+   }
 
    // Wrapper for `Expression.positionals`
    getPositionals(): string[] {
-      return $Expression.positionals(this.$expr).map(fromFakeUTF8String)
+      let $positionals = $Expression.positionals(this.$expr)
+      // My kingdom for better functional tooling in JavaScript ;_;
+      return $positionals.map(reduceOrSubexprWithEval.bind(null, this.evaluator))
    }
 
    // Wrapper for `Expression.iter`
    forEachFlag(
       f: (name: string, payload: string | undefined, idx: number) => void,
    ): void {
-      const stringMapper = function(
-         idx: number,
-         $name: $string,
-         $payloadOpt: $flag_payload | undefined,
-      ) {
-         const name = fromFakeUTF8String($name),
-            payload = fromFlagPayloadOption($payloadOpt)
+      const self = this,
+         flagMapper = function(
+            idx: number,
+            $name: $string,
+            $payloadOpt: $flag_payload | undefined,
+         ) {
+            const name = fromFakeUTF8String($name),
+               $payload = fromFlagPayloadOption($payloadOpt),
+               payload =
+                  typeof $payload === 'undefined'
+                     ? undefined
+                     : reduceOrSubexprWithEval(self.evaluator, $payload)
 
-         f(name, payload, idx)
-      }
-      $Expression.iteri(stringMapper, this.$expr)
+            f.call(null, name, payload, idx)
+         }
+
+      $Expression.iteri(flagMapper, this.$expr)
    }
 
    // Wrapper for `Expression.flag`
-   getFlag(flag: string) {
+   getFlag(flag: string): string | undefined {
       console.assert(typeof flag === 'string')
       const $flag = toFakeUTF8String(flag),
-         $payloadOpt = $Expression.flag($flag, this.$expr)
+         $payloadOpt = $Expression.flag($flag, this.$expr),
+         $payload = fromFlagPayloadOption($payloadOpt)
 
-      return fromFlagPayloadOption($payloadOpt)
+      return typeof $payload === 'undefined'
+         ? undefined
+         : reduceOrSubexprWithEval(this.evaluator, $payload)
    }
 }
 

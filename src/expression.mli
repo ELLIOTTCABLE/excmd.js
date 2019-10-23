@@ -1,3 +1,5 @@
+open AST
+
 (** Most of these methods take their names from standard OCaml methods over maps. cf.
     {{:https://reasonml.github.io/api/Map.Make.html} [Map.Make]}.
 
@@ -8,7 +10,7 @@
 type t
 (** An alias to {!AST.expression}, abstracted that mutation may be controlled. *)
 
-type flag_payload = Empty | Payload of string
+type flag_payload = Empty | Payload of string or_subexpr
 
 (** {2 Basic getters} *)
 
@@ -16,7 +18,7 @@ type flag_payload = Empty | Payload of string
 
 val count : t -> int
 
-val command : t -> string
+val command : t -> string or_subexpr
 
 val mem : string -> t -> bool
 (** [mem fl expr] returns [true] if [expr] contains flag [fl], [false] otherwise.
@@ -41,7 +43,7 @@ val flags : t -> string array
 
 (** All of these may, in some circumstances, mutate the data-structure. *)
 
-val positionals : t -> string array
+val positionals : t -> string or_subexpr array
 (** [positionals expr] returns a [array] of positional (non-flag) arguments in [expr].
 
     This {{!reso} fully resolves} [expr] — any ambiguous words will be consumed as
@@ -83,9 +85,6 @@ val hydrate : t -> AST.expression
 
 val from_script : AST.t -> t array
 
-val payload_to_opt : flag_payload -> string option
-(** Helper to convert a [flag_payload] to a BuckleScript-friendly [option]. *)
-
 (** {2:reso Note: Resolution of ambiguous words}
 
     It's important to note that a expression is a mutable structure, and that accesses
@@ -126,5 +125,8 @@ val payload_to_opt : flag_payload -> string option
     further mutate such a [expression]. *)
 
 (**/**)
+
+val payload_to_opt : flag_payload -> string or_subexpr option
+(** Helper to convert a [flag_payload] to a BuckleScript-friendly [option]. *)
 
 val dehydrate : AST.expression -> t
