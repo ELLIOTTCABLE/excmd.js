@@ -37,13 +37,11 @@
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
 %type <AST.expression> unterminated_expression
-%type <string>       command noncommand_word flag_long flags_short quotation quotation_chunk
+%type <string>       command noncommand_word _flag_long _flags_short quotation quotation_chunk
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
-%type <AST.arg list> arguments nonempty_arguments positional_and_arguments
-                        flag_and_arguments
-%type <AST.arg>      long_flag_before_positional long_flag_before_flag last_long_flag
-%type <AST.arg list> short_flags_before_positional short_flags_before_flag
-                        last_short_flags
+%type <AST.arg list> rev_arguments rev_arguments_and_flag rev_arguments_and_positional
+                        rev_arguments_nonempty short_flags
+%type <AST.arg>      long_flag
 %type <unit> break
 
 
@@ -68,8 +66,8 @@ expression:
  ;
 
 unterminated_expression:
- | COLON*; count = COUNT?; cmd = command; args = arguments
- { make_expression ?count ~cmd:(Literal cmd) ~args }
+ | COLON*; count = COUNT?; cmd = command; rev_args = rev_arguments
+ { make_expression ?count ~cmd:(Literal cmd) ~rev_args }
  ;
 
 command:
@@ -84,77 +82,61 @@ noncommand_word:
  | BARE_DOUBLE_DASH { "--" }
  ;
 
-arguments:
+rev_arguments:
  | { [] }
- | xs = nonempty_arguments { xs }
+ | xs = rev_arguments_nonempty { xs }
  ;
 
-nonempty_arguments:
- | xs = positional_and_arguments { xs }
- | xs = flag_and_arguments { xs }
+rev_arguments_nonempty:
+ | xs = rev_arguments_and_flag { xs }
+ | xs = rev_arguments_and_positional { xs }
  ;
 
-positional_and_arguments:
+rev_arguments_and_positional:
  | x = noncommand_word { [Positional (Literal x)] }
- | x = noncommand_word; xs = nonempty_arguments { (Positional (Literal x)) :: xs }
- ;
 
-flag_and_arguments:
- | x = last_long_flag  { [x] }
- | xs = last_short_flags  { xs }
-
- | x = long_flag_before_positional; xs = positional_and_arguments { x :: xs }
- | x = long_flag_before_flag; xs = flag_and_arguments { x :: xs }
-
- | xs = short_flags_before_positional; ys = positional_and_arguments { xs @ ys }
- | xs = short_flags_before_flag; ys = flag_and_arguments { xs @ ys }
- ;
-
-long_flag_before_positional:
- | name = flag_long  { Flag {name; payload = Unresolved} }
- | name = flag_long; EQUALS; payload = noncommand_word
- { Flag {name; payload = Resolved (Literal payload)} }
- ;
-
-long_flag_before_flag:
- | x = last_long_flag { x }
- ;
-
-last_long_flag:
- | name = flag_long  { Flag {name; payload = Absent} }
- | name = flag_long; EQUALS; payload = noncommand_word
- { Flag {name; payload = Resolved (Literal payload)} }
- ;
-
-
-short_flags_before_positional:
- | xs = explode(flags_short)
+ | xs = rev_arguments_and_positional; x = noncommand_word { (Positional (Literal x)) :: xs }
+ | xs = rev_arguments_and_flag; x = noncommand_word
  {
-   let len = List.length xs in
-   xs |> List.mapi (fun i x ->
-      Flag {
-         name = x;
-         payload = if i == (len - 1) then Unresolved else Absent
-      }
-   )
+   let pos = (Positional (Literal x)) in
+   match xs with
+    | [] -> failwith "unreachable: rev_arguments_and_positional, empty xs"
+    | arg :: tl ->
+      match arg with
+      | Flag { payload = Resolved _; _ } -> pos :: xs
+      | Flag ({ payload = Absent; _ } as flag) ->
+            pos :: Flag { flag with payload = Unresolved } :: tl
+      | Flag { payload = Unresolved; _ } ->
+            failwith "unreachable: rev_arguments_and_positional, unresolved"
+      | Positional _ -> failwith "unreachable: rev_arguments_and_positional, positional"
  }
  ;
 
-short_flags_before_flag:
- | xs = last_short_flags { xs }
+rev_arguments_and_flag:
+ | x = long_flag { [x] }
+ | xs = short_flags { List.rev xs }
+
+ | xs = rev_arguments_nonempty; x = long_flag; { x :: xs }
+ | xs = rev_arguments_nonempty; ys = short_flags { List.rev_append ys xs }
  ;
 
-last_short_flags:
- | xs = explode(flags_short)
+long_flag:
+ | name = _flag_long { Flag {name; payload = Absent} }
+ | name = _flag_long; EQUALS; payload = noncommand_word
+ { Flag {name; payload = Resolved (Literal payload)} }
+ ;
+
+short_flags:
+ | xs = explode(_flags_short)
  { List.map (fun x -> Flag {name = x; payload = Absent}) xs }
  ;
 
-flag_long:
+_flag_long:
  | FLAG_LONG_START; x = IDENTIFIER { x }
  | FLAG_LONG_START; x = quotation { x }
  ;
 
-flags_short:
+_flags_short:
  | FLAGS_SHORT_START; x = IDENTIFIER { x }
  | FLAGS_SHORT_START; x = quotation { x }
  ;

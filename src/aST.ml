@@ -55,19 +55,19 @@ and flag = { name : string; mutable payload : string or_subexpr unresolved }
 and arg = Positional of string or_subexpr | Flag of flag
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-and expression = { count : int; cmd : string or_subexpr; mutable args : arg array }
+and expression = { count : int; cmd : string or_subexpr; mutable rev_args : arg list }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 type t = { expressions : expression array }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-let make_expression ?count ~cmd ~args =
+let make_expression ?count ~cmd ~rev_args =
    { count =
         ( match count with
           | Some c -> int_of_string c
           | None -> 1 )
    ; cmd
-   ; args = Array.of_list args
+   ; rev_args
    }
 
 
@@ -96,7 +96,7 @@ and copy_arg arg =
 and copy_expression expr =
    { expr with
       cmd = copy_string_or_subexpr expr.cmd
-    ; args = Array.copy expr.args |> Array.map copy_arg
+    ; rev_args = List.map copy_arg expr.rev_args
    }
 
 

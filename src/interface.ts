@@ -391,7 +391,7 @@ class ExpressionCommon {
    }
 
    get flags(): string[] {
-      return $Expression.flags(this.$expr).map(fromFakeUTF8String)
+      return $Expression.flags_arr(this.$expr).map(fromFakeUTF8String)
    }
 
    // Wrapper for `Expression.mem`
@@ -426,7 +426,7 @@ export class Expression extends ExpressionCommon {
 
    // Wrapper for `Expression.positionals`
    getPositionals(): (Literal | Sub<Expression>)[] {
-      let $positionals = $Expression.positionals(this.$expr)
+      let $positionals = $Expression.positionals_arr(this.$expr)
       return $positionals.map(fromOrSubexpr)
    }
 
@@ -511,7 +511,7 @@ export class ExpressionEval extends ExpressionCommon {
 
    // Wrapper for `Expression.positionals`
    getPositionals(): string[] {
-      let $positionals = $Expression.positionals(this.$expr)
+      let $positionals = $Expression.positionals_arr(this.$expr)
       // My kingdom for better functional tooling in JavaScript ;_;
       return $positionals.map(reduceOrSubexprWithEval.bind(null, this.evaluator))
    }

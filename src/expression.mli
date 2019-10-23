@@ -35,7 +35,7 @@ val has_payload : string -> t -> bool
     already {{!reso} resolved}, {e and} flag [fl] resolved to a [string] payload instead
     of a [bool]. Returns [false] otherwise. *)
 
-val flags : t -> string array
+val flags : t -> string list
 (** [flags expr] returns a list of the flags used in [expr], including only the {e names}
     of flags - not the payloads. *)
 
@@ -43,8 +43,8 @@ val flags : t -> string array
 
 (** All of these may, in some circumstances, mutate the data-structure. *)
 
-val positionals : t -> string or_subexpr array
-(** [positionals expr] returns a [array] of positional (non-flag) arguments in [expr].
+val positionals : t -> string or_subexpr list
+(** [positionals expr] returns a [list] of positional (non-flag) arguments in [expr].
 
     This {{!reso} fully resolves} [expr] — any ambiguous words will be consumed as
     positional arguments, becoming unavailable as flag-values. *)
@@ -58,6 +58,8 @@ val iter : (string -> flag_payload -> unit) -> t -> unit
     values to their associated flags, becoming unavailable as positional arguments. *)
 
 val iteri : (int -> string -> flag_payload -> unit) -> t -> unit
+
+val rev_iteri : (int -> string -> flag_payload -> unit) -> t -> unit
 
 val flag : string -> t -> flag_payload option
 (** [flag fl expr] finds the flag by the name of [fl], {{!reso} resolves} it if
@@ -128,5 +130,9 @@ val from_script : AST.t -> t array
 
 val payload_to_opt : flag_payload -> string or_subexpr option
 (** Helper to convert a [flag_payload] to a BuckleScript-friendly [option]. *)
+
+val flags_arr : t -> string array
+
+val positionals_arr : t -> string or_subexpr array
 
 val dehydrate : AST.expression -> t

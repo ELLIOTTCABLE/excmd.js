@@ -2,18 +2,18 @@
 
 ### Simple, single command:
 Parser.expression "test"
-{ "count": 1, "cmd": [ "Literal", "test" ], "args": [] }
+{ "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] }
 
 ### Single command, with count:
 Parser.expression "2test"
-{ "count": 2, "cmd": [ "Literal", "test" ], "args": [] }
+{ "count": 2, "cmd": [ "Literal", "test" ], "rev_args": [] }
 
 ### Single command, with single positional parameter:
 Parser.expression "test foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Positional", [ "Literal", "foo" ] ] ]
+  "rev_args": [ [ "Positional", [ "Literal", "foo" ] ] ]
 }
 
 ### Single command, with single positional URL:
@@ -21,7 +21,7 @@ Parser.expression "test google.com/search"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Positional", [ "Literal", "google.com/search" ] ] ]
+  "rev_args": [ [ "Positional", [ "Literal", "google.com/search" ] ] ]
 }
 
 ### Single command, count, and single positional parameter:
@@ -29,7 +29,7 @@ Parser.expression "2test foo"
 {
   "count": 2,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Positional", [ "Literal", "foo" ] ] ]
+  "rev_args": [ [ "Positional", [ "Literal", "foo" ] ] ]
 }
 
 ### Single command, with multiple positional parameters:
@@ -37,9 +37,9 @@ Parser.expression "test foo bar"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Positional", [ "Literal", "foo" ] ],
-    [ "Positional", [ "Literal", "bar" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Positional", [ "Literal", "foo" ] ]
   ]
 }
 
@@ -48,9 +48,9 @@ Parser.expression "2test foo bar"
 {
   "count": 2,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Positional", [ "Literal", "foo" ] ],
-    [ "Positional", [ "Literal", "bar" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Positional", [ "Literal", "foo" ] ]
   ]
 }
 
@@ -59,7 +59,7 @@ Parser.expression "test --foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
+  "rev_args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
 }
 
 ### Single command, with multiple boolean flags:
@@ -67,9 +67,9 @@ Parser.expression "test --foo --bar"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ],
-    [ "Flag", { "name": "bar", "payload": [ "Absent" ] } ]
+  "rev_args": [
+    [ "Flag", { "name": "bar", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ]
   ]
 }
 
@@ -78,7 +78,7 @@ Parser.expression "test -f"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Flag", { "name": "f", "payload": [ "Absent" ] } ] ]
+  "rev_args": [ [ "Flag", { "name": "f", "payload": [ "Absent" ] } ] ]
 }
 
 ### Single command, with multiple, concatenated boolean short-flags:
@@ -86,10 +86,10 @@ Parser.expression "test -foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "f", "payload": [ "Absent" ] } ],
+  "rev_args": [
     [ "Flag", { "name": "o", "payload": [ "Absent" ] } ],
-    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ]
+    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "f", "payload": [ "Absent" ] } ]
   ]
 }
 
@@ -98,10 +98,10 @@ Parser.expression "test -f -o -o"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "f", "payload": [ "Absent" ] } ],
+  "rev_args": [
     [ "Flag", { "name": "o", "payload": [ "Absent" ] } ],
-    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ]
+    [ "Flag", { "name": "o", "payload": [ "Absent" ] } ],
+    [ "Flag", { "name": "f", "payload": [ "Absent" ] } ]
   ]
 }
 
@@ -110,9 +110,9 @@ Parser.expression "test --foo bar"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "bar" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
   ]
 }
 
@@ -121,9 +121,9 @@ Parser.expression "test -f bar"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "f", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "bar" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Flag", { "name": "f", "payload": [ "Unresolved" ] } ]
   ]
 }
 
@@ -132,9 +132,9 @@ Parser.expression "test -f google.com/search"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "f", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "google.com/search" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "google.com/search" ] ],
+    [ "Flag", { "name": "f", "payload": [ "Unresolved" ] } ]
   ]
 }
 
@@ -143,10 +143,10 @@ Parser.expression "test --foo bar baz"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
+  "rev_args": [
+    [ "Positional", [ "Literal", "baz" ] ],
     [ "Positional", [ "Literal", "bar" ] ],
-    [ "Positional", [ "Literal", "baz" ] ]
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
   ]
 }
 
@@ -155,11 +155,11 @@ Parser.expression "test --foo bar --baz widget"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "bar" ] ],
+  "rev_args": [
+    [ "Positional", [ "Literal", "widget" ] ],
     [ "Flag", { "name": "baz", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "widget" ] ]
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
   ]
 }
 
@@ -168,7 +168,7 @@ Parser.expression "test --foo=bar"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
+  "rev_args": [
     [
       "Flag",
       { "name": "foo", "payload": [ "Resolved", [ "Literal", "bar" ] ] }
@@ -181,12 +181,12 @@ Parser.expression "test --foo=bar baz"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
+  "rev_args": [
+    [ "Positional", [ "Literal", "baz" ] ],
     [
       "Flag",
       { "name": "foo", "payload": [ "Resolved", [ "Literal", "bar" ] ] }
-    ],
-    [ "Positional", [ "Literal", "baz" ] ]
+    ]
   ]
 }
 
@@ -195,15 +195,15 @@ Parser.expression "test --foo=google.com/search baz"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
+  "rev_args": [
+    [ "Positional", [ "Literal", "baz" ] ],
     [
       "Flag",
       {
         "name": "foo",
         "payload": [ "Resolved", [ "Literal", "google.com/search" ] ]
       }
-    ],
-    [ "Positional", [ "Literal", "baz" ] ]
+    ]
   ]
 }
 
@@ -212,7 +212,7 @@ Parser.expression "test --"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Positional", [ "Literal", "--" ] ] ]
+  "rev_args": [ [ "Positional", [ "Literal", "--" ] ] ]
 }
 
 ### Single command with a bare-double-dash followed by a long-flag:
@@ -220,9 +220,9 @@ Parser.expression "test -- --foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Positional", [ "Literal", "--" ] ],
-    [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ]
+  "rev_args": [
+    [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ],
+    [ "Positional", [ "Literal", "--" ] ]
   ]
 }
 
@@ -231,9 +231,9 @@ Parser.expression "test -- foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Positional", [ "Literal", "--" ] ],
-    [ "Positional", [ "Literal", "foo" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "foo" ] ],
+    [ "Positional", [ "Literal", "--" ] ]
   ]
 }
 
@@ -242,30 +242,30 @@ Parser.expression "test --foo bar --baz=widget qux -qu ux"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "bar" ] ],
+  "rev_args": [
+    [ "Positional", [ "Literal", "ux" ] ],
+    [ "Flag", { "name": "u", "payload": [ "Unresolved" ] } ],
+    [ "Flag", { "name": "q", "payload": [ "Absent" ] } ],
+    [ "Positional", [ "Literal", "qux" ] ],
     [
       "Flag",
       { "name": "baz", "payload": [ "Resolved", [ "Literal", "widget" ] ] }
     ],
-    [ "Positional", [ "Literal", "qux" ] ],
-    [ "Flag", { "name": "q", "payload": [ "Absent" ] } ],
-    [ "Flag", { "name": "u", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "ux" ] ]
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
   ]
 }
 
 ### Single dquoted command:
 Parser.expression "\"test\""
-{ "count": 1, "cmd": [ "Literal", "test" ], "args": [] }
+{ "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] }
 
 ### Single dquoted command with bare positional:
 Parser.expression "\"test\" foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Positional", [ "Literal", "foo" ] ] ]
+  "rev_args": [ [ "Positional", [ "Literal", "foo" ] ] ]
 }
 
 ### Single dquoted command with bare flag:
@@ -273,7 +273,7 @@ Parser.expression "\"test\" --foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
+  "rev_args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
 }
 
 ### Bare command with single dquoted positional:
@@ -281,7 +281,7 @@ Parser.expression "test \"foo\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Positional", [ "Literal", "foo" ] ] ]
+  "rev_args": [ [ "Positional", [ "Literal", "foo" ] ] ]
 }
 
 ### Single dquoted command with single dquoted positional:
@@ -289,7 +289,7 @@ Parser.expression "\"test\" \"foo\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Positional", [ "Literal", "foo" ] ] ]
+  "rev_args": [ [ "Positional", [ "Literal", "foo" ] ] ]
 }
 
 ### Single dquoted command, bare flag, and dquoted payload:
@@ -297,9 +297,9 @@ Parser.expression "\"test\" --foo \"bar\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "bar" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
   ]
 }
 
@@ -308,9 +308,9 @@ Parser.expression "\"test\" \"--foo\" \"bar\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Positional", [ "Literal", "--foo" ] ],
-    [ "Positional", [ "Literal", "bar" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "bar" ] ],
+    [ "Positional", [ "Literal", "--foo" ] ]
   ]
 }
 
@@ -319,9 +319,9 @@ Parser.expression "test -- \"foo bar\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Positional", [ "Literal", "--" ] ],
-    [ "Positional", [ "Literal", "foo bar" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "foo bar" ] ],
+    [ "Positional", [ "Literal", "--" ] ]
   ]
 }
 
@@ -330,7 +330,7 @@ Parser.expression "test --\"foo\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
+  "rev_args": [ [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ] ]
 }
 
 ### Bare command, long-flag, with a space in the flag's name:
@@ -338,7 +338,7 @@ Parser.expression "test --\"foo bar\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [ [ "Flag", { "name": "foo bar", "payload": [ "Absent" ] } ] ]
+  "rev_args": [ [ "Flag", { "name": "foo bar", "payload": [ "Absent" ] } ] ]
 }
 
 ### Bare command, long-flag w/ space in name, possibly-parameterized:
@@ -346,9 +346,9 @@ Parser.expression "test --\"foo bar\" baz"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
-    [ "Flag", { "name": "foo bar", "payload": [ "Unresolved" ] } ],
-    [ "Positional", [ "Literal", "baz" ] ]
+  "rev_args": [
+    [ "Positional", [ "Literal", "baz" ] ],
+    [ "Flag", { "name": "foo bar", "payload": [ "Unresolved" ] } ]
   ]
 }
 
@@ -357,7 +357,7 @@ Parser.expression "test --\"foo bar\"=baz"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
+  "rev_args": [
     [
       "Flag",
       { "name": "foo bar", "payload": [ "Resolved", [ "Literal", "baz" ] ] }
@@ -370,7 +370,7 @@ Parser.expression "test --\"foo bar\"=\"baz widget\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "args": [
+  "rev_args": [
     [
       "Flag",
       {
@@ -385,9 +385,9 @@ Parser.expression "test --\"foo bar\"=\"baz widget\""
 Parser.script "test; 2test; 3test"
 {
   "expressions": [
-    { "count": 1, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 2, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 3, "cmd": [ "Literal", "test" ], "args": [] }
+    { "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 2, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 3, "cmd": [ "Literal", "test" ], "rev_args": [] }
   ]
 }
 
@@ -395,9 +395,9 @@ Parser.script "test; 2test; 3test"
 Parser.script "test; 2test; 3test;"
 {
   "expressions": [
-    { "count": 1, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 2, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 3, "cmd": [ "Literal", "test" ], "args": [] }
+    { "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 2, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 3, "cmd": [ "Literal", "test" ], "rev_args": [] }
   ]
 }
 
@@ -408,15 +408,15 @@ Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar"
     {
       "count": 1,
       "cmd": [ "Literal", "test" ],
-      "args": [
-        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-        [ "Positional", [ "Literal", "bar" ] ]
+      "rev_args": [
+        [ "Positional", [ "Literal", "bar" ] ],
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
       ]
     },
     {
       "count": 2,
       "cmd": [ "Literal", "test" ],
-      "args": [
+      "rev_args": [
         [
           "Flag",
           { "name": "foo", "payload": [ "Resolved", [ "Literal", "bar" ] ] }
@@ -426,9 +426,9 @@ Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar"
     {
       "count": 3,
       "cmd": [ "Literal", "test" ],
-      "args": [
-        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-        [ "Positional", [ "Literal", "bar" ] ]
+      "rev_args": [
+        [ "Positional", [ "Literal", "bar" ] ],
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
       ]
     }
   ]
@@ -441,15 +441,15 @@ Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar;"
     {
       "count": 1,
       "cmd": [ "Literal", "test" ],
-      "args": [
-        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-        [ "Positional", [ "Literal", "bar" ] ]
+      "rev_args": [
+        [ "Positional", [ "Literal", "bar" ] ],
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
       ]
     },
     {
       "count": 2,
       "cmd": [ "Literal", "test" ],
-      "args": [
+      "rev_args": [
         [
           "Flag",
           { "name": "foo", "payload": [ "Resolved", [ "Literal", "bar" ] ] }
@@ -459,9 +459,9 @@ Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar;"
     {
       "count": 3,
       "cmd": [ "Literal", "test" ],
-      "args": [
-        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ],
-        [ "Positional", [ "Literal", "bar" ] ]
+      "rev_args": [
+        [ "Positional", [ "Literal", "bar" ] ],
+        [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
       ]
     }
   ]
@@ -471,9 +471,9 @@ Parser.script "test --foo bar; 2test --foo=bar; 3test --foo bar;"
 Parser.script "test;\n   2test;\n   3test"
 {
   "expressions": [
-    { "count": 1, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 2, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 3, "cmd": [ "Literal", "test" ], "args": [] }
+    { "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 2, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 3, "cmd": [ "Literal", "test" ], "rev_args": [] }
   ]
 }
 
@@ -481,9 +481,9 @@ Parser.script "test;\n   2test;\n   3test"
 Parser.script "test;\n   2test;\n   3test;\n   "
 {
   "expressions": [
-    { "count": 1, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 2, "cmd": [ "Literal", "test" ], "args": [] },
-    { "count": 3, "cmd": [ "Literal", "test" ], "args": [] }
+    { "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 2, "cmd": [ "Literal", "test" ], "rev_args": [] },
+    { "count": 3, "cmd": [ "Literal", "test" ], "rev_args": [] }
   ]
 }
 
@@ -492,7 +492,7 @@ Incremental.expression "hello --where=world"
 {
   "count": 1,
   "cmd": [ "Literal", "hello" ],
-  "args": [
+  "rev_args": [
     [
       "Flag",
       { "name": "where", "payload": [ "Resolved", [ "Literal", "world" ] ] }
@@ -517,7 +517,7 @@ Terminal
 unit
 EQUALS
 EQUALS : (unit) Terminal
-flag_long : (string) Nonterminal
+_flag_long : (string) Nonterminal
 command : (string) Nonterminal
 option_COUNT_ : (string option) Nonterminal
 list_COLON_ : (unit list) Nonterminal
