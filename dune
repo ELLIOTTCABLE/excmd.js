@@ -1,1 +1,8 @@
 (ignored_subdirs (node_modules lib))
+
+(env
+ (dev
+  ; Disable fatal-level warnings from the compiled output
+  (flags (:standard -warn-error -9-3 -w -K)))
+ (release
+  (flags (:standard -O3))))
