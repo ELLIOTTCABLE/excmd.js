@@ -113,7 +113,8 @@ let tests () =
 
    (* Piped subexpressions *)
    test_expression "Piped command" "echo test | echo" ;
-   test_expression "Piped command with parenthetical subexpr" "echo test | (determine_command)" ;
+   test_expression "Piped command with parenthetical subexpr"
+      "echo test | (determine_command)" ;
    test_expression "Subexpression with piped command" "foo (bar baz | widget)" ;
    test_expression "Complex subexpressions, with flags and quotation"
       "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\") | do_a_thing)" ;

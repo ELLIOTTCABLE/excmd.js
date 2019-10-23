@@ -151,13 +151,16 @@ let element_incoming_symbol_desc = function
           | I.N I.N_rev_nonempty_subquotation -> ("rev_nonempty_subquotation", "string list")
           | I.N I.N_rev_nonempty_quotation -> ("rev_nonempty_quotation", "string list")
           | I.N I.N_rev_arguments_nonempty -> ("rev_arguments_nonempty", "AST.arg list")
-          | I.N I.N_rev_arguments_and_positional -> ("rev_arguments_and_positional", "AST.arg list")
+          | I.N I.N_rev_arguments_and_positional ->
+            ("rev_arguments_and_positional", "AST.arg list")
           | I.N I.N_rev_arguments_and_flag -> ("rev_arguments_and_flag", "AST.arg list")
           | I.N I.N_rev_arguments -> ("rev_arguments", "AST.arg list")
           | I.N I.N_quotation_chunk -> ("quotation_chunk", "string")
           | I.N I.N_quotation -> ("quotation", "string")
-          | I.N I.N_optterm_nonempty_list_break_expression_chain_ -> ("optterm_nonempty_list_break_expression_chain_", "AST.expression list")
-          | I.N I.N_optterm_list_break_expression_chain_ -> ("optterm_list_break_expression_chain_", "AST.expression list")
+          | I.N I.N_optterm_nonempty_list_break_expression_chain_ ->
+            ("optterm_nonempty_list_break_expression_chain_", "AST.expression list")
+          | I.N I.N_optterm_list_break_expression_chain_ ->
+            ("optterm_list_break_expression_chain_", "AST.expression list")
           | I.N I.N_option_break_ -> ("option_break_", "unit option")
           | I.N I.N_option_COUNT_ -> ("option_COUNT_", "string option")
           | I.N I.N_noncommand_word -> ("noncommand_word", "string AST.or_subexpr")

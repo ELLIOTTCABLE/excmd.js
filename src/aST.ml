@@ -72,15 +72,16 @@ let make_expression ?count ~cmd ~rev_args =
 
 
 let pipe_last ~from ~into =
-   let new_args = match into.rev_args with
-   | [] -> []
-   | Flag ({ payload = Absent; _ } as flg) :: rest ->
-      let new_flag = { flg with payload = Unresolved } in
-      Flag new_flag :: rest
-   | Flag { payload = Resolved _; _ } :: _rest
-   | Positional _ :: _rest -> into.rev_args
-   | Flag { payload = Unresolved; _ } :: _rest ->
-      failwith "unreachable: pipe_last, unresolved-flag in last position"
+   let new_args =
+      match into.rev_args with
+       | [] -> []
+       | Flag ({ payload = Absent; _ } as flg) :: rest ->
+         let new_flag = { flg with payload = Unresolved } in
+         Flag new_flag :: rest
+       | Flag { payload = Resolved _; _ } :: _rest | Positional _ :: _rest ->
+         into.rev_args
+       | Flag { payload = Unresolved; _ } :: _rest ->
+         failwith "unreachable: pipe_last, unresolved-flag in last position"
    in
    let new_args = Positional (Sub from) :: new_args in
    { into with rev_args = new_args }
