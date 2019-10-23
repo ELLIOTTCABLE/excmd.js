@@ -81,7 +81,7 @@ let continue ~accept ~fail cp =
 
 
 let current_command cp =
-   let { status = menhir_cp } = cp in
+   let { status = menhir_cp; _ } = cp in
    match menhir_cp with
     (* FIXME: Are all of these actually states in which I can't determine a command? *)
     | Shifting _ | AboutToReduce _ | HandlingError _ | Accepted _ | Rejected -> None
@@ -91,14 +91,14 @@ let current_command cp =
           | None -> None
           | Some (I.Element (lr1state, valu, _startp, _endp)) -> (
                 match I.incoming_symbol lr1state with
-                 | I.N I.N_command -> Some (valu : string)
+                 | I.N I.N_command -> Some (valu : string AST.or_subexpr)
                  | _ -> f (i + 1) )
       in
       f 0
 
 
 let automaton_status_str cp =
-   let { status = cp } = cp in
+   let { status = cp; _ } = cp in
    match cp with
     | InputNeeded _env -> "InputNeeded"
     | Shifting (_before, _after, _will_need_more) -> "Shifting"
@@ -116,7 +116,7 @@ let element_incoming_symbol_category_str = function
 
 
 let incoming_symbol_category_str cp =
-   let { status = cp } = cp in
+   let { status = cp; _ } = cp in
    let the_env =
       match cp with
        | InputNeeded env -> env
@@ -144,6 +144,7 @@ let element_incoming_symbol_desc = function
    | I.Element (lr1state, _valu, _startp, _endp) -> (
          match I.incoming_symbol lr1state with
           | I.N I.N_unterminated_expression -> ("unterminated_expression", "AST.expression")
+          | I.N I.N_subexpression -> ("subexpression", "AST.expression")
           | I.N I.N_short_flags -> ("short_flags", "AST.arg list")
           | I.N I.N_script -> ("script", "AST.t")
           | I.N I.N_rev_subquotation -> ("rev_subquotation", "string list")
@@ -166,7 +167,7 @@ let element_incoming_symbol_desc = function
           | I.N I.N_long_flag -> ("long_flag", "AST.arg")
           | I.N I.N_list_COLON_ -> ("list_COLON_", "unit list")
           | I.N I.N_expression -> ("expression", "AST.expression")
-          | I.N I.N_command -> ("command", "string")
+          | I.N I.N_command -> ("command", "string AST.or_subexpr")
           | I.N I.N_break -> ("break", "unit")
           | I.N I.N__flags_short -> ("_flags_short", "string")
           | I.N I.N__flag_long -> ("_flag_long", "string")
@@ -211,7 +212,7 @@ let element_incoming_symbol_type_str el =
 
 
 let incoming_symbol_type_str cp =
-   let { status = cp } = cp in
+   let { status = cp; _ } = cp in
    let the_env =
       match cp with
        | InputNeeded env -> env
@@ -235,7 +236,7 @@ let element_incoming_symbol_str el =
 
 
 let incoming_symbol_str cp =
-   let { status = cp } = cp in
+   let { status = cp; _ } = cp in
    let the_env =
       match cp with
        | InputNeeded env -> env
@@ -271,14 +272,14 @@ let print_stack (env : 'a I.env) =
 
 
 let debug_checkpoint cp =
-   let { status = menhir_cp } = cp in
+   let { status = menhir_cp; _ } = cp in
    match menhir_cp with
     | InputNeeded env -> print_stack env
     | _ -> failwith "supposed to be InputNeeded"
 
 
 let get_before cp idx =
-   let { status = cp } = cp in
+   let { status = cp; _ } = cp in
    let the_env =
       match cp with
        | InputNeeded env -> env
@@ -294,7 +295,7 @@ let get_before cp idx =
 
 
 let get_after cp idx =
-   let { status = cp } = cp in
+   let { status = cp; _ } = cp in
    let the_env =
       match cp with
        | Shifting (_before, after, _final) -> after

@@ -76,7 +76,8 @@ let tests () =
    test_expression "Single command with mixed flags and parameters"
       "test --foo bar --baz=widget qux -qu ux" ;
 
-   (* These are, of course, going to be a nightmare of double-escaping. I'm sorry, Jon. *)
+   (* Quotation. These are, of course, going to be a nightmare of double-escaping. I'm
+      sorry, Jon. *)
    test_expression "Single dquoted command" "\"test\"" ;
    test_expression "Single dquoted command with bare positional" "\"test\" foo" ;
    test_expression "Single dquoted command with bare flag" "\"test\" --foo" ;
@@ -98,6 +99,19 @@ let tests () =
       "test --\"foo bar\"=baz" ;
    test_expression "Bare command, long-flag w/ space in name, explicit, quoted parameter"
       "test --\"foo bar\"=\"baz widget\"" ;
+
+   (* Subexpressions *)
+   test_expression "Subexpression in command-position" "2(echo test)" ;
+   test_expression "Subexpression in command-position with command-quotation"
+      "2(\"echo test\")" ;
+   test_expression "Subexpression as positional" "defer (echo test)" ;
+   test_expression "Subexpression as unresolved flag payload" "defer --foo (echo test)" ;
+   test_expression "Subexpression as explicit flag payload" "defer --foo=(echo test)" ;
+   test_expression "Subexpression-positional after explicit flag payload"
+      "defer --foo=bar (echo test)" ;
+   test_expression "Nested subexpressions" "a ( b (c) d ) e" ;
+   test_expression "Complex subexpressions, with flags and quotation"
+      "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\"))" ;
 
    (* Simple multi-expression scripts *)
    test_script "Expressions separated by semicolons" "test; 2test; 3test" ;
@@ -157,7 +171,10 @@ let tests () =
    in
    let accept _expression = failwith "parsing should have failed" in
    let fail last_good _failing =
-      Incremental.current_command last_good |> unwrap_exn |> print_endline
+      match Incremental.current_command last_good with
+       | None -> failwith "current_command should have produced a command"
+       | Some (Sub _) -> failwith "current_command should have produced a literal"
+       | Some (Literal str) -> print_endline str
    in
    Incremental.continue ~accept ~fail entrypoint
 

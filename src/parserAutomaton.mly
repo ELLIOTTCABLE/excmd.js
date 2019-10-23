@@ -36,8 +36,9 @@
 
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
-%type <AST.expression> unterminated_expression
-%type <string>       command noncommand_word _flag_long _flags_short quotation quotation_chunk
+%type <AST.expression> subexpression unterminated_expression
+%type <string AST.or_subexpr> command noncommand_word
+%type <string>       _flag_long _flags_short quotation quotation_chunk
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
 %type <AST.arg list> rev_arguments rev_arguments_and_flag rev_arguments_and_positional
                         rev_arguments_nonempty short_flags
@@ -65,21 +66,26 @@ expression:
  | x = unterminated_expression; break?; EOF { x }
  ;
 
+subexpression:
+ | PAREN_OPEN; x = unterminated_expression; PAREN_CLOSE { x }
+
 unterminated_expression:
  | COLON*; count = COUNT?; cmd = command; rev_args = rev_arguments
- { make_expression ?count ~cmd:(Literal cmd) ~rev_args }
+ { make_expression ?count ~cmd ~rev_args }
  ;
 
 command:
- | x = IDENTIFIER { x }
- | x = quotation { x }
+ | x = IDENTIFIER { Literal x }
+ | x = quotation { Literal x }
+ | x = subexpression { Sub x }
  ;
 
 noncommand_word:
- | x = IDENTIFIER { x }
- | hd = URL_START; tl = URL_REST { hd ^ tl }
- | x = quotation { x }
- | BARE_DOUBLE_DASH { "--" }
+ | x = IDENTIFIER { Literal x }
+ | hd = URL_START; tl = URL_REST { Literal (hd ^ tl) }
+ | BARE_DOUBLE_DASH { Literal "--" }
+ | x = quotation { Literal x }
+ | x = subexpression { Sub x }
  ;
 
 rev_arguments:
@@ -93,12 +99,12 @@ rev_arguments_nonempty:
  ;
 
 rev_arguments_and_positional:
- | x = noncommand_word { [Positional (Literal x)] }
+ | x = noncommand_word { [Positional x] }
 
- | xs = rev_arguments_and_positional; x = noncommand_word { (Positional (Literal x)) :: xs }
+ | xs = rev_arguments_and_positional; x = noncommand_word { (Positional x) :: xs }
  | xs = rev_arguments_and_flag; x = noncommand_word
  {
-   let pos = (Positional (Literal x)) in
+   let pos = (Positional x) in
    match xs with
     | [] -> failwith "unreachable: rev_arguments_and_positional, empty xs"
     | arg :: tl ->
@@ -123,7 +129,7 @@ rev_arguments_and_flag:
 long_flag:
  | name = _flag_long { Flag {name; payload = Absent} }
  | name = _flag_long; EQUALS; payload = noncommand_word
- { Flag {name; payload = Resolved (Literal payload)} }
+ { Flag {name; payload = Resolved payload} }
  ;
 
 short_flags:

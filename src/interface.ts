@@ -756,9 +756,9 @@ export class Checkpoint<D extends SemanticDiscriminator> {
       return $toks.map($tok => new Token(INTERNAL, $tok))
    }
 
-   get command(): string | undefined {
+   get command(): Literal | Sub<Expression> | undefined {
       const $command = $Incremental.current_command(this.$cp)
-      return fromFakeUTF8StringOption($command)
+      return typeof $command === 'undefined' ? undefined : fromOrSubexpr($command)
    }
 
    // FIXME: More accessors

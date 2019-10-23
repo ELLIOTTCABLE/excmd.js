@@ -381,6 +381,195 @@ Parser.expression "test --\"foo bar\"=\"baz widget\""
   ]
 }
 
+### Subexpression in command-position:
+Parser.expression "2(echo test)"
+{
+  "count": 2,
+  "cmd": [
+    "Sub",
+    {
+      "count": 1,
+      "cmd": [ "Literal", "echo" ],
+      "rev_args": [ [ "Positional", [ "Literal", "test" ] ] ]
+    }
+  ],
+  "rev_args": []
+}
+
+### Subexpression in command-position with command-quotation:
+Parser.expression "2(\"echo test\")"
+{
+  "count": 2,
+  "cmd": [
+    "Sub",
+    { "count": 1, "cmd": [ "Literal", "echo test" ], "rev_args": [] }
+  ],
+  "rev_args": []
+}
+
+### Subexpression as positional:
+Parser.expression "defer (echo test)"
+{
+  "count": 1,
+  "cmd": [ "Literal", "defer" ],
+  "rev_args": [
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 1,
+          "cmd": [ "Literal", "echo" ],
+          "rev_args": [ [ "Positional", [ "Literal", "test" ] ] ]
+        }
+      ]
+    ]
+  ]
+}
+
+### Subexpression as unresolved flag payload:
+Parser.expression "defer --foo (echo test)"
+{
+  "count": 1,
+  "cmd": [ "Literal", "defer" ],
+  "rev_args": [
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 1,
+          "cmd": [ "Literal", "echo" ],
+          "rev_args": [ [ "Positional", [ "Literal", "test" ] ] ]
+        }
+      ]
+    ],
+    [ "Flag", { "name": "foo", "payload": [ "Unresolved" ] } ]
+  ]
+}
+
+### Subexpression as explicit flag payload:
+Parser.expression "defer --foo=(echo test)"
+{
+  "count": 1,
+  "cmd": [ "Literal", "defer" ],
+  "rev_args": [
+    [
+      "Flag",
+      {
+        "name": "foo",
+        "payload": [
+          "Resolved",
+          [
+            "Sub",
+            {
+              "count": 1,
+              "cmd": [ "Literal", "echo" ],
+              "rev_args": [ [ "Positional", [ "Literal", "test" ] ] ]
+            }
+          ]
+        ]
+      }
+    ]
+  ]
+}
+
+### Subexpression-positional after explicit flag payload:
+Parser.expression "defer --foo=bar (echo test)"
+{
+  "count": 1,
+  "cmd": [ "Literal", "defer" ],
+  "rev_args": [
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 1,
+          "cmd": [ "Literal", "echo" ],
+          "rev_args": [ [ "Positional", [ "Literal", "test" ] ] ]
+        }
+      ]
+    ],
+    [
+      "Flag",
+      { "name": "foo", "payload": [ "Resolved", [ "Literal", "bar" ] ] }
+    ]
+  ]
+}
+
+### Nested subexpressions:
+Parser.expression "a ( b (c) d ) e"
+{
+  "count": 1,
+  "cmd": [ "Literal", "a" ],
+  "rev_args": [
+    [ "Positional", [ "Literal", "e" ] ],
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 1,
+          "cmd": [ "Literal", "b" ],
+          "rev_args": [
+            [ "Positional", [ "Literal", "d" ] ],
+            [
+              "Positional",
+              [
+                "Sub",
+                { "count": 1, "cmd": [ "Literal", "c" ], "rev_args": [] }
+              ]
+            ]
+          ]
+        }
+      ]
+    ]
+  ]
+}
+
+### Complex subexpressions, with flags and quotation:
+Parser.expression "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\"))"
+{
+  "count": 1,
+  "cmd": [ "Literal", "defer" ],
+  "rev_args": [
+    [
+      "Positional",
+      [
+        "Sub",
+        {
+          "count": 2,
+          "cmd": [ "Literal", "echo" ],
+          "rev_args": [
+            [
+              "Positional",
+              [
+                "Sub",
+                {
+                  "count": 1,
+                  "cmd": [ "Literal", "bookmark_get" ],
+                  "rev_args": [
+                    [ "Positional", [ "Literal", "sommat else" ] ]
+                  ]
+                }
+              ]
+            ],
+            [
+              "Flag",
+              {
+                "name": "sep",
+                "payload": [ "Resolved", [ "Literal", "\n - " ] ]
+              }
+            ],
+            [ "Flag", { "name": "n", "payload": [ "Absent" ] } ]
+          ]
+        }
+      ]
+    ]
+  ]
+}
+
 ### Expressions separated by semicolons:
 Parser.script "test; 2test; 3test"
 {
@@ -507,7 +696,7 @@ fail-continuation invoked! cool.
 
 ### Listing of acceptable tokens during a failure:
 Incremental.expression "hello --where="
-URL_START, QUOTE_OPEN, IDENTIFIER, BARE_DOUBLE_DASH
+URL_START, QUOTE_OPEN, PAREN_OPEN, IDENTIFIER, BARE_DOUBLE_DASH
 
 
 ### Dumping of stack-debugging information from a checkpoint:
@@ -518,7 +707,7 @@ unit
 EQUALS
 EQUALS : (unit) Terminal
 _flag_long : (string) Nonterminal
-command : (string) Nonterminal
+command : (string AST.or_subexpr) Nonterminal
 option_COUNT_ : (string option) Nonterminal
 list_COLON_ : (unit list) Nonterminal
 
