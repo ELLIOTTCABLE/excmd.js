@@ -27,13 +27,13 @@ val mem : string -> t -> bool
     expression. *)
 
 val is_resolved : string -> t -> bool
-(** [is_resolved fl expr] returns [true] if [expr] contains flag [fl] {e and} flag [fl]
-    is already {{!reso} resolved}; and [false] otherwise. *)
+(** [is_resolved fl expr] returns [true] if [expr] contains a flag [fl] {e and} the last
+    such flag [fl] is already {{!reso} resolved}; and [false] otherwise. *)
 
 val has_payload : string -> t -> bool
-(** [has_payload fl expr] returns [true] if [expr] contains flag [fl], flag [fl] is
-    already {{!reso} resolved}, {e and} flag [fl] resolved to a [string] payload instead
-    of a [bool]. Returns [false] otherwise. *)
+(** [has_payload fl expr] returns [true] if [expr] contains a flag [fl], the last such
+    flag [fl] is already {{!reso} resolved}, {e and} that last flag [fl] resolved to a
+    [string] payload instead of a [bool]. Returns [false] otherwise. *)
 
 val flags : t -> string list
 (** [flags expr] returns a list of the flags used in [expr], including only the {e names}
@@ -47,7 +47,7 @@ val positionals : t -> string or_subexpr list
 (** [positionals expr] returns a [list] of positional (non-flag) arguments in [expr].
 
     This {{!reso} fully resolves} [expr] — any ambiguous words will be consumed as
-    positional arguments, becoming unavailable as flag-values. *)
+    positional arguments, becoming unavailable as flag-payloads. *)
 
 val iter : (string -> flag_payload -> unit) -> t -> unit
 (** [iter f expr] applies [f] to all flags in expression [expr]. [f] receives the flag as
@@ -58,19 +58,26 @@ val iter : (string -> flag_payload -> unit) -> t -> unit
     values to their associated flags, becoming unavailable as positional arguments. *)
 
 val iteri : (int -> string -> flag_payload -> unit) -> t -> unit
+(** [iteri f expr], as with {!iter}, applies [f] to each flag in [expr]. However, [f]
+    will also receive the {e index} of each flag as an argument. *)
 
 val rev_iteri : (int -> string -> flag_payload -> unit) -> t -> unit
+(** [rev_iteri f expr], as with {!iteri}, applies [f] to each flag in [expr]; except that
+    the flags are observed in reverse order — from the end of the expression, to the
+    start. (This is marginally more efficient than either {!iter} or {!iteri}.) *)
 
 val flag : string -> t -> flag_payload option
-(** [flag fl expr] finds the flag by the name of [fl], {{!reso} resolves} it if
-    necessary, and produces the payload there of, if any.
+(** [flag fl expr] finds a flag by the name of [fl], {{!reso} resolves} it if necessary,
+    and produces the payload there of, if any.
 
     This can yield ...
 
     - [None], indicating flag [fl] was not present at all.
-    - [Some Empty], indicating flag [fl] was present, but resolved to having no payload.
-    - [Some (Payload str)], indicating flag [fl] was present and became resolved to the
-      payload [str]. This can involve resolution of the word immediately following [fl]. *)
+    - [Some Empty], indicating a flag [fl] was present, but the last such resolved to
+      having no payload.
+    - [Some (Payload str)], indicating a flag [fl] was present and the last such became
+      resolved to the payload [str]. This can involve resolution of the word immediately
+      following said [fl]. *)
 
 (** {2 Other helpers} *)
 
@@ -109,16 +116,15 @@ val from_script : AST.t -> t array
     {!iter} or {!find}/{!flag}):
 
     {[
-       (* FIXME: `flag` doesn't actually work this way ... *)
        (* Yields zero positionals, and 'world' as the value associated with the flag '--where'. *)
        let expr1 = Parser.expression_of_string "hello --where world" in
-       let where = Parser.flag "where" expr1 (* 'world' *) in
-       let xs = Parser.positionals expr1 (* [] *)
+       let where = Expression.flag "where" expr1 (* Some (Payload 'world') *) in
+       let xs = Expression.positionals expr1 (* [] *)
 
        (* Yields one positional, 'world', and no value associated with the flag '--where'. *)
        let expr2 = Parser.expression_of_string "hello --where world" in
-       let xs = Parser.positionals expr2 (* ['world'] *) in
-       let where = Parser.flag "where" expr2 (* None *)
+       let xs = Expression.positionals expr2 (* ['world'] *) in
+       let where = Expression.flag "where" expr2 (* Some (Empty) *)
     ]}
 
     Once any ambiguous words have been so resolved (or when a function is called that
