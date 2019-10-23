@@ -561,6 +561,7 @@ and quote_complex buf =
       let whole = utf8 buf in
       let ch = String.sub whole 1 (String.length whole - 1) in
       QUOTE_ESCAPE ch |> locate buf
+    | '\\', 'n' -> QUOTE_ESCAPE "\n" |> locate buf
     | '\\', any -> quote_escaping_fail buf "\"" (utf8 buf)
     | '"' ->
       buf.mode <- MainIgnoringWhitespace ;
