@@ -38,6 +38,7 @@ build-doc: src/parserAutomaton.mly
 	@cp -Rv "_build/default/_doc/_html/"*.js docs/
 	@cp -Rv "_build/default/_doc/_html/"*.css docs/
 	@cp -Rv "_build/default/_doc/_html/excmd" docs/
+	@typedoc ./src
 
 scripts/annotateMenhirTypes.bs.js:
 	# FIXME: I should be able to massage `bsb` into doing this, but ...

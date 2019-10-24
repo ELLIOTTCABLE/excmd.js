@@ -8,5 +8,13 @@
       "noImplicitThis": true,
       "noEmit": true
    },
-   "include": ["src/**/*.ts"]
+   "include": ["src/**/*.ts"],
+   "typedocOptions": {
+      "name": "Excmd.js",
+      "mode": "file",
+      "out": "docs",
+      "readme": "docs/index.md",
+      "disableOutputCheck": true,
+      "listInvalidSymbolLinks": true
+   }
 }
