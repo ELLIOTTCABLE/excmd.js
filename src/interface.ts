@@ -10,11 +10,19 @@ import $Parser from './parser.bs'
 import $Expression from './expression.bs'
 import $Incremental from './incremental.bs'
 
-// A hack to ape nominal typing.
+/**
+ * A hack to ape nominal typing.
+ * @hidden
+ */
 type Nominal<Ty, Discriminant> = Ty & {__discriminant: Discriminant}
 
-// Used to ensure that nothing else can invoke these classes' constructors directly; this mints a new, locally-scoped Symbol that cannot be reproduced outside of this file.
+/**
+ * Used to ensure that nothing else can invoke these classes' constructors directly; this mints a new, locally-scoped Symbol that cannot be reproduced outside of this file.
+ * @hidden
+ */
 type sentinel = Nominal<symbol, 'INTERNAL'>
+
+/** @hidden */
 const INTERNAL = Symbol() as sentinel
 
 type checkpoint_state =
@@ -26,20 +34,32 @@ type checkpoint_state =
    | 'Rejected'
 
 // Some TypeScript-side types for BuckleScript runtime values
+/** @hidden */
 type $exn = Nominal<Array<any>, 'exn'>
+/** @hidden */
 type $string = string_as_utf_8_buffer
 
+/** @hidden */
 type $buffer = Nominal<object, 'Lexer.buffer'>
+/** @hidden */
 type $token = Nominal<object, 'Tokens.token'>
+/** @hidden */
 type $token_located = Nominal<object, 'Tokens.token located'>
+/** @hidden */
 type $position = Nominal<object, 'Lexing.position'>
 
+/** @hidden */
 type $ASTt = Nominal<object, 'AST.t'>
+/** @hidden */
 type $or_subexpr = Nominal<object, 'AST.or_subexpr'>
+/** @hidden */
 type $Expressiont = Nominal<object, 'Expression.t'>
+/** @hidden */
 type $flag_payload = Nominal<object, 'Expression.flag_payload'>
 
+/** @hidden */
 type $checkpoint = Nominal<object, 'Incremental.checkpoint'>
+/** @hidden */
 type $element = Nominal<object, 'MenhirInterpreter.element'>
 
 // Ugly, inline type-annotations for my BuckleScript types. Because genType is runtime-heavy trash.
@@ -86,6 +106,7 @@ type ParseOptions = {
 // Errors
 
 export class OCamlError extends Error {
+   /** @hidden */
    $exn: $exn
 
    constructor($exn: $exn, message?: string) {
@@ -149,6 +170,7 @@ export class ParseError extends OCamlError {
    }
 }
 
+/** @hidden */
 const errorMap = {
    'Lexer.LexError': LexError,
    'Parser.ParseError': ParseError,
@@ -156,14 +178,19 @@ const errorMap = {
 
 // Helpers
 
+/** @hidden */
 function isOCamlExn($exn: unknown): $exn is $exn {
    return Array.isArray($exn) && Array.isArray($exn[0]) && typeof $exn[0][0] === 'string'
 }
 
-// Call a BuckleScript-generated OCaml function, catch OCaml `exn`-type exceptions, attempt to wrap
-// them in a JavaScript-side `Error`-descendant, and then throw them. Naturally, *this function*
-// will show up in the stack-trace — that is perfectly fine, as OCaml `exn`s *don't actually
-// maintain a stack*, as a performance trade-off; thus, no information is being lost here.
+/**
+ * Call a BuckleScript-generated OCaml function, catch OCaml `exn`-type exceptions, attempt to wrap
+ * them in a JavaScript-side `Error`-descendant, and then throw them. Naturally, *this function*
+ * will show up in the stack-trace — that is perfectly fine, as OCaml `exn`s *don't actually
+ * maintain a stack*, as a performance trade-off; thus, no information is being lost here.
+ *
+ * @hidden
+ */
 function buckleScriptErrorTrampoline<R>(
    bs_function: (...args: unknown[]) => R,
    ...args: unknown[]
@@ -188,7 +215,10 @@ function buckleScriptErrorTrampoline<R>(
    }
 }
 
-// Meta-programmatic nonsense to translate all errors occuring in BuckleScript-land.
+/**
+ * Meta-programmatic nonsense to translate all errors occuring in BuckleScript-land.
+ * @hidden
+ */
 function mapExposedFunctionsThruErrorTrampoline($module) {
    for (const exposed in $module) {
       if ($module.hasOwnProperty(exposed)) {
@@ -205,6 +235,7 @@ function mapExposedFunctionsThruErrorTrampoline($module) {
    mapExposedFunctionsThruErrorTrampoline,
 )
 
+/** @hidden */
 function fromFakeUTF8StringOption(
    $str: string_as_utf_8_buffer | undefined,
 ): string | undefined {
@@ -215,7 +246,10 @@ function fromFakeUTF8StringOption(
    }
 }
 
-// Yes, this is basically a no-op; but I like to be explicit. >,>
+/**
+ * Yes, this is basically a no-op; but I like to be explicit. >,>
+ * @hidden
+ */
 function fromFlagPayloadOption(
    $payloadOpt: $flag_payload | undefined,
 ): $or_subexpr | undefined {
@@ -235,20 +269,39 @@ function fromFlagPayloadOption(
    }
 }
 
+/**
+ * As opposed to [[Sub]]; represents simple, directly-embedded `string`s in the AST. These are
+ * the values that are immediately available, and do not need further evaluation.
+ *
+ * (Functions that return this are usually also available as `eval*` versions that help you
+ * interpret subexpressions recursively; see [[Expression]] for more information.)
+ */
 interface Literal {
    type: 'literal'
    value: string
 }
 
+/**
+ * As opposed to [[Literal]]; represents an sub-[[Expression]] embedded in the AST.
+ *
+ * (Functions that return this are usually also available as `eval*` versions that help you
+ * interpret subexpressions recursively; see [[Expression]] for more information.)
+ */
 interface Sub<T> {
    type: 'subexpression'
    expr: T
 }
 
-// The signature of a function
+/**
+ * The function-signature required of callbacks, passed to `eval*` functions and friends, that can
+ * reduce an unevaluated sub-[[Expression]] into a resultant, simple `string`-ish return value.
+ *
+ * See [[Expression]] for more information.
+ */
 type evaluator = (expr: ExpressionEval) => string
 
 // Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`
+/** @hidden */
 function fromOrSubexpr($x: $or_subexpr): Literal | Sub<Expression> {
    if ($AST.is_literal($x)) {
       let $val = $AST.get_literal_exn($x)
@@ -259,8 +312,11 @@ function fromOrSubexpr($x: $or_subexpr): Literal | Sub<Expression> {
    }
 }
 
-// Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`, as `fromOrSubexpr`; but
-// producing `ExpressionEval`s instead of `Expression`s for subexpressions.
+/**
+ * Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`, as `fromOrSubexpr`; but
+ * producing `ExpressionEval`s instead of `Expression`s for subexpressions.
+ * @hidden
+ */
 function fromOrSubexprWithEval(
    evl: evaluator,
    $x: $or_subexpr,
@@ -274,6 +330,7 @@ function fromOrSubexprWithEval(
    }
 }
 
+/** @hidden */
 function reduceOrSubexprWithEval(evl: evaluator, $x: $or_subexpr): string {
    if ($AST.is_literal($x)) {
       let $val = $AST.get_literal_exn($x)
@@ -356,8 +413,10 @@ export const Parser = {
 
 // Wrapper for `AST.t`.
 export class Script {
-   $scpt: $ASTt
-   $expressions: $Expressiont[]
+   /** @hidden */
+   private $scpt: $ASTt
+   /** @hidden */
+   private $expressions: $Expressiont[]
 
    constructor(isInternal: sentinel, $scpt: $ASTt) {
       if (isInternal !== INTERNAL)
@@ -375,7 +434,8 @@ export class Script {
 }
 
 class ExpressionCommon {
-   $expr: $Expressiont
+   /** @hidden */
+   protected $expr: $Expressiont
 
    constructor(isInternal: sentinel, $expr: $Expressiont) {
       if (isInternal !== INTERNAL)
@@ -402,7 +462,129 @@ class ExpressionCommon {
    }
 }
 
-// Wrapper for `Expression.t`.
+/**
+ * The core type of my AST, this data-structure represents a single (sub-)command in an excmd
+ * script; and is the product of entry-points like [[Parser.expressionOfString]].
+ *
+ * ### Construction
+ * This JavaScript class, like most in my interface, cannot be constructed directly (i.e. `new
+ * Expression()` is going to throw an error); instead, you must invoke the parser via the functions
+ * in the exported [[Parser]] module.
+ *
+ * ### Evaluation
+ * The language accepted by this parser allows for "sub-expressions" — runs of code that may remain
+ * unevaluated, to be executed at a later point.
+ *
+ * The most direct method of interacting with these, is manually testing whether a particular method
+ * has produced a [[Literal]] or a [[Sub]]-expression, and proceeding as appropriate:
+ *
+ * ```typescript
+ * const expr = Parser.expressionOfString('(echo test_cmd) arg'),
+ *    cmd = expr.command
+ *
+ * switch (cmd.type) {
+ *    case 'literal': console.log(cmd.value) // ... use stringish val,
+ *    case 'subexpression': handleSubexpr(cmd.expr) // or evaluate.
+ * }
+ * ```
+ *
+ * However, this can be tedious, if you only wish to evaluate simple expressions. For these
+ * situations, I provide a simplified "recursive evaluation" interface: by inverting control, you
+ * can allow the parser to become responsible for recursively evaluating [[Sub]] and [[Literal]]
+ * values into simple `string`s, as long as you can provide the parser with a simplified
+ * handler-callback that will attempt to reduce a single, given sub-expression into a `string`.
+ *
+ * The entry-point to this auto-evaluation interface is either [[cloneWithEvaluator]], or as a
+ * further convenience, the various `eval*` methods below: [[evalCommand]], [[evalPositionals]], and
+ * so on.
+ *
+ * Each of these takes a function — matching the [[evaluator]] signature — that takes an expression,
+ * and mechanistically reduces it into a simple string:
+ *
+ * ```typescript
+ * const expr = Parser.expressionOfString('(echo test_cmd) arg')
+ *
+ * function handleSubexpr(expr) {
+ *    if (expr.command === 'echo') {
+ *       return expr.positionals.join(' ')
+ *    }
+ * }
+ *
+ * console.log("Command:", expr.evalCommand(handleSubexpr))
+ * //=> prints "Command: test_cmd"
+ * ```
+ *
+ * (Note, additionally, that within the body of the evaluator above, I've only had to compare
+ * `expr.command` to a string, directly. As evaluators receive [[ExpressionEval]]s instead of plain
+ * expressions, their bodies need no further shenanigans; any requested expression-properties will
+ * recursively evaluate further subexpressions as-needed.)
+ *
+ * Finally, if you want to access multiple elements of an expression thusly, it may be easier to
+ * pre-associate an evaluator with the expression using [[cloneWithEvaluator]], producing an
+ * [[ExpressionEval]] directly:
+ *
+ * ```typescript
+ * function handleSubexpr(expr) {
+ *    if (expr.command === 'echo') {
+ *       return expr.positionals.join(' ')
+ *    }
+ * }
+ *
+ * const expr = Parser.expressionOfString('(echo test_cmd) arg'),
+ *    ee = expr.cloneWithEvaluator(handleSubexpr)
+ *
+ * console.log(`Command: ${ee.command}, args: ${ee.positionals.join(' ')}`)
+ * //=> prints "Command: test_cmd, args: arg"
+ * ```
+ *
+ * ### Mutation
+ * Importantly, these `Expression`s are *mutable* views onto the underlying AST. They're designed to
+ * ensure you don't access the data-structure in an unsafe way. In particular, a given `word` in the
+ * original input-string can only be *either* a flag-payload, *or* a positional argument — not both.
+ *
+ * Consider the following:
+ *
+ * ```typescript
+ * const expr = Parser.expressionOfString('hello -f world')
+ * ```
+ *
+ * Does that command have one flag, with the payload `world`? Or an empty (boolean) flag, and a
+ * single positional-argument, `world`? My answer, in this interface, is “whichever you observe
+ * first”. To be more specific, any method of either [[Expression]] or [[ExpressionEval]] that
+ * produces flag-payloads or positional arguments, will *mutate* the data-structure such that
+ * subsequent accesses don't see an inconsistent state.
+ *
+ * Let's look at some examples:
+ *
+ * ```typescript
+ * const expr1 = Parser.expressionOfString('hello -f world')
+ *
+ * expr1.getFlag('f').value //=> returs 'world';
+ * expr1.getPositionals() //=> returns []
+ * ```
+ *
+ * Here, [[getFlag]] mutated `expr1`; and so a subsequent [[getPositionals]] produced a consistent
+ * result: there were no remaining positional arguments.
+ *
+ * ```typescript
+ * const expr2 = Parser.expressionOfString('hello -f world')
+ *
+ * expr2.getPositionals() //=> returns one arg, [{ value: 'world' }]
+ * expr2.getFlag('f') //=> returs undefined; because `-f` has no payload
+ * ```
+ *
+ * Here, [[getPositionals]] mutated `expr2`; and so a subsequent [[getFlag]], *again*, produced a
+ * consistent result: there was no value available to become the payload of `-f`.
+ *
+ * This interface is intended to be used in a form wherein the invocations of these methods acts as
+ * the specification of the parser's behaviour. For example, one command might expect a flag `-d` or
+ * `--dest`, and demand a payload for that flag; whereas another might use `-d` as a boolean, and
+ * expect positionals. This way, the behaviour of the parser is flexible enough to handle both of
+ * those situations.
+ *
+ * Finally, note that at least for flags, there's also non-mutative accessors: you can always check
+ * whether a flag *exists* using [[hasFlag]].
+ */
 export class Expression extends ExpressionCommon {
    clone(): Expression {
       let $new = $AST.copy_expression(this.$expr)
@@ -467,6 +649,7 @@ export class Expression extends ExpressionCommon {
    }
 
    // Wrapper for `Expression.flag`
+   // TODO: Rename to something clearer, like getPayload
    getFlag(flag: string): Literal | Sub<Expression> | undefined {
       console.assert(typeof flag === 'string')
       const $flag = toFakeUTF8String(flag),
@@ -484,8 +667,7 @@ export class Expression extends ExpressionCommon {
 
 // `Expression.t`, with recursive evaluation of subexpressions
 export class ExpressionEval extends ExpressionCommon {
-   $expr: $Expressiont
-   evaluator: evaluator
+   private evaluator: evaluator
 
    constructor(isInternal: sentinel, $expr: $Expressiont, handleSubexpr: evaluator) {
       if (isInternal !== INTERNAL)
@@ -553,6 +735,7 @@ export class ExpressionEval extends ExpressionCommon {
 }
 
 export class LexBuffer {
+   /** @hidden */
    $buf: $buffer
 
    constructor(isInternal: sentinel, $buf: $buffer) {
@@ -584,7 +767,8 @@ export class LexBuffer {
 }
 
 export class Position {
-   $pos: $position
+   /** @hidden */
+   private $pos: $position
 
    constructor(isInternal: sentinel, $pos: $position) {
       if (isInternal !== INTERNAL) throw new Error('`Position` cannot be constructed')
@@ -611,7 +795,8 @@ export class Position {
 }
 
 export class LocatedToken {
-   $loctok: $token_located
+   /** @hidden */
+   private $loctok: $token_located
 
    constructor(isInternal: sentinel, $loctok: $token_located) {
       if (isInternal !== INTERNAL) throw new Error('`LocatedToken` cannot be constructed')
@@ -650,7 +835,8 @@ export class LocatedToken {
 }
 
 export class Token {
-   $token: $token
+   /** @hidden */
+   private $token: $token
 
    constructor(isInternal: sentinel, $tok: $token) {
       if (isInternal !== INTERNAL) throw new Error('`Token` cannot be constructed')
@@ -673,17 +859,21 @@ export class Token {
    }
 }
 
+/** @hidden */
 interface SemanticMap {
    script: Script
    expression: Expression
 }
 
+/** @hidden */
 type SemanticDiscriminator = keyof SemanticMap
 
 // Wrapper for Incremental.checkpoint.
 export class Checkpoint<D extends SemanticDiscriminator> {
+   /** @hidden */
    $cp: $checkpoint
-   type: D
+
+   private type: D
 
    constructor(isInternal: sentinel, $cp: $checkpoint, type: D) {
       if (isInternal !== INTERNAL)
@@ -695,10 +885,12 @@ export class Checkpoint<D extends SemanticDiscriminator> {
       this.type = type
    }
 
+   /** @hidden */
    producesScript(): this is Checkpoint<'script'> {
       return this.type === 'script'
    }
 
+   /** @hidden */
    producesExpression(): this is Checkpoint<'expression'> {
       return this.type === 'expression'
    }
@@ -815,7 +1007,8 @@ export class AutomatonStack<D extends SemanticDiscriminator> {
 }
 
 export class AutomatonElement {
-   $el: $element
+   /** @hidden */
+   private $el: $element
 
    constructor(isInternal: sentinel, $el: $element) {
       if (isInternal !== INTERNAL)

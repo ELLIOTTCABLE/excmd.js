@@ -66,6 +66,105 @@
 <div class="container container-main">
 	<div class="row">
 		<div class="col-8 col-content">
+			<section class="tsd-panel tsd-comment">
+				<div class="tsd-comment tsd-typography">
+					<div class="lead">
+						<p>The core type of my AST, this data-structure represents a single (sub-)command in an excmd
+						script; and is the product of entry-points like <a href="../globals.html#parser.expressionofstring">Parser.expressionOfString</a>.</p>
+					</div>
+					<a href="#construction" id="construction" style="color: inherit; text-decoration: none;">
+						<h3>Construction</h3>
+					</a>
+					<p>This JavaScript class, like most in my interface, cannot be constructed directly (i.e. <code>new
+Expression()</code> is going to throw an error); instead, you must invoke the parser via the functions
+					in the exported <a href="../globals.html#parser">Parser</a> module.</p>
+					<a href="#evaluation" id="evaluation" style="color: inherit; text-decoration: none;">
+						<h3>Evaluation</h3>
+					</a>
+					<p>The language accepted by this parser allows for &quot;sub-expressions&quot; — runs of code that may remain
+					unevaluated, to be executed at a later point.</p>
+					<p>The most direct method of interacting with these, is manually testing whether a particular method
+					has produced a <a href="../interfaces/literal.html">Literal</a> or a <a href="../interfaces/sub.html">Sub</a>-expression, and proceeding as appropriate:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> expr = Parser.expressionOfString(<span class="hljs-string">'(echo test_cmd) arg'</span>),
+   cmd = expr.command
+
+<span class="hljs-keyword">switch</span> (cmd.type) {
+   <span class="hljs-keyword">case</span> <span class="hljs-string">'literal'</span>: <span class="hljs-built_in">console</span>.log(cmd.value) <span class="hljs-comment">// ... use stringish val,</span>
+   <span class="hljs-keyword">case</span> <span class="hljs-string">'subexpression'</span>: handleSubexpr(cmd.expr) <span class="hljs-comment">// or evaluate.</span>
+}</code></pre>
+					<p>However, this can be tedious, if you only wish to evaluate simple expressions. For these
+						situations, I provide a simplified &quot;recursive evaluation&quot; interface: by inverting control, you
+						can allow the parser to become responsible for recursively evaluating <a href="../interfaces/sub.html">Sub</a> and <a href="../interfaces/literal.html">Literal</a>
+						values into simple <code>string</code>s, as long as you can provide the parser with a simplified
+					handler-callback that will attempt to reduce a single, given sub-expression into a <code>string</code>.</p>
+					<p>The entry-point to this auto-evaluation interface is either <a href="expression.html#clonewithevaluator">cloneWithEvaluator</a>, or as a
+						further convenience, the various <code>eval*</code> methods below: <a href="expression.html#evalcommand">evalCommand</a>, <a href="expression.html#evalpositionals">evalPositionals</a>, and
+					so on.</p>
+					<p>Each of these takes a function — matching the <a href="expressioneval.html#evaluator">evaluator</a> signature — that takes an expression,
+					and mechanistically reduces it into a simple string:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> expr = Parser.expressionOfString(<span class="hljs-string">'(echo test_cmd) arg'</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleSubexpr</span>(<span class="hljs-params">expr</span>) </span>{
+   <span class="hljs-keyword">if</span> (expr.command === <span class="hljs-string">'echo'</span>) {
+      <span class="hljs-keyword">return</span> expr.positionals.join(<span class="hljs-string">' '</span>)
+   }
+}
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Command:"</span>, expr.evalCommand(handleSubexpr))
+<span class="hljs-comment">//=&gt; prints "Command: test_cmd"</span></code></pre>
+					<p>(Note, additionally, that within the body of the evaluator above, I&#39;ve only had to compare
+						<code>expr.command</code> to a string, directly. As evaluators receive <a href="expressioneval.html">ExpressionEval</a>s instead of plain
+						expressions, their bodies need no further shenanigans; any requested expression-properties will
+					recursively evaluate further subexpressions as-needed.)</p>
+					<p>Finally, if you want to access multiple elements of an expression thusly, it may be easier to
+						pre-associate an evaluator with the expression using <a href="expression.html#clonewithevaluator">cloneWithEvaluator</a>, producing an
+					<a href="expressioneval.html">ExpressionEval</a> directly:</p>
+					<pre><code class="language-typescript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleSubexpr</span>(<span class="hljs-params">expr</span>) </span>{
+   <span class="hljs-keyword">if</span> (expr.command === <span class="hljs-string">'echo'</span>) {
+      <span class="hljs-keyword">return</span> expr.positionals.join(<span class="hljs-string">' '</span>)
+   }
+}
+
+<span class="hljs-keyword">const</span> expr = Parser.expressionOfString(<span class="hljs-string">'(echo test_cmd) arg'</span>),
+   ee = expr.cloneWithEvaluator(handleSubexpr)
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`Command: <span class="hljs-subst">${ee.command}</span>, args: <span class="hljs-subst">${ee.positionals.join(<span class="hljs-string">' '</span>)}</span>`</span>)
+<span class="hljs-comment">//=&gt; prints "Command: test_cmd, args: arg"</span></code></pre>
+					<a href="#mutation" id="mutation" style="color: inherit; text-decoration: none;">
+						<h3>Mutation</h3>
+					</a>
+					<p>Importantly, these <code>Expression</code>s are <em>mutable</em> views onto the underlying AST. They&#39;re designed to
+						ensure you don&#39;t access the data-structure in an unsafe way. In particular, a given <code>word</code> in the
+					original input-string can only be <em>either</em> a flag-payload, <em>or</em> a positional argument — not both.</p>
+					<p>Consider the following:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> expr = Parser.expressionOfString(<span class="hljs-string">'hello -f world'</span>)</code></pre>
+					<p>Does that command have one flag, with the payload <code>world</code>? Or an empty (boolean) flag, and a
+						single positional-argument, <code>world</code>? My answer, in this interface, is “whichever you observe
+						first”. To be more specific, any method of either <a href="expression.html">Expression</a> or <a href="expressioneval.html">ExpressionEval</a> that
+						produces flag-payloads or positional arguments, will <em>mutate</em> the data-structure such that
+					subsequent accesses don&#39;t see an inconsistent state.</p>
+					<p>Let&#39;s look at some examples:</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> expr1 = Parser.expressionOfString(<span class="hljs-string">'hello -f world'</span>)
+
+expr1.getFlag(<span class="hljs-string">'f'</span>).value <span class="hljs-comment">//=&gt; returs 'world';</span>
+expr1.getPositionals() <span class="hljs-comment">//=&gt; returns []</span></code></pre>
+					<p>Here, <a href="expression.html#getflag">getFlag</a> mutated <code>expr1</code>; and so a subsequent <a href="expression.html#getpositionals">getPositionals</a> produced a consistent
+					result: there were no remaining positional arguments.</p>
+					<pre><code class="language-typescript"><span class="hljs-keyword">const</span> expr2 = Parser.expressionOfString(<span class="hljs-string">'hello -f world'</span>)
+
+expr2.getPositionals() <span class="hljs-comment">//=&gt; returns one arg, [{ value: 'world' }]</span>
+expr2.getFlag(<span class="hljs-string">'f'</span>) <span class="hljs-comment">//=&gt; returs undefined; because `-f` has no payload</span></code></pre>
+					<p>Here, <a href="expression.html#getpositionals">getPositionals</a> mutated <code>expr2</code>; and so a subsequent <a href="expression.html#getflag">getFlag</a>, <em>again</em>, produced a
+					consistent result: there was no value available to become the payload of <code>-f</code>.</p>
+					<p>This interface is intended to be used in a form wherein the invocations of these methods acts as
+						the specification of the parser&#39;s behaviour. For example, one command might expect a flag <code>-d</code> or
+						<code>--dest</code>, and demand a payload for that flag; whereas another might use <code>-d</code> as a boolean, and
+						expect positionals. This way, the behaviour of the parser is flexible enough to handle both of
+					those situations.</p>
+					<p>Finally, note that at least for flags, there&#39;s also non-mutative accessors: you can always check
+					whether a flag <em>exists</em> using <a href="expression.html#hasflag">hasFlag</a>.</p>
+				</div>
+			</section>
 			<section class="tsd-panel tsd-hierarchy">
 				<h3>Hierarchy</h3>
 				<ul class="tsd-hierarchy">
@@ -87,12 +186,6 @@
 							<h3>Constructors</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><a href="expression.html#constructor" class="tsd-kind-icon">constructor</a></li>
-							</ul>
-						</section>
-						<section class="tsd-index-section tsd-is-inherited">
-							<h3>Properties</h3>
-							<ul class="tsd-index-list">
-								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><a href="expression.html#_expr" class="tsd-kind-icon">$expr</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -127,42 +220,28 @@
 					<a name="constructor" class="tsd-anchor"></a>
 					<h3>constructor</h3>
 					<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
-						<li class="tsd-signature tsd-kind-icon">new <wbr>Expression<span class="tsd-signature-symbol">(</span>isInternal<span class="tsd-signature-symbol">: </span><a href="../globals.html#sentinel" class="tsd-signature-type">sentinel</a>, $expr<span class="tsd-signature-symbol">: </span><a href="../globals.html#_expressiont" class="tsd-signature-type">$Expressiont</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="expression.html" class="tsd-signature-type">Expression</a></li>
+						<li class="tsd-signature tsd-kind-icon">new <wbr>Expression<span class="tsd-signature-symbol">(</span>isInternal<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">sentinel</span>, $expr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">$Expressiont</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="expression.html" class="tsd-signature-type">Expression</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="expressioncommon.html">ExpressionCommon</a>.<a href="expressioncommon.html#constructor">constructor</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L378">interface.ts:378</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L438">interface.ts:438</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>isInternal: <a href="../globals.html#sentinel" class="tsd-signature-type">sentinel</a></h5>
+									<h5>isInternal: <span class="tsd-signature-type">sentinel</span></h5>
 								</li>
 								<li>
-									<h5>$expr: <a href="../globals.html#_expressiont" class="tsd-signature-type">$Expressiont</a></h5>
+									<h5>$expr: <span class="tsd-signature-type">$Expressiont</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <a href="expression.html" class="tsd-signature-type">Expression</a></h4>
 						</li>
 					</ul>
-				</section>
-			</section>
-			<section class="tsd-panel-group tsd-member-group tsd-is-inherited">
-				<h2>Properties</h2>
-				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-					<a name="_expr" class="tsd-anchor"></a>
-					<h3>$expr</h3>
-					<div class="tsd-signature tsd-kind-icon">$expr<span class="tsd-signature-symbol">:</span> <a href="../globals.html#_expressiont" class="tsd-signature-type">$Expressiont</a></div>
-					<aside class="tsd-sources">
-						<p>Inherited from <a href="expressioncommon.html">ExpressionCommon</a>.<a href="expressioncommon.html#_expr">$expr</a></p>
-						<ul>
-							<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L378">interface.ts:378</a></li>
-						</ul>
-					</aside>
 				</section>
 			</section>
 			<section class="tsd-panel-group tsd-member-group ">
@@ -177,7 +256,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L417">interface.ts:417</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L599">interface.ts:599</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="../interfaces/literal.html" class="tsd-signature-type">Literal</a>
@@ -198,7 +277,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="expressioncommon.html">ExpressionCommon</a>.<a href="expressioncommon.html#count">count</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L389">interface.ts:389</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L449">interface.ts:449</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
@@ -216,7 +295,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="expressioncommon.html">ExpressionCommon</a>.<a href="expressioncommon.html#flags">flags</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L393">interface.ts:393</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L453">interface.ts:453</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
@@ -236,7 +315,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L407">interface.ts:407</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L589">interface.ts:589</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <a href="expression.html" class="tsd-signature-type">Expression</a></h4>
@@ -253,7 +332,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L412">interface.ts:412</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L594">interface.ts:594</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -276,7 +355,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L422">interface.ts:422</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L604">interface.ts:604</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -299,7 +378,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L461">interface.ts:461</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L643">interface.ts:643</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -349,7 +428,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L479">interface.ts:479</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L662">interface.ts:662</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -378,7 +457,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L433">interface.ts:433</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L615">interface.ts:615</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -401,7 +480,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L439">interface.ts:439</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L621">interface.ts:621</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -448,7 +527,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L470">interface.ts:470</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L653">interface.ts:653</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -476,7 +555,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L428">interface.ts:428</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L610">interface.ts:610</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">(</span><a href="../interfaces/literal.html" class="tsd-signature-type">Literal</a><span class="tsd-signature-symbol"> | </span><a href="../interfaces/sub.html" class="tsd-signature-type">Sub</a><span class="tsd-signature-symbol">&lt;</span><a href="expression.html" class="tsd-signature-type">Expression</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></h4>
@@ -494,7 +573,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from <a href="expressioncommon.html">ExpressionCommon</a>.<a href="expressioncommon.html#hasflag">hasFlag</a></p>
 								<ul>
-									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/a9e3b6e/src/interface.ts#L398">interface.ts:398</a></li>
+									<li>Defined in <a href="https://github.com/ELLIOTTCABLE/excmd.js/blob/fb0c8d4/src/interface.ts#L458">interface.ts:458</a></li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -519,6 +598,15 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-class">
+						<a href="automatonelement.html" class="tsd-kind-icon">Automaton<wbr>Element</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="automatonstack.html" class="tsd-kind-icon">Automaton<wbr>Stack</a>
+					</li>
+					<li class=" tsd-kind-class tsd-has-type-parameter">
+						<a href="checkpoint.html" class="tsd-kind-icon">Checkpoint</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
@@ -526,9 +614,6 @@
 						<ul>
 							<li class=" tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited">
 								<a href="expression.html#constructor" class="tsd-kind-icon">constructor</a>
-							</li>
-							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited">
-								<a href="expression.html#_expr" class="tsd-kind-icon">$expr</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="expression.html#command" class="tsd-kind-icon">command</a>
@@ -573,6 +658,78 @@
 					</li>
 				</ul>
 				<ul class="after-current">
+					<li class=" tsd-kind-class tsd-is-not-exported">
+						<a href="expressioncommon.html" class="tsd-kind-icon">Expression<wbr>Common</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="expressioneval.html" class="tsd-kind-icon">Expression<wbr>Eval</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="lexbuffer.html" class="tsd-kind-icon">Lex<wbr>Buffer</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="lexerror.html" class="tsd-kind-icon">Lex<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="locatedtoken.html" class="tsd-kind-icon">Located<wbr>Token</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="ocamlerror.html" class="tsd-kind-icon">OCaml<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="parseerror.html" class="tsd-kind-icon">Parse<wbr>Error</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="position.html" class="tsd-kind-icon">Position</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="script.html" class="tsd-kind-icon">Script</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="token.html" class="tsd-kind-icon">Token</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-is-not-exported">
+						<a href="../interfaces/literal.html" class="tsd-kind-icon">Literal</a>
+					</li>
+					<li class=" tsd-kind-interface tsd-has-type-parameter tsd-is-not-exported">
+						<a href="../interfaces/sub.html" class="tsd-kind-icon">Sub</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-not-exported">
+						<a href="../globals.html#parseoptions" class="tsd-kind-icon">Parse<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-not-exported">
+						<a href="../globals.html#checkpoint_state" class="tsd-kind-icon">checkpoint_<wbr>state</a>
+					</li>
+					<li class=" tsd-kind-type-alias tsd-is-not-exported">
+						<a href="../globals.html#evaluator" class="tsd-kind-icon">evaluator</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#expression" class="tsd-kind-icon">expression</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#expressionofstring" class="tsd-kind-icon">expression<wbr>OfString</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#script" class="tsd-kind-icon">script</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#scriptofstring" class="tsd-kind-icon">script<wbr>OfString</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#startexpression" class="tsd-kind-icon">start<wbr>Expression</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#startexpressionwithstring" class="tsd-kind-icon">start<wbr>Expression<wbr>With<wbr>String</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#startscript" class="tsd-kind-icon">start<wbr>Script</a>
+					</li>
+					<li class=" tsd-kind-function tsd-is-not-exported">
+						<a href="../globals.html#startscriptwithstring" class="tsd-kind-icon">start<wbr>Script<wbr>With<wbr>String</a>
+					</li>
+					<li class=" tsd-kind-object-literal">
+						<a href="../globals.html#parser" class="tsd-kind-icon">Parser</a>
+					</li>
 				</ul>
 			</nav>
 		</div>
