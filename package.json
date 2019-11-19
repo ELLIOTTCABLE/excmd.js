@@ -1,6 +1,6 @@
 {
    "name": "excmd",
-   "version": "0.0.1",
+   "version": "1.0.0",
    "description": "Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
    "main": "lib/interface.js",
    "types": "lib/interface.d.ts",
