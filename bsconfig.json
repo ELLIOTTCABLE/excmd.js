@@ -82,6 +82,6 @@
       "in-source": true
    },
    "suffix": ".bs.js",
-   "bsc-flags": ["-bs-super-errors", "-bs-no-version-header", "-w -9"],
+   "bsc-flags": ["-bs-super-errors", "-bs-no-version-header", "-w -9", "-open UcharShim"],
    "refmt": 3
 }
