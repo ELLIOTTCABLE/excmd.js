@@ -79,7 +79,7 @@
    "dependencies": {
       "@babel/runtime": "^7.5.5",
       "@elliottcable/bs-result": "^12.0.0",
-      "bs-deriving": "^42.1.0",
+      "bs-deriving": "^44.1.0",
       "bs-gen": "^0.5.2",
       "bs-platform": "^5.0.6",
       "bs-sedlex": "^20.0.0",
@@ -99,7 +99,7 @@
       "jest": "^24.8.0",
       "lint-staged": "^9.2.1",
       "npm-run-all": "^4.1.5",
-      "ppx-deriving": "^42.1.0",
+      "ppx-deriving": "^44.1.0",
       "ppx-sedlex": "^20.0.0",
       "prettier": "^1.18.2",
       "terminal-kit": "^1.31.1",
