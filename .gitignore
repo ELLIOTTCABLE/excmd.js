@@ -1,0 +1,11 @@
+# These are the ignores for the monorepo-root; most ignores should be duplicated in the individual
+# modules.
+
+# Merlin's various log-files (the lack of escapes is intentional!)
+*merlin-log*
+
+# opam directory-local switch
+_opam/
+
+# Dependency directories
+node_modules/

@@ -64,12 +64,6 @@ setup.log
 # Merlin configuring file for Vim and Emacs
 .merlin
 
-# Merlin's various log-files (the lack of escapes is intentional!)
-*merlin-log*
-
-# opam directory-local switch
-_opam/
-
 
 # Node.js
 # =======
