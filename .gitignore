@@ -4,6 +4,9 @@
 # Merlin's various log-files (the lack of escapes is intentional!)
 *merlin-log*
 
+# ocamlbuild working directory
+_build/
+
 # opam directory-local switch
 _opam/
 
