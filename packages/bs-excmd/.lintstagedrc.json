@@ -1,0 +1,11 @@
+{
+   "linters": {
+      "*.{js,json,css,md}": [
+         "prettier --ignore-path .gitignore --write",
+         "git add",
+         "jest --bail --findRelatedTests"
+      ],
+      "*.{ml,mli}": ["npm run format:ml ; :", "git add", "npm run changed:ml"]
+   },
+   "ignore": ["docs/**/*", "package.json"]
+}

@@ -41,31 +41,6 @@
       "format": "npm-run-all 'format:*'",
       "lint-staged": "lint-staged"
    },
-   "lint-staged": {
-      "linters": {
-         "*.{js,json,css,md}": [
-            "prettier --ignore-path .gitignore --write",
-            "git add",
-            "jest --bail --findRelatedTests"
-         ],
-         "*.{ml,mli}": [
-            "npm run format:ml ; :",
-            "git add",
-            "npm run changed:ml"
-         ]
-      },
-      "ignore": [
-         "docs/**/*",
-         "package.json"
-      ]
-   },
-   "husky": {
-      "husky": {
-         "hooks": {
-            "pre-commit": "lint-staged && run-p test:js:staged test:ml"
-         }
-      }
-   },
    "repository": {
       "type": "git",
       "url": "git+https://github.com/ELLIOTTCABLE/excmd.js.git"
@@ -95,10 +70,7 @@
       "@babel/preset-typescript": "^7.3.3",
       "@types/terminal-kit": "^1.28.0",
       "babel-jest": "^24.8.0",
-      "husky": "^1.3.1",
       "jest": "^24.8.0",
-      "lint-staged": "^9.2.1",
-      "npm-run-all": "^4.1.5",
       "ppx-deriving": "^44.1.0",
       "ppx-sedlex": "^20.0.0",
       "prettier": "^1.18.2",
