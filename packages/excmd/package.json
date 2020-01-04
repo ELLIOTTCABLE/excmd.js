@@ -1,0 +1,16 @@
+{
+   "name": "excmd",
+   "version": "1.0.0",
+   "description": "JavaScript interface to Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/ELLIOTTCABLE/excmd.js.git"
+   },
+   "author": "ELLIOTTCABLE <npm@ell.io>",
+   "license": "ISC",
+   "bugs": {
+      "url": "https://github.com/ELLIOTTCABLE/excmd.js/issues"
+   },
+   "homepage": "https://github.com/ELLIOTTCABLE/excmd.js#readme"
+}
+
