@@ -1,5 +1,0 @@
-{
-   "hooks": {
-      "pre-commit": "run-p test:js:staged test:ml"
-   }
-}

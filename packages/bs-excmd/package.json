@@ -39,7 +39,7 @@
       "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.ts' 'src/**/*.js' 'test/**/*.js' 'examples/**/*.ts'",
       "format:ml": "make format-ml",
       "format": "npm-run-all 'format:*'",
-      "lint-staged": "lint-staged"
+      "pre-commit": "lint-staged && run-p test:js:staged test:ml"
    },
    "repository": {
       "type": "git",
