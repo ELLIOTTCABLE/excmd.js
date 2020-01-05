@@ -2,5 +2,11 @@
   "packages": [
     "packages/*"
   ],
+  "command": {
+    "bootstrap": {
+      "strict": true,
+      "hoist": true
+    }
+  },
   "version": "0.0.0"
 }

@@ -2,6 +2,27 @@
    "name": "excmd",
    "version": "1.0.0",
    "description": "JavaScript interface to Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
+   "main": "lib/interface.js",
+   "types": "lib/interface.d.ts",
+   "files": [
+      "bsconfig.json",
+      "tsconfig.json",
+      "docs",
+      "lib",
+      "shim",
+      "src",
+      "test",
+      "!lib/bs",
+      "!**/dune",
+      "!**/.merlin"
+   ],
+   "scripts": {
+      "build:bs": "bsb -make-world",
+      "build:js": "",
+      "build": "npm-run-all build:bs build:js",
+      "clean": "bsb -clean-world",
+      "prepare": "npm-run-all clean build"
+   },
    "repository": {
       "type": "git",
       "url": "git+https://github.com/ELLIOTTCABLE/excmd.js.git"
@@ -23,6 +44,9 @@
       "bs-excmd": "^1.0.0",
       "bs-platform": "^5.2.1",
       "jest": "^24.8.0",
+      "lerna": "^3.20.2",
+      "lint-staged": "^10.0.0-beta.14",
+      "npm-run-all": "^4.1.5",
       "prettier": "^1.18.2",
       "terminal-kit": "^1.31.1",
       "typedoc": "^0.15.0",
