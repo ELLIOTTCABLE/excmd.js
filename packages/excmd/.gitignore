@@ -1,0 +1,22 @@
+# TypeScript
+# ==========
+examples/**/*.js
+src/**/*.d.ts
+src/**/*.d.ts.map
+!src/**/*.bs.d.ts
+
+# BuckleScript
+# ============
+.bsb.lock
+
+
+# Node.js
+# =======
+# Logs
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+
+# Output of 'npm pack'
+*.tgz
