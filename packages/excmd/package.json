@@ -11,6 +11,8 @@
    "bugs": {
       "url": "https://github.com/ELLIOTTCABLE/excmd.js/issues"
    },
-   "homepage": "https://github.com/ELLIOTTCABLE/excmd.js#readme"
+   "homepage": "https://github.com/ELLIOTTCABLE/excmd.js#readme",
+   "devDependencies": {
+      "bs-excmd": "^1.0.0"
+   }
 }
-
