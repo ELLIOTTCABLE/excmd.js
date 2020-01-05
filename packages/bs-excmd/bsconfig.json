@@ -1,5 +1,5 @@
 {
-   "name": "excmd",
+   "name": "bs-excmd",
    "version": "1.0.0",
    "sources": [
       {
@@ -76,7 +76,13 @@
          "command": "cp $src_root_dir/src/uAX31.ml ${out} && tail -n +2 $src_root_dir/src/lexer.body.ml >> ${out}"
       }
    ],
-   "bs-dependencies": ["bs-sedlex", "bs-deriving", "bs-uchar", "bs-gen", "@elliottcable/bs-result"],
+   "bs-dependencies": [
+      "bs-sedlex",
+      "bs-deriving",
+      "bs-uchar",
+      "bs-gen",
+      "@elliottcable/bs-result"
+   ],
    "package-specs": {
       "module": "commonjs",
       "in-source": true
