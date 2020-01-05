@@ -5,7 +5,7 @@
 *merlin-log*
 
 # ocamlbuild working directory
-_build/
+**/_build/
 
 # opam directory-local switch
 _opam/
