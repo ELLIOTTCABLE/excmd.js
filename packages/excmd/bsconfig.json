@@ -1,0 +1,6 @@
+{
+   "name": "excmd",
+   "sources": ["src"],
+   "bs-dependencies": ["bs-excmd"]
+}
+

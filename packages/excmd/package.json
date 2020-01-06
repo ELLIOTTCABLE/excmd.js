@@ -18,10 +18,12 @@
    ],
    "scripts": {
       "build:bs": "bsb -make-world",
-      "build:js": "",
+      "build:dts": "tsc -p tsconfig.gen-declarations.json",
+      "build:examples": "babel --verbose examples --extensions '.ts' --out-dir examples",
+      "build:js": "babel --verbose src --extensions '.ts,.js' --ignore '**/*.d.ts' --out-dir lib",
       "build": "npm-run-all build:bs build:js",
-      "clean": "bsb -clean-world",
-      "prepare": "npm-run-all clean build"
+      "clean": "rm -rf lib/ && bsb -clean-world",
+      "prepare": "npm run build"
    },
    "repository": {
       "type": "git",

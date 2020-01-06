@@ -1,3 +1,5 @@
+lib/
+
 # TypeScript
 # ==========
 examples/**/*.js
@@ -8,6 +10,9 @@ src/**/*.d.ts.map
 # BuckleScript
 # ============
 .bsb.lock
+
+# Merlin configuring file for Vim and Emacs
+.merlin
 
 
 # Node.js

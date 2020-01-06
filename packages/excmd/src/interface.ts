@@ -4,11 +4,11 @@ import {
    string_as_utf_8_buffer,
 } from 'ocaml-string-convert'
 
-import $AST from './aST.bs'
-import $Lexer from './lexer.bs'
-import $Parser from './parser.bs'
-import $Expression from './expression.bs'
-import $Incremental from './incremental.bs'
+import $AST from 'bs-excmd/src/aST.bs'
+import $Lexer from 'bs-excmd/src/lexer.bs'
+import $Parser from 'bs-excmd/src/parser.bs'
+import $Expression from 'bs-excmd/src/expression.bs'
+import $Incremental from 'bs-excmd/src/incremental.bs'
 
 /**
  * A hack to ape nominal typing.
