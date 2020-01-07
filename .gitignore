@@ -10,5 +10,8 @@
 # opam directory-local switch
 _opam/
 
+# Coverage directory used by tools like istanbul
+coverage/
+
 # Dependency directories
 node_modules/
