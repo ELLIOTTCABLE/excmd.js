@@ -10,6 +10,7 @@ module.exports = {
    ],
 
    // Prettier
+   // FIXME: This shouldn't be formatting package.json, ugh
    './*.{js,json,md}': ['prettier --ignore-path .gitignore --write'],
    'packages/bs-excmd/**/*.{js,json,md}': [
       'prettier --ignore-path packages/bs-excmd/.gitignore --write',
