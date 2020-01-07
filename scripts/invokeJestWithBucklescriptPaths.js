@@ -10,10 +10,11 @@ const newPathArr = process.argv.slice(2)
 function pathChanger(arr) {
    return arr
       .map(thePath => path.parse(thePath))
-      .filter(pathObj => pathObj.ext === '.ml' || pathObj.ext === '.mli')
       .map(pathObj => {
-         pathObj.ext = '.bs.js'
-         delete pathObj.base
+         if (pathObj.ext === '.ml' || pathObj.ext === '.mli') {
+            pathObj.ext = '.bs.js'
+            delete pathObj.base
+         }
          return path.format(pathObj)
       })
 }
