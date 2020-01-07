@@ -3,7 +3,7 @@ import $Lexer from '../src/lexer.bs'
 import $Tokens from '../src/tokens.bs'
 import $Parser from '../src/parser.bs'
 import $Expression from '../src/expression.bs'
-import {LexBuffer, Token, Parser, ParseError} from '../src/interface'
+// import {LexBuffer, Token, Parser, ParseError} from '../src/interface'
 import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 
 let of_string = function(js_string) {
@@ -31,9 +31,11 @@ describe('Parser', () => {
       expect($AST.get_literal_exn($command)).toBe('hello')
    })
 
-   it('throws natual JavaScript ParseErrors, not BuckleScript exn reps', () => {
-      const $buf = of_string('hello-')
-
-      expect(() => $Parser.expression(true, $buf)).toThrow(ParseError)
-   })
+   // FIXME: This needs to be moved into the JS-interface excmd project ... and also, needs to not
+   //        stomp on the existing behaviour *anyway*. :P
+   // it('throws natual JavaScript ParseErrors, not BuckleScript exn reps', () => {
+   //    const $buf = of_string('hello-')
+   //
+   //    expect(() => $Parser.expression(true, $buf)).toThrow(ParseError)
+   // })
 })
