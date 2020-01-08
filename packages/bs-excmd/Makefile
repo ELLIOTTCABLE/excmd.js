@@ -15,8 +15,11 @@ build-ml: scripts/annotateMenhirTypes.bs.js src/uAX31.ml src/parserAutomaton.mly
 	-./node_modules/.bin/bsb -make-world
 
 	# Further horrible hack, to avoid using our local, BuckleScript-friendly copy of MenhirLib
-	rm -f src/menhirLib.ml*
+	@mv -fv src/menhirLib.ml{,.bucklescript}
+	@mv -fv src/menhirLib.mli{,.bucklescript}
 	dune build
+	@mv -fv src/menhirLib.ml{.bucklescript,}
+	@mv -fv src/menhirLib.mli{.bucklescript,}
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
 	dune exec pkg/generate_uchar_ranges.exe $< > $@

@@ -1,12 +1,14 @@
 {
-  "packages": [
-    "packages/*"
-  ],
-  "command": {
-    "bootstrap": {
-      "strict": true,
-      "hoist": true
-    }
-  },
-  "version": "0.0.0"
+   "packages": ["packages/*"],
+   "command": {
+      "bootstrap": {
+         "ignoreScripts": true,
+         "strict": true,
+         "hoist": true
+      },
+      "run": {
+         "stream": true
+      }
+   },
+   "version": "0.0.0"
 }
