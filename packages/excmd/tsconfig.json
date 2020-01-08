@@ -12,8 +12,8 @@
    "typedocOptions": {
       "name": "Excmd.js",
       "mode": "file",
-      "out": "docs",
-      "readme": "docs/index.md",
+      "out": "../../docs",
+      "readme": "../../docs/index.md",
       "disableOutputCheck": true,
       "listInvalidSymbolLinks": true
    }

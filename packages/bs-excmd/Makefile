@@ -30,18 +30,22 @@ pkg/ucd.nounihan.grouped.xml: pkg/ucd.nounihan.grouped.zip
 pkg/ucd.nounihan.grouped.zip:
 	curl http://www.unicode.org/Public/11.0.0/ucdxml/ucd.nounihan.grouped.zip -o $@
 
+DOCDIR := ../../docs/
+
 .PHONY: build-doc
 build-doc: src/parserAutomaton.mly
-	rm -f src/menhirLib.ml*
-
+	@mv -fv src/menhirLib.ml{,.bucklescript}
+	@mv -fv src/menhirLib.mli{,.bucklescript}
 	dune build @doc
+	@mv -fv src/menhirLib.ml{.bucklescript,}
+	@mv -fv src/menhirLib.mli{.bucklescript,}
+
 	# FIXME: There's gotta be a better way to clean up the docs ...
 	-rm -r "_build/default/_doc/_html/excmd/Excmd__"*
-	mkdir -p docs
-	@cp -Rv "_build/default/_doc/_html/"*.js docs/
-	@cp -Rv "_build/default/_doc/_html/"*.css docs/
-	@cp -Rv "_build/default/_doc/_html/excmd" docs/
-	@typedoc ./src
+	mkdir -p $(DOCDIR)
+	@cp -Rv "_build/default/_doc/_html/"*.js $(DOCDIR)
+	@cp -Rv "_build/default/_doc/_html/"*.css $(DOCDIR)
+	@cp -Rv "_build/default/_doc/_html/excmd" $(DOCDIR)
 
 scripts/annotateMenhirTypes.bs.js:
 	# FIXME: I should be able to massage `bsb` into doing this, but ...
