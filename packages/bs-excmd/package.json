@@ -31,8 +31,7 @@
       "test": "npm-run-all build --parallel test:js test:ml",
       "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.ts' 'src/**/*.js' 'test/**/*.js' 'examples/**/*.ts'",
       "format:ml": "make format-ml",
-      "format": "npm-run-all 'format:*'",
-      "pre-commit": "npm run test:ml"
+      "format": "npm-run-all 'format:*'"
    },
    "repository": {
       "type": "git",
