@@ -15,8 +15,8 @@ module.exports = {
    // Dune, ocamlformat, and odoc
    'packages/bs-excmd/**/*.{ml,mli,mld}': [
       'cd packages/bs-excmd/ && npm run format:ml ; :',
-      'cd packages/bs-excmd/ && npm run test:ml',
-      'cd packages/bs-excmd/ && npm run build:doc',
+      'cd packages/bs-excmd/ && npm run test:ml ; :',
+      'cd packages/bs-excmd/ && npm run build:doc ; :',
    ],
 
    // Typedoc
