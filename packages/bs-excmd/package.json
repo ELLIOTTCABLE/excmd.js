@@ -29,9 +29,7 @@
       "test:ml": "dune runtest",
       "test:ml:promote": "dune promote",
       "test": "npm-run-all build --parallel test:js test:ml",
-      "format:js": "prettier --ignore-path .gitignore --write 'src/**/*.ts' 'src/**/*.js' 'test/**/*.js' 'examples/**/*.ts'",
-      "format:ml": "make format-ml",
-      "format": "npm-run-all 'format:*'"
+      "format:ml": "make format-ml"
    },
    "repository": {
       "type": "git",
