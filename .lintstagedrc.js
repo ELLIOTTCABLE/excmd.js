@@ -10,7 +10,7 @@ module.exports = {
    ],
 
    // Jest
-   '**/*.{ml,mli,mly,ts,js,json}': './scripts/invokeJestWithBucklescriptPaths.js',
+   '**/*.{ml,mli,mly,ts,js}': './scripts/invokeJestWithBucklescriptPaths.js',
 
    // Dune, ocamlformat, and odoc
    'packages/bs-excmd/**/*.{ml,mli,mld}': [
@@ -20,5 +20,5 @@ module.exports = {
    ],
 
    // Typedoc
-   'packages/excmd/**/*.{js,json,md}': ['cd packages/excmd/ && npm run build:doc'],
+   'packages/excmd/**/*.{js,md}': ['cd packages/excmd/ && npm run build:doc'],
 }
