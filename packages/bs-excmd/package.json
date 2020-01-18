@@ -6,8 +6,6 @@
    "types": "lib/interface.d.ts",
    "files": [
       "bsconfig.json",
-      "tsconfig.json",
-      "docs",
       "lib",
       "shim",
       "src",
