@@ -7,10 +7,9 @@
    "files": [
       "bsconfig.json",
       "tsconfig.json",
-      "docs",
-      "lib",
-      "shim",
       "src",
+      "!src/**/*.d.ts*",
+      "lib",
       "test",
       "!lib/bs",
       "!**/dune",
