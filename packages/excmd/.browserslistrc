@@ -1,0 +1,4 @@
+# Supported browsers
+# (Used by @wessberg/rollup-plugin-ts; see `rollup.config.js`)
+
+last 5 Firefox versions
