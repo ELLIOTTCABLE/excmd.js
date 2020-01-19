@@ -20,5 +20,5 @@ module.exports = {
    ],
 
    // Typedoc
-   'packages/excmd/**/*.{js,md}': ['cd packages/excmd/ && npm run build:doc'],
+   'packages/excmd/**/*.{js,md}': ['cd packages/excmd/ && npm run build:doc ; :'],
 }
