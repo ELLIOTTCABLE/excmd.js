@@ -1031,15 +1031,3 @@ export class AutomatonElement {
       return $Incremental.element_incoming_symbol_str(this.$el)
    }
 }
-
-export default {
-   OCamlError,
-   LexError,
-   Parser,
-   Script,
-   Expression,
-   LexBuffer,
-   LocatedToken,
-   Token,
-   Checkpoint,
-}

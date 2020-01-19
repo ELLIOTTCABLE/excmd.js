@@ -13,7 +13,6 @@ export default {
       {
          file: 'dist/interface.js',
          format: 'cjs',
-         exports: 'default',
       },
       {
          file: 'dist/interface.esm.js',
