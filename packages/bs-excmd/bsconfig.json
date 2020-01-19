@@ -83,10 +83,16 @@
       "bs-gen",
       "@elliottcable/bs-result"
    ],
-   "package-specs": {
-      "module": "commonjs",
-      "in-source": true
-   },
+   "package-specs": [
+      {
+         "module": "commonjs",
+         "in-source": true
+      },
+      {
+         "module": "es6",
+         "in-source": false
+      }
+   ],
    "suffix": ".bs.js",
    "bsc-flags": ["-bs-super-errors", "-bs-no-version-header", "-w -9", "-open UcharShim"],
    "refmt": 3
