@@ -2,7 +2,6 @@
    "packages": ["packages/*"],
    "command": {
       "bootstrap": {
-         "ignoreScripts": true,
          "strict": true,
          "hoist": true,
          "nohoist": "bs-platform"
