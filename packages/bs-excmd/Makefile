@@ -64,8 +64,6 @@ clean:
 	rm -f src/tokens.*
 	rm -f src/menhirLib.ml*
 	rm -f src/parserAutomaton.ml src/parserAutomaton.mli
-	rm -rf src/**/*.d.ts
-	rm -rf examples/**/*.js
 	rm -rf _build/
 	rm -rf lib/
 	./node_modules/.bin/bsb -clean-world
