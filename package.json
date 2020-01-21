@@ -1,5 +1,6 @@
 {
    "name": "root",
+   "version": "1.0.0",
    "private": true,
    "scripts": {
       "bootstrap": "npx lerna bootstrap --ci && lerna run clean && lerna run build --concurrency 1",
