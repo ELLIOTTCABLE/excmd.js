@@ -4,8 +4,6 @@
    "private": true,
    "scripts": {
       "bootstrap": "npx lerna bootstrap --ci && lerna run clean && lerna run build --concurrency 1",
-      "clean": "lerna run clean",
-      "build": "lerna run build --concurrency 1",
       "build:docs:ml": "cd packages/bs-excmd/ && npm run build:doc",
       "build:docs:ts": "cd packages/excmd/ && npm run build:doc",
       "build:docs": "npm-run-all build:docs:*",
