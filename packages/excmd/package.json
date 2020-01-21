@@ -23,7 +23,7 @@
       "build:examples": "babel --root-mode upward --verbose examples --extensions '.ts' --out-dir examples",
       "build:js": "babel --root-mode upward --verbose src --extensions '.ts,.js' --ignore '**/*.d.ts' --copy-files --out-dir lib",
       "build": "npm-run-all build:bs build:dts build:js build:dist",
-      "clean": "rm -rf lib/ dist/ && bsb -clean-world",
+      "clean": "rm -rf lib/ dist/ && bsb -clean",
       "prepare": "npm-run-all clean build",
       "test": "jest",
       "test:coverage": "cd ../../ && jest --coverage"
