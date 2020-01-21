@@ -4,7 +4,8 @@
       "bootstrap": {
          "ignoreScripts": true,
          "strict": true,
-         "hoist": true
+         "hoist": true,
+         "nohoist": "bs-platform"
       },
       "run": {
          "stream": true
