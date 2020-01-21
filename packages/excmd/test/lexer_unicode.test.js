@@ -1,4 +1,4 @@
-import {LexBuffer} from '../src/interface'
+import {LexBuffer} from '../src/excmd'
 
 describe('Lexer, Unicode support', () => {
    // Yes, I used Google Translate. Don't h8.

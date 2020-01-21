@@ -1,4 +1,4 @@
-import {Parser, LexBuffer, Script, Expression} from '../src/interface'
+import {Parser, LexBuffer, Script, Expression} from '../src/excmd'
 
 describe('JavaScript interface', () => {
    describe('Parser.script()', () => {

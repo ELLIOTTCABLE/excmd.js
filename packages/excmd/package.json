@@ -2,8 +2,8 @@
    "name": "excmd",
    "version": "1.0.0",
    "description": "JavaScript interface to Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
-   "main": "lib/interface.js",
-   "types": "lib/interface.d.ts",
+   "main": "lib/excmd.js",
+   "types": "lib/excmd.d.ts",
    "files": [
       "bsconfig.json",
       "tsconfig.json",

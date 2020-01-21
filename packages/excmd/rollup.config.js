@@ -3,15 +3,15 @@ import resolve from '@rollup/plugin-node-resolve'
 
 function produceConfig({tsConfig, pathComponent}) {
    return {
-      input: 'src/interface.ts',
+      input: 'src/excmd.ts',
       plugins: [resolve(), ts(tsConfig)],
       output: [
          {
-            file: `dist/interface${pathComponent || ''}.js`,
+            file: `dist/excmd${pathComponent || ''}.js`,
             format: 'cjs',
          },
          {
-            file: `dist/interface${pathComponent || ''}.esm.js`,
+            file: `dist/excmd${pathComponent || ''}.esm.js`,
             format: 'esm',
          },
       ],

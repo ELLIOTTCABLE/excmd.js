@@ -96,8 +96,8 @@ To debug OCaml implementation-code, it's useful to know that BuckleScript has a 
 that vastly improves the inspector output for data-structures. One thing those docs *do not*
 mention, however, is that you only need to add `[%%debugger.chrome]` to a single ML file in the
 current code-path — this is useful information when debugging a JavaScript interface like ours.
-(i.e. add the `[%%debugger.chrome]` expression to `Parser.ml`, even if you're debugging
-`interface.js` that includes `Parser.bs.js`.)
+(i.e. add the `[%%debugger.chrome]` expression to `Parser.ml`, even if you're debugging `excmd.js`
+that includes `Parser.bs.js`.)
 
    [debugging mode]: <https://bucklescript.github.io/docs/en/better-data-structures-printing-debug-mode.html>
       "BuckleScript's documentation for enabling debugging symbols in the compiler"

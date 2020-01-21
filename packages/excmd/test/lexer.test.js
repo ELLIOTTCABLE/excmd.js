@@ -1,4 +1,4 @@
-import {LexBuffer, Token} from '../src/interface'
+import {LexBuffer, Token} from '../src/excmd'
 
 describe('Lexer (objective interface)', () => {
    it.skip('lexes an EOF', () => {
