@@ -1,11 +1,11 @@
 module.exports = {
    // Prettier
    // FIXME: This shouldn't be formatting package.json, ugh
-   './*.{js,json,md}': ['prettier --ignore-path .gitignore --write'],
+   './*.{ts,js,json,md}': ['prettier --ignore-path .gitignore --write'],
    'packages/bs-excmd/**/*.{js,json,md}': [
       'prettier --ignore-path packages/bs-excmd/.gitignore --write',
    ],
-   'packages/excmd/**/*.{js,json,css,md}': [
+   'packages/excmd/**/*.{ts,js,json,css,md}': [
       'prettier --ignore-path packages/excmd/.gitignore --write',
    ],
 
@@ -20,5 +20,5 @@ module.exports = {
    ],
 
    // Typedoc
-   'packages/excmd/**/*.{js,md}': ['cd packages/excmd/ && npm run build:doc ; :'],
+   'packages/excmd/**/*.{ts,js,md}': ['cd packages/excmd/ && npm run build:doc ; :'],
 }
