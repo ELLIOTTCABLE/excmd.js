@@ -17,12 +17,13 @@
    ],
    "scripts": {
       "build:bs": "bsb -make-world",
+      "build:dist": "rollup --config",
       "build:doc": "typedoc ./src",
       "build:dts": "tsc -p tsconfig.gen-declarations.json",
       "build:examples": "babel --root-mode upward --verbose examples --extensions '.ts' --out-dir examples",
       "build:js": "babel --root-mode upward --verbose src --extensions '.ts,.js' --ignore '**/*.d.ts' --copy-files --out-dir lib",
-      "build": "npm-run-all build:bs build:dts build:js",
-      "clean": "rm -rf lib/ && bsb -clean-world",
+      "build": "npm-run-all build:bs build:dts build:js build:dist",
+      "clean": "rm -rf lib/ dist/ && bsb -clean-world",
       "prepare": "npm-run-all clean build",
       "test": "jest",
       "test:coverage": "cd ../../ && jest --coverage"
