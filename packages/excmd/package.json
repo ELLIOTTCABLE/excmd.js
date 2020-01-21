@@ -10,7 +10,9 @@
       "src",
       "!src/**/*.d.ts*",
       "lib",
+      "dist",
       "test",
+      "examples",
       "!lib/bs",
       "!**/dune",
       "!**/.merlin"
@@ -22,7 +24,7 @@
       "build:dts": "tsc -p tsconfig.gen-declarations.json",
       "build:examples": "babel --root-mode upward --verbose examples --extensions '.ts' --out-dir examples",
       "build:js": "babel --root-mode upward --verbose src --extensions '.ts,.js' --ignore '**/*.d.ts' --copy-files --out-dir lib",
-      "build": "npm-run-all build:bs build:dts build:js build:dist",
+      "build": "npm-run-all build:bs build:dts build:js build:dist build:examples",
       "clean": "rm -rf lib/ dist/ && bsb -clean",
       "prepare": "npm-run-all clean build",
       "test": "jest",
