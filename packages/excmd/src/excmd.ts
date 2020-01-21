@@ -4,11 +4,17 @@ import {
    string_as_utf_8_buffer,
 } from 'ocaml-string-convert'
 
-import * as $AST from 'bs-excmd/src/aST.bs'
-import * as $Lexer from 'bs-excmd/src/lexer.bs'
-import * as $Parser from 'bs-excmd/src/parser.bs.js'
-import * as $Expression from 'bs-excmd/src/expression.bs'
-import * as $Incremental from 'bs-excmd/src/incremental.bs'
+import * as $_AST from 'bs-excmd/src/aST.bs'
+import * as $_Lexer from 'bs-excmd/src/lexer.bs'
+import * as $_Parser from 'bs-excmd/src/parser.bs.js'
+import * as $_Expression from 'bs-excmd/src/expression.bs'
+import * as $_Incremental from 'bs-excmd/src/incremental.bs'
+
+const $AST = mapExposedFunctionsThruErrorTrampoline($_AST)
+const $Lexer = mapExposedFunctionsThruErrorTrampoline($_Lexer)
+const $Parser = mapExposedFunctionsThruErrorTrampoline($_Parser)
+const $Expression = mapExposedFunctionsThruErrorTrampoline($_Expression)
+const $Incremental = mapExposedFunctionsThruErrorTrampoline($_Incremental)
 
 /**
  * A hack to ape nominal typing.
@@ -220,20 +226,20 @@ function buckleScriptErrorTrampoline<R>(
  * @hidden
  */
 function mapExposedFunctionsThruErrorTrampoline($module) {
-   for (const exposed in $module) {
-      if ($module.hasOwnProperty(exposed)) {
-         const $func = $module[exposed]
+   const replacement = new Object()
 
-         if ($func instanceof Function) {
-            $module[exposed] = buckleScriptErrorTrampoline.bind(null, $func)
-         }
+   Object.getOwnPropertyNames($module).forEach(function(key) {
+      const $val = $module[key]
+
+      if ($val instanceof Function) {
+         replacement[key] = buckleScriptErrorTrampoline.bind(null, $val)
+      } else {
+         replacement[key] = $val
       }
-   }
-}
+   })
 
-;[$AST, $Lexer, $Parser, $Expression, $Incremental].forEach(
-   mapExposedFunctionsThruErrorTrampoline,
-)
+   return replacement
+}
 
 /** @hidden */
 function fromFakeUTF8StringOption(
