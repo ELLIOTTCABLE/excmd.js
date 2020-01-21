@@ -9,17 +9,20 @@ test-ml: build-ml
 	dune runtest
 
 .PHONY: build-ml
-build-ml: scripts/annotateMenhirTypes.bs.js src/uAX31.ml src/parserAutomaton.mly
-	# This is a horrible hack. We run the BuckleScript build first, since the Menhir configuration is
-	# already laid out in bsconfig.json.
-	-./node_modules/.bin/bsb -make-world
-
-	# Further horrible hack, to avoid using our local, BuckleScript-friendly copy of MenhirLib
+build-ml: build-js
+	# FIXME: Horrible hack, to avoid using our local, BuckleScript-friendly copy of MenhirLib.
+	#        (This should really be moved to an npm package ...)
 	@mv -fv src/menhirLib.ml{,.bucklescript}
 	@mv -fv src/menhirLib.mli{,.bucklescript}
 	dune build
 	@mv -fv src/menhirLib.ml{.bucklescript,}
 	@mv -fv src/menhirLib.mli{.bucklescript,}
+
+.PHONY: build-js
+build-js: scripts/annotateMenhirTypes.bs.js src/uAX31.ml src/parserAutomaton.mly
+	-./node_modules/.bin/bsb -make-world
+
+	@cp -fRv lib/js/src/* lib
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
 	dune exec pkg/generate_uchar_ranges.exe $< > $@

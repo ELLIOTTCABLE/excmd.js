@@ -2,8 +2,8 @@
    "name": "bs-excmd",
    "version": "1.0.0",
    "description": "OCaml component of Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
-   "main": "src/parser.bs.js",
-   "module": "lib/es6/src/parser.bs.js",
+   "main": "lib/parser.bs.js",
+   "module": "src/parser.bs.js",
    "files": [
       "bsconfig.json",
       "lib",
@@ -11,6 +11,8 @@
       "src",
       "test",
       "!lib/bs",
+      "!lib/js",
+      "!lib/ocaml",
       "!**/dune",
       "!**/.merlin"
    ],
