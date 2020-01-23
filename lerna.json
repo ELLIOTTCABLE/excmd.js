@@ -4,7 +4,7 @@
       "bootstrap": {
          "strict": true,
          "hoist": true,
-         "nohoist": "bs-platform"
+         "nohoist": ["bs-*", "ppx-*", "**/bs-*", "**/ppx-*"]
       },
       "run": {
          "stream": true
