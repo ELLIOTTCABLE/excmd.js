@@ -2,8 +2,8 @@
    "packages": ["packages/*"],
    "command": {
       "bootstrap": {
-         "strict": true,
          "hoist": true,
+         "strict": true,
          "nohoist": ["bs-*", "ppx-*", "**/bs-*", "**/ppx-*"]
       },
       "run": {
