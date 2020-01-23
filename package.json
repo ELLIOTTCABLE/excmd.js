@@ -3,7 +3,7 @@
    "version": "1.0.0",
    "private": true,
    "scripts": {
-      "bootstrap": "npx lerna bootstrap --ci && lerna run clean && lerna run build --concurrency 1",
+      "bootstrap": "npx lerna bootstrap --ci",
       "build:docs:ml": "cd packages/bs-excmd/ && npm run build:doc",
       "build:docs:ts": "cd packages/excmd/ && npm run build:doc",
       "build:docs": "npm-run-all build:docs:*",
