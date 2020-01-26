@@ -4,17 +4,27 @@ import {
    string_as_utf_8_buffer,
 } from 'ocaml-string-convert'
 
+// FIXME: Import *only* actually-used values
 import * as $_AST from 'bs-excmd/src/aST.bs'
 import * as $_Lexer from 'bs-excmd/src/lexer.bs'
 import * as $_Parser from 'bs-excmd/src/parser.bs.js'
 import * as $_Expression from 'bs-excmd/src/expression.bs'
 import * as $_Incremental from 'bs-excmd/src/incremental.bs'
 
-const $AST = mapExposedFunctionsThruErrorTrampoline($_AST)
-const $Lexer = mapExposedFunctionsThruErrorTrampoline($_Lexer)
-const $Parser = mapExposedFunctionsThruErrorTrampoline($_Parser)
-const $Expression = mapExposedFunctionsThruErrorTrampoline($_Expression)
-const $Incremental = mapExposedFunctionsThruErrorTrampoline($_Incremental)
+/** @hidden */
+const $AST: typeof $_AST = mapExposedFunctionsThruErrorTrampoline($_AST)
+/** @hidden */
+const $Lexer: typeof $_Lexer = mapExposedFunctionsThruErrorTrampoline($_Lexer)
+/** @hidden */
+const $Parser: typeof $_Parser = mapExposedFunctionsThruErrorTrampoline($_Parser)
+/** @hidden */
+const $Expression: typeof $_Expression = mapExposedFunctionsThruErrorTrampoline(
+   $_Expression,
+)
+/** @hidden */
+const $Incremental: typeof $_Incremental = mapExposedFunctionsThruErrorTrampoline(
+   $_Incremental,
+)
 
 /**
  * A hack to ape nominal typing.
@@ -29,6 +39,15 @@ type Nominal<Ty, Discriminant> = Ty & {__discriminant: Discriminant}
 type sentinel = Nominal<symbol, 'INTERNAL'>
 
 /** @hidden */
+interface SemanticMap {
+   script: Script
+   expression: Expression
+}
+
+/** @hidden */
+type SemanticDiscriminator = keyof SemanticMap
+
+/** @hidden */
 const INTERNAL = Symbol() as sentinel
 
 type checkpoint_state =
@@ -39,71 +58,7 @@ type checkpoint_state =
    | 'Accepted'
    | 'Rejected'
 
-// Some TypeScript-side types for BuckleScript runtime values
-/** @hidden */
-type $exn = Nominal<Array<any>, 'exn'>
-/** @hidden */
-type $string = string_as_utf_8_buffer
-
-/** @hidden */
-type $buffer = Nominal<object, 'Lexer.buffer'>
-/** @hidden */
-type $token = Nominal<object, 'Tokens.token'>
-/** @hidden */
-type $token_located = Nominal<object, 'Tokens.token located'>
-/** @hidden */
-type $position = Nominal<object, 'Lexing.position'>
-
-/** @hidden */
-type $ASTt = Nominal<object, 'AST.t'>
-/** @hidden */
-type $or_subexpr = Nominal<object, 'AST.or_subexpr'>
-/** @hidden */
-type $Expressiont = Nominal<object, 'Expression.t'>
-/** @hidden */
-type $flag_payload = Nominal<object, 'Expression.flag_payload'>
-
-/** @hidden */
-type $checkpoint = Nominal<object, 'Incremental.checkpoint'>
-/** @hidden */
-type $element = Nominal<object, 'MenhirInterpreter.element'>
-
-// Ugly, inline type-annotations for my BuckleScript types. Because genType is runtime-heavy trash.
-//---
-// FIXME: The TypeScript compiler handles these just fine; but Babel chokes on them, for some
-// reason. Pending <https://github.com/babel/babel/issues/10353>.
-
-//declare function toFakeUTF8String(str: string): $string
-//declare function fixBrokenBuckleScriptUTF8String($str: $string): string
-
-//declare class $Lexer {
-//   static buffer_of_string($str: $string): $buffer
-//   static next_loc($buf: $buffer): $token_located
-//   static tokens_loc($buf: $buffer): $token_located[]
-//   static token($tok: $token_located): $token
-//   static show_token($tok: $token): $string
-//   static start_lnum($tok: $token_located): number
-//   static start_cnum($tok: $token_located): number
-//   static end_lnum($tok: $token_located): number
-//   static end_cnum($tok: $token_located): number
-//   static token_body($tok: $token): $string | undefined
-//   static compare_token($first: $token, $second: $token): boolean
-//}
-
-//declare class $Parser {
-//   static script(exn: boolean | undefined, buf: $buffer): $ASTt | undefined
-//   static expression(exn: boolean | undefined, buf: $buffer): $Expressiont | undefined
-//}
-
-//declare class $Expression {
-//   static from_script($scpt: $ASTt): $Expressiont[]
-//   static count($expr: $Expressiont): number
-//   static command($expr: $Expressiont): $string
-//   static mem($flag: $string, $expr: $Expressiont): boolean
-//   static positionals($expr: $Expressiont): $string[]
-//   static flag($flag: $string, $expr: $Expressiont): $flag_payload | undefined
-//   static payload_to_opt($fp: $flag_payload): $string | undefined
-//}
+type symbol_category = 'Terminal' | 'Nonterminal'
 
 type ParseOptions = {
    throwException?: boolean
@@ -115,6 +70,7 @@ export class OCamlError extends Error {
    /** @hidden */
    $exn: $exn
 
+   /** @hidden */
    constructor($exn: $exn, message?: string) {
       // FIXME: This is fragile; I'm depending on the BuckleScript runtime-repr of `exn`, here ...
       console.assert(
@@ -142,6 +98,7 @@ export class OCamlError extends Error {
 export class LexError extends OCamlError {
    pos: Position
 
+   /** @hidden */
    constructor($exn: $exn) {
       const [[$error_variant, _], $pos, $message] = $exn,
          message = fromFakeUTF8String($message),
@@ -165,6 +122,7 @@ export class LexError extends OCamlError {
 export class ParseError extends OCamlError {
    token: LocatedToken
 
+   /** @hidden */
    constructor($exn: $exn) {
       const [[$error_variant, _], $loctok] = $exn
 
@@ -180,7 +138,10 @@ export class ParseError extends OCamlError {
 const errorMap = {
    'Lexer.LexError': LexError,
    'Parser.ParseError': ParseError,
-}
+} as const
+
+/** @hidden */
+type knownExnModule = keyof typeof errorMap
 
 // Helpers
 
@@ -211,7 +172,7 @@ function buckleScriptErrorTrampoline<R>(
             throw orig_error
          } else {
             const ErrorConstructor: typeof OCamlError =
-               errorMap[error_variant] || OCamlError
+               errorMap[error_variant as knownExnModule] || OCamlError
 
             throw new ErrorConstructor($exn)
          }
@@ -223,12 +184,19 @@ function buckleScriptErrorTrampoline<R>(
 
 /**
  * Meta-programmatic nonsense to translate all errors occuring in BuckleScript-land.
+ *
+ * TYPEME: This is less type-safe than it should/could be. See:
+ *         <https://stackoverflow.com/questions/59914385>
+ *
  * @hidden
  */
-function mapExposedFunctionsThruErrorTrampoline($module) {
-   const replacement = new Object()
+function mapExposedFunctionsThruErrorTrampoline<M extends {[X: string]: unknown}>(
+   $module: M,
+): M {
+   const replacement = {} as M
 
-   Object.getOwnPropertyNames($module).forEach(function(key) {
+   Object.getOwnPropertyNames($module).forEach(function(arg) {
+      const key = arg as keyof M
       const $val = $module[key]
 
       if ($val instanceof Function) {
@@ -368,7 +336,7 @@ function scriptOfString(str: string, options: ParseOptions = {}) {
 // Wrapper for Incremental.script
 function startScript(lexbuf: LexBuffer) {
    console.assert(lexbuf instanceof LexBuffer)
-   const $cp: $checkpoint = $Incremental.script(lexbuf.$buf)
+   const $cp = $Incremental.script(lexbuf.$buf)
    return new Checkpoint(INTERNAL, $cp, 'script')
 }
 
@@ -396,7 +364,7 @@ function expressionOfString(str: string, options: ParseOptions = {}) {
 // Wrapper for Incremental.script
 function startExpression(lexbuf: LexBuffer) {
    console.assert(lexbuf instanceof LexBuffer)
-   const $cp: $checkpoint = $Incremental.expression(lexbuf.$buf)
+   const $cp = $Incremental.expression(lexbuf.$buf)
    return new Checkpoint(INTERNAL, $cp, 'expression')
 }
 
@@ -424,6 +392,7 @@ export class Script {
    /** @hidden */
    private $expressions: $Expressiont[]
 
+   /** @hidden */
    constructor(isInternal: sentinel, $scpt: $ASTt) {
       if (isInternal !== INTERNAL)
          throw new Error(
@@ -443,6 +412,7 @@ class ExpressionCommon {
    /** @hidden */
    protected $expr: $Expressiont
 
+   /** @hidden */
    constructor(isInternal: sentinel, $expr: $Expressiont) {
       if (isInternal !== INTERNAL)
          throw new Error(
@@ -675,6 +645,7 @@ export class Expression extends ExpressionCommon {
 export class ExpressionEval extends ExpressionCommon {
    private evaluator: evaluator
 
+   /** @hidden */
    constructor(isInternal: sentinel, $expr: $Expressiont, handleSubexpr: evaluator) {
       if (isInternal !== INTERNAL)
          throw new Error(
@@ -744,6 +715,7 @@ export class LexBuffer {
    /** @hidden */
    $buf: $buffer
 
+   /** @hidden */
    constructor(isInternal: sentinel, $buf: $buffer) {
       if (isInternal !== INTERNAL)
          throw new Error(
@@ -776,6 +748,7 @@ export class Position {
    /** @hidden */
    private $pos: $position
 
+   /** @hidden */
    constructor(isInternal: sentinel, $pos: $position) {
       if (isInternal !== INTERNAL) throw new Error('`Position` cannot be constructed')
 
@@ -804,12 +777,14 @@ export class LocatedToken {
    /** @hidden */
    private $loctok: $token_located
 
+   /** @hidden */
    constructor(isInternal: sentinel, $loctok: $token_located) {
       if (isInternal !== INTERNAL) throw new Error('`LocatedToken` cannot be constructed')
 
       this.$loctok = $loctok
    }
 
+   /** @hidden */
    get $token(): $token {
       return $Lexer.token(this.$loctok)
    }
@@ -844,6 +819,7 @@ export class Token {
    /** @hidden */
    private $token: $token
 
+   /** @hidden */
    constructor(isInternal: sentinel, $tok: $token) {
       if (isInternal !== INTERNAL) throw new Error('`Token` cannot be constructed')
 
@@ -865,23 +841,15 @@ export class Token {
    }
 }
 
-/** @hidden */
-interface SemanticMap {
-   script: Script
-   expression: Expression
-}
-
-/** @hidden */
-type SemanticDiscriminator = keyof SemanticMap
-
 // Wrapper for Incremental.checkpoint.
 export class Checkpoint<D extends SemanticDiscriminator> {
    /** @hidden */
-   $cp: $checkpoint
+   $cp: $checkpoint<D>
 
    private type: D
 
-   constructor(isInternal: sentinel, $cp: $checkpoint, type: D) {
+   /** @hidden */
+   constructor(isInternal: sentinel, $cp: $checkpoint<D>, type: D) {
       if (isInternal !== INTERNAL)
          throw new Error(
             '`Checkpoint` can only be constructed by `Excmd.startScript()` and friends.',
@@ -906,30 +874,30 @@ export class Checkpoint<D extends SemanticDiscriminator> {
          onAccept?: (val: SemanticMap[D]) => T
          onFail?: (lastGood: Checkpoint<D>, errorAt: Checkpoint<D>) => T
       } = {},
-   ): T {
+   ): T | void {
       const self = this
 
-      let acceptMapper
+      let acceptMapper: ($val: $SemanticMap[D]) => T | void
       if (typeof opts.onAccept === 'undefined') acceptMapper = function() {}
       else if (this.producesScript())
-         acceptMapper = function wrapScript($scpt: $ASTt) {
-            const scpt = new Script(INTERNAL, $scpt),
+         acceptMapper = function wrapScript($scpt: $SemanticMap[D]) {
+            const scpt = new Script(INTERNAL, $scpt as $ASTt),
                onAccept = opts.onAccept as (arg0: Script) => T
             return onAccept(scpt)
          }
       else
-         acceptMapper = function wrapExpression($expr: $Expressiont) {
-            const expr = new Expression(INTERNAL, $expr),
+         acceptMapper = function wrapExpression($expr: $SemanticMap[D]) {
+            const expr = new Expression(INTERNAL, $expr as $Expressiont),
                onAccept = opts.onAccept as (arg0: Expression) => T
             return onAccept(expr)
          }
 
       const onFail = opts.onFail
 
-      let failMapper
+      let failMapper: ($lastGood: $checkpoint<D>, $errorAt: $checkpoint<D>) => T | void
       if (typeof onFail === 'undefined') failMapper = function() {}
       else
-         failMapper = function($lastGood: $checkpoint, $errorAt: $checkpoint) {
+         failMapper = function($lastGood: $checkpoint<D>, $errorAt: $checkpoint<D>) {
             const lastGood = new Checkpoint(INTERNAL, $lastGood, self.type),
                errorAt = new Checkpoint(INTERNAL, $errorAt, self.type)
 
@@ -962,11 +930,21 @@ export class Checkpoint<D extends SemanticDiscriminator> {
    // FIXME: More accessors
 
    get automaton_status(): checkpoint_state {
-      return $Incremental.automaton_status_str(this.$cp)
+      const $str = $Incremental.automaton_status_str(this.$cp)
+      if (typeof $str === 'undefined') {
+         return undefined
+      } else {
+         return $str as checkpoint_state
+      }
    }
 
-   get incoming_symbol_category(): 'Terminal' | 'Nonterminal' | undefined {
-      return $Incremental.incoming_symbol_category_str(this.$cp)
+   get incoming_symbol_category(): symbol_category | undefined {
+      const $str = $Incremental.incoming_symbol_category_str(this.$cp)
+      if (typeof $str === 'undefined') {
+         return undefined
+      } else {
+         return $str as symbol_category
+      }
    }
 
    get incoming_symbol_type(): string | undefined {
@@ -990,6 +968,7 @@ export class AutomatonStack<D extends SemanticDiscriminator> {
    cp: Checkpoint<D>
    isAfterStack: boolean
 
+   /** @hidden */
    constructor(isInternal: sentinel, cp: Checkpoint<D>, isAfterStack: boolean) {
       if (isInternal !== INTERNAL)
          throw new Error(
@@ -1016,6 +995,7 @@ export class AutomatonElement {
    /** @hidden */
    private $el: $element
 
+   /** @hidden */
    constructor(isInternal: sentinel, $el: $element) {
       if (isInternal !== INTERNAL)
          throw new Error(
@@ -1026,7 +1006,9 @@ export class AutomatonElement {
    }
 
    get incoming_symbol_category(): 'Terminal' | 'Nonterminal' {
-      return $Incremental.element_incoming_symbol_category_str(this.$el)
+      return $Incremental.element_incoming_symbol_category_str(
+         this.$el,
+      ) as symbol_category
    }
 
    get incoming_symbol_type(): string {
