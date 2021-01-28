@@ -51,12 +51,13 @@ Finally, after all of the above, you can let Lerna kick off the rest of the buil
 ### Directory structure
 There are two packages comprising this project, to be published separately to npm:
 
- - [`bs-excmd`][bs-excmd]: the lexer and parser themselves; written in [OCaml][] using [Sedlex][]
-   and [Menhir][], and compiled to JavaScript using the [ReScript][] compiler (née BuckleScript), in
-   the [`packages/bs-excmd/`](packages/bs-excmd) subdirectory ...
+ - [`packages/bs-excmd/`](packages/bs-excmd): the lexer and parser themselves; written in [OCaml][]
+   using [Sedlex][] and [Menhir][], and compiled to JavaScript using the [ReScript][] compiler (née
+   BuckleScript), published to npm as [`bs-excmd`][bs-excmd] ...
 
- - [`excmd`][excmd]: ... and a thin [TypeScript][] wrapper providing idiomatic JavaScript interfaces
-   to the parser modules in [`packages/excmd/`](packages/excmd).
+ - [`packages/excmd/`](packages/excmd): ... and a thin [TypeScript][] wrapper providing idiomatic
+   JavaScript interfaces to the parser modules, published to npm as the primary package,
+   [`excmd`][excmd].
 
 [Lerna][], a JavaScript-ecosystem monorepo/multi-package management tool, orchestrates the building
 of these two interdependent subpackages.
