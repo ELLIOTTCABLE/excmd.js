@@ -1,6 +1,6 @@
 {
    "name": "root",
-   "version": "1.0.0",
+   "version": "1.0.0-secondary-rollup-package.0",
    "private": true,
    "scripts": {
       "bootstrap": "npx lerna bootstrap --ci",
