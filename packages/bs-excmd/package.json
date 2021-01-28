@@ -23,7 +23,7 @@
       "watch": "bsb -make-world -w",
       "clean": "make clean",
       "clean:all": "make clean-all",
-      "prepare": "pwd && npm run clean && npm run build",
+      "prepare": "npm run clean && npm run build",
       "test:js": "jest",
       "test:js:coverage": "cd ../../ && jest --coverage",
       "test:ml": "dune runtest",
