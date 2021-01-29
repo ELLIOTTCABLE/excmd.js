@@ -3,7 +3,8 @@
    "version": "1.0.0",
    "description": "JavaScript interface to Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
    "main": "lib/excmd.js",
-   "types": "lib/excmd.d.ts",
+   "module": "dist/excmd.esm.js",
+   "types": "dist/excmd.esm.d.ts",
    "files": [
       "bsconfig.json",
       "tsconfig.json",
@@ -65,6 +66,6 @@
       "typescript": "^3.5.3"
    },
    "dependencies": {
-      "@babel/runtime": "^7.8.3"
+      "@babel/runtime": "~7.8.3"
    }
 }
