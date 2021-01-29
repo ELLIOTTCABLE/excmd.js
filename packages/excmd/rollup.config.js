@@ -1,10 +1,9 @@
 import ts from '@wessberg/rollup-plugin-ts'
-import resolve from '@rollup/plugin-node-resolve'
+import nodeResolve from '@rollup/plugin-node-resolve'
 
 function produceConfig({tsConfig, pathComponent}) {
    return {
       input: 'src/excmd.ts',
-      plugins: [resolve(), ts(tsConfig)],
       output: [
          {
             file: `dist/excmd${pathComponent || ''}.js`,
@@ -14,6 +13,12 @@ function produceConfig({tsConfig, pathComponent}) {
             file: `dist/excmd${pathComponent || ''}.esm.js`,
             format: 'esm',
          },
+      ],
+      plugins: [
+         nodeResolve({
+            preferBuiltins: true,
+         }),
+         ts(),
       ],
    }
 }
