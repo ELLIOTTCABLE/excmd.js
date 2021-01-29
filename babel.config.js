@@ -14,7 +14,7 @@ module.exports = {
                   //       choosing to duplicate the value from `package.json` precisely.
                   //
                   //       See: <https://github.com/babel/babel/blob/9808d2/packages/babel-plugin-transform-runtime/src/helpers.js#L4-L33>
-                  version: '~7.8.3', // @babel/runtime version
+                  version: '~7.12.5', // @babel/runtime version
                },
             ],
          ],
