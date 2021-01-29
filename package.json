@@ -13,6 +13,7 @@
       "test": "run-p --silent test:js test:ml"
    },
    "devDependencies": {
-      "husky": "^5.0.8"
+      "husky": "^5.0.8",
+      "lerna": "^3.22.1"
    }
 }
