@@ -17,6 +17,7 @@ function produceConfig({tsConfig, pathComponent}) {
       plugins: [
          nodeResolve({
             preferBuiltins: true,
+            modulesOnly: true,
          }),
          ts(),
       ],
