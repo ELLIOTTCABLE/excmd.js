@@ -1,14 +1,17 @@
 {
    "compilerOptions": {
-      "target": "ESNext",
-      "module": "CommonJS",
-      "moduleResolution": "Node",
       "esModuleInterop": true,
       "isolatedModules": true,
       "noImplicitThis": true,
       "noImplicitAny": true,
       "declaration": true,
-      "declarationMap": true
+      "declarationMap": true,
+
+      // overridden by rollup-plugin-ts
+      // See: <https://github.com/wessberg/rollup-plugin-ts#ignoredoverridden-typescript-options>
+      "target": "ESNext", // (overridden by browserslist)
+      "module": "CommonJS",
+      "moduleResolution": "Node"
    },
    "include": ["src/**/*.ts"],
    "typedocOptions": {
