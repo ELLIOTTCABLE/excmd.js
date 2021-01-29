@@ -6,11 +6,11 @@ function produceConfig({tsConfig, pathComponent}) {
       input: 'src/excmd.ts',
       output: [
          {
-            file: `dist/excmd${pathComponent || ''}.js`,
+            file: `dist/excmd${pathComponent || ''}.cjs`,
             format: 'cjs',
          },
          {
-            file: `dist/excmd${pathComponent || ''}.esm.js`,
+            file: `dist/excmd${pathComponent || ''}.mjs`,
             format: 'esm',
          },
       ],
