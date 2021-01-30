@@ -1,5 +1,6 @@
-import ts from '@wessberg/rollup-plugin-ts'
+import filesize from 'rollup-plugin-filesize'
 import nodeResolve from '@rollup/plugin-node-resolve'
+import ts from '@wessberg/rollup-plugin-ts'
 
 function produceConfig({tsConfig, pathComponent}) {
    return {
@@ -20,6 +21,7 @@ function produceConfig({tsConfig, pathComponent}) {
             modulesOnly: true,
          }),
          ts(),
+         filesize(),
       ],
    }
 }
