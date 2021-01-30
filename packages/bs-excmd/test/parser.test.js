@@ -1,8 +1,8 @@
-import $AST from '../src/aST.bs'
-import $Lexer from '../src/lexer.bs'
-import $Tokens from '../src/tokens.bs'
-import $Parser from '../src/parser.bs'
-import $Expression from '../src/expression.bs'
+import * as $AST from '../src/aST.bs'
+import * as $Lexer from '../src/lexer.bs'
+import * as $Tokens from '../src/tokens.bs'
+import * as $Parser from '../src/parser.bs'
+import * as $Expression from '../src/expression.bs'
 // import {LexBuffer, Token, Parser, ParseError} from '../src/interface'
 import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 

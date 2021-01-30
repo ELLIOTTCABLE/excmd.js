@@ -1,5 +1,5 @@
-import $Lexer from '../src/lexer.bs'
-import $Tokens from '../src/tokens.bs'
+import * as $Lexer from '../src/lexer.bs'
+import * as $Tokens from '../src/tokens.bs'
 import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 
 let of_string = function(js_string) {
