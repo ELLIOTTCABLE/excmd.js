@@ -1,6 +1,6 @@
 {
    "name": "excmd",
-   "version": "1.0.0",
+   "version": "2.0.0-alpha.0",
    "description": "JavaScript interface to Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
    "main": "dist/excmd.mjs",
    "type": "module",
@@ -47,7 +47,7 @@
       "@types/terminal-kit": "^1.28.2",
       "@wessberg/rollup-plugin-ts": "^1.2.13",
       "babel-jest": "^24.9.0",
-      "bs-excmd": "^1.0.0",
+      "bs-excmd": "2.0.0-alpha.0",
       "bs-platform": "^5.2.1",
       "jest": "^26.6.3",
       "lint-staged": "^10.5.3",
