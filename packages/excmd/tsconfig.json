@@ -16,7 +16,9 @@
    "include": ["src/**/*.ts"],
    "typedocOptions": {
       "name": "Excmd.js",
-      "mode": "file",
+      "entryPoints": ["./src/excmd.ts"],
+      "excludeExternals": true,
+      "externalPattern": ["**/node_modules/**/*.ts", "./src/bs-excmd.d.ts"],
       "out": "../../docs",
       "readme": "../../docs/index.md",
       "disableOutputCheck": true,

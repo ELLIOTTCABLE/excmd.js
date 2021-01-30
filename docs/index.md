@@ -3,7 +3,7 @@ between a [Vim excmd][] and a POSIX-sh command.
 
 <!-- FIXME: use actual, functioning commands, once this starts to ship into Tridactyl -->
 
-```vim
+```viml
 " I like wikiwand but I don't like the way it changes URLs
 bindurl wikiwand.com yy composite js document.location.href.replace("wikiwand.com/en","wikipedia.org/wiki") | clipboard yank
 

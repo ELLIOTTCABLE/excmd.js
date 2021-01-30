@@ -474,8 +474,8 @@ class ExpressionCommon {
  * further convenience, the various `eval*` methods below: [[evalCommand]], [[evalPositionals]], and
  * so on.
  *
- * Each of these takes a function — matching the [[evaluator]] signature — that takes an expression,
- * and mechanistically reduces it into a simple string:
+ * Each of these takes a function — matching the [["index".evaluator | evaluator]] signature — that
+ * takes an expression, and mechanistically reduces it into a simple string:
  *
  * ```typescript
  * const expr = Parser.expressionOfString('(echo test_cmd) arg')
