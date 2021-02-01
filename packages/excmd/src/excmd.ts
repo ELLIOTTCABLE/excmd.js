@@ -272,7 +272,7 @@ interface Sub<T> {
  *
  * See [[Expression]] for more information.
  */
-type evaluator = (expr: ExpressionEval) => string
+type evaluatorSync = (expr: ExpressionEvalSync) => string
 
 // Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`
 /** @hidden */
@@ -292,26 +292,26 @@ function fromOrSubexpr($x: $or_subexpr): Literal | Sub<Expression> {
  * @hidden
  */
 function fromOrSubexprWithEval(
-   evl: evaluator,
+   evl: evaluatorSync,
    $x: $or_subexpr,
-): Literal | Sub<ExpressionEval> {
+): Literal | Sub<ExpressionEvalSync> {
    if ($AST.is_literal($x)) {
       let $val = $AST.get_literal_exn($x)
       return {type: 'literal', value: fromFakeUTF8String($val)}
    } else {
       let $expr = $AST.get_sub_exn($x)
-      return {type: 'subexpression', expr: new ExpressionEval(INTERNAL, $expr, evl)}
+      return {type: 'subexpression', expr: new ExpressionEvalSync(INTERNAL, $expr, evl)}
    }
 }
 
 /** @hidden */
-function reduceOrSubexprWithEval(evl: evaluator, $x: $or_subexpr): string {
+function evalOrSubexprSync(evl: evaluatorSync, $x: $or_subexpr): string {
    if ($AST.is_literal($x)) {
       let $val = $AST.get_literal_exn($x)
       return fromFakeUTF8String($val)
    } else {
       let $expr = $AST.get_sub_exn($x),
-         expr = new ExpressionEval(INTERNAL, $expr, evl)
+         expr = new ExpressionEvalSync(INTERNAL, $expr, evl)
       return evl.call(null, expr)
    }
 }
@@ -567,9 +567,9 @@ export class Expression extends ExpressionCommon {
       return new Expression(INTERNAL, $new)
    }
 
-   cloneWithEvaluator(handleSubexpr: evaluator): ExpressionEval {
+   cloneWithEvaluatorSync(handleSubexpr: evaluatorSync): ExpressionEvalSync {
       let $new = $AST.copy_expression(this.$expr)
-      return new ExpressionEval(INTERNAL, $new, handleSubexpr)
+      return new ExpressionEvalSync(INTERNAL, $new, handleSubexpr)
    }
 
    get command(): Literal | Sub<Expression> {
@@ -577,8 +577,8 @@ export class Expression extends ExpressionCommon {
       return fromOrSubexpr($command)
    }
 
-   evalCommand(handleSubexpr: evaluator): string {
-      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+   evalCommandSync(handleSubexpr: evaluatorSync): string {
+      let ee = new ExpressionEvalSync(INTERNAL, this.$expr, handleSubexpr)
       return ee.command
    }
 
@@ -588,8 +588,8 @@ export class Expression extends ExpressionCommon {
       return $positionals.map(fromOrSubexpr)
    }
 
-   evalPositionals(handleSubexpr: evaluator): string[] {
-      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+   evalPositionalsSync(handleSubexpr: evaluatorSync): string[] {
+      let ee = new ExpressionEvalSync(INTERNAL, this.$expr, handleSubexpr)
       return ee.getPositionals()
    }
 
@@ -617,10 +617,10 @@ export class Expression extends ExpressionCommon {
    }
 
    evalEachFlag(
-      handleSubexpr: evaluator,
+      handleSubexpr: evaluatorSync,
       f: (name: string, payload: string | undefined, idx: number) => void,
    ): void {
-      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      let ee = new ExpressionEvalSync(INTERNAL, this.$expr, handleSubexpr)
       return ee.forEachFlag(f)
    }
 
@@ -635,18 +635,18 @@ export class Expression extends ExpressionCommon {
       return typeof $payload === 'undefined' ? undefined : fromOrSubexpr($payload)
    }
 
-   evalFlag(handleSubexpr: evaluator, flag: string): string | undefined {
-      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+   evalFlagSync(handleSubexpr: evaluatorSync, flag: string): string | undefined {
+      let ee = new ExpressionEvalSync(INTERNAL, this.$expr, handleSubexpr)
       return ee.getFlag(flag)
    }
 }
 
 // `Expression.t`, with recursive evaluation of subexpressions
-export class ExpressionEval extends ExpressionCommon {
-   private evaluator: evaluator
+export class ExpressionEvalSync extends ExpressionCommon {
+   private evaluator: evaluatorSync
 
    /** @hidden */
-   constructor(isInternal: sentinel, $expr: $Expressiont, handleSubexpr: evaluator) {
+   constructor(isInternal: sentinel, $expr: $Expressiont, handleSubexpr: evaluatorSync) {
       if (isInternal !== INTERNAL)
          throw new Error(
             '`ExpressionEval` can only be constructed by `Expression#evalPositionals()` and similar.',
@@ -658,21 +658,21 @@ export class ExpressionEval extends ExpressionCommon {
       this.evaluator = handleSubexpr
    }
 
-   clone(): ExpressionEval {
+   clone(): ExpressionEvalSync {
       let $new = $AST.copy_expression(this.$expr)
-      return new ExpressionEval(INTERNAL, $new, this.evaluator)
+      return new ExpressionEvalSync(INTERNAL, $new, this.evaluator)
    }
 
    get command(): string {
       let $command = $Expression.command(this.$expr)
-      return reduceOrSubexprWithEval(this.evaluator, $command)
+      return evalOrSubexprSync(this.evaluator, $command)
    }
 
    // Wrapper for `Expression.positionals`
    getPositionals(): string[] {
       let $positionals = $Expression.positionals_arr(this.$expr)
-      // My kingdom for better functional tooling in JavaScript ;_;
-      return $positionals.map(reduceOrSubexprWithEval.bind(null, this.evaluator))
+
+      return $positionals.map(evalOrSubexprSync.bind(null, this.evaluator))
    }
 
    // Wrapper for `Expression.iter`
@@ -690,7 +690,7 @@ export class ExpressionEval extends ExpressionCommon {
                payload =
                   typeof $payload === 'undefined'
                      ? undefined
-                     : reduceOrSubexprWithEval(self.evaluator, $payload)
+                     : evalOrSubexprSync(self.evaluator, $payload)
 
             f.call(null, name, payload, idx)
          }
@@ -707,7 +707,7 @@ export class ExpressionEval extends ExpressionCommon {
 
       return typeof $payload === 'undefined'
          ? undefined
-         : reduceOrSubexprWithEval(this.evaluator, $payload)
+         : evalOrSubexprSync(this.evaluator, $payload)
    }
 }
 

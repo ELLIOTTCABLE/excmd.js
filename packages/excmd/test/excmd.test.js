@@ -86,20 +86,20 @@ describe('JavaScript interface', () => {
       })
 
       describe('Recursive evaluation', () => {
-         it('#cloneWithEvaluator creates a recursively-evaluating copy of an expression', () => {
+         it('#cloneWithEvaluatorSync creates a recursively-evaluating copy of an expression', () => {
             const orig = Parser.expressionOfString('2test'),
                noop = jest.fn(() => ''),
-               nuevo = orig.cloneWithEvaluator(noop)
+               nuevo = orig.cloneWithEvaluatorSync(noop)
 
             expect(nuevo.count).toBe(2)
             expect(nuevo.command).toBe('test')
          })
 
-         it("#cloneWithEvaluator produces a *new* ExpressionEval that doesn't mutate the original", () => {
+         it("#cloneWithEvaluatorSync produces a *new* ExpressionEval that doesn't mutate the original", () => {
             // An expression that requires mutation to access
             const orig = Parser.expressionOfString('cmd --flg mby fosho'),
                noop = jest.fn(() => ''),
-               nuevo = orig.cloneWithEvaluator(noop)
+               nuevo = orig.cloneWithEvaluatorSync(noop)
 
             // Mutate the clone,
             expect(nuevo.getPositionals()).toContain('mby')
@@ -108,7 +108,7 @@ describe('JavaScript interface', () => {
          })
       })
 
-      describe('Simple accessors', () => {
+      describe('Accessors', () => {
          it('#count', () => {
             const expr = Parser.expressionOfString('2test')
 
@@ -122,11 +122,11 @@ describe('JavaScript interface', () => {
             expect(expr.command.value).toBe('test')
          })
 
-         it('#evalCommand reduces a literal to a string', () => {
+         it('#evalCommandSync reduces a literal to a string', () => {
             const expr = Parser.expressionOfString('2test'),
                noop = jest.fn(() => '')
 
-            expect(expr.evalCommand(noop)).toBe('test')
+            expect(expr.evalCommandSync(noop)).toBe('test')
             expect(noop).not.toBeCalled()
          })
       })
@@ -150,10 +150,10 @@ describe('JavaScript interface', () => {
             ])
          })
 
-         it('#evalPositionals returns an array of positional arguments evaluated into strings', () => {
+         it('#evalPositionalsSync returns an array of positional arguments evaluated into strings', () => {
             const expr = Parser.expressionOfString('foo qux quux'),
                noop = jest.fn(() => ''),
-               positionals = expr.evalPositionals(noop)
+               positionals = expr.evalPositionalsSync(noop)
 
             expect(positionals).toBeInstanceOf(Array)
             expect(positionals).toEqual(['qux', 'quux'])
@@ -175,10 +175,10 @@ describe('JavaScript interface', () => {
             expect(payload).toEqual({type: 'literal', value: 'baz'})
          })
 
-         it('#evalFlag returns a string payload for a present argument', () => {
+         it('#evalFlagSync returns a string payload for a present argument', () => {
             const expr = Parser.expressionOfString('foo --bar=baz'),
                noop = jest.fn(() => ''),
-               payload = expr.evalFlag(noop, 'bar')
+               payload = expr.evalFlagSync(noop, 'bar')
 
             expect(typeof payload).toBe('string')
             expect(payload).toEqual('baz')
@@ -205,7 +205,7 @@ describe('JavaScript interface', () => {
          })
       })
       // TODO: Excercise the passing of recursive ExpressionEvals to the evaluators given to an
-      //       ExpressionEval, i.e. that you don't nned to use .evalFlag() inside the body of an
+      //       ExpressionEval, i.e. that you don't nned to use .evalFlagSync() inside the body of an
       //       evaluator. (pending subexpression impl.)
    }) // Expression
 })

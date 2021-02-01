@@ -94,8 +94,8 @@
 						can allow the parser to become responsible for recursively evaluating [[Sub]] and [[Literal]]
 						values into simple <code>string</code>s, as long as you can provide the parser with a simplified
 					handler-callback that will attempt to reduce a single, given sub-expression into a <code>string</code>.</p>
-					<p>The entry-point to this auto-evaluation interface is either <a href="expression.html#clonewithevaluator">cloneWithEvaluator</a>, or as a
-						further convenience, the various <code>eval*</code> methods below: <a href="expression.html#evalcommand">evalCommand</a>, <a href="expression.html#evalpositionals">evalPositionals</a>, and
+					<p>The entry-point to this auto-evaluation interface is either [[cloneWithEvaluator]], or as a
+						further convenience, the various <code>eval*</code> methods below: [[evalCommand]], [[evalPositionals]], and
 					so on.</p>
 					<p>Each of these takes a function — matching the [[&quot;index&quot;.evaluator | evaluator]] signature — that
 					takes an expression, and mechanistically reduces it into a simple string:</p>
@@ -111,12 +111,12 @@
 <span style="color: #008000">//=&gt; prints &quot;Command: test_cmd&quot;</span>
 </code></pre>
 					<p>(Note, additionally, that within the body of the evaluator above, I&#39;ve only had to compare
-						<code>expr.command</code> to a string, directly. As evaluators receive <a href="expressioneval.html">ExpressionEval</a>s instead of plain
+						<code>expr.command</code> to a string, directly. As evaluators receive [[ExpressionEval]]s instead of plain
 						expressions, their bodies need no further shenanigans; any requested expression-properties will
 					recursively evaluate further subexpressions as-needed.)</p>
 					<p>Finally, if you want to access multiple elements of an expression thusly, it may be easier to
-						pre-associate an evaluator with the expression using <a href="expression.html#clonewithevaluator">cloneWithEvaluator</a>, producing an
-					<a href="expressioneval.html">ExpressionEval</a> directly:</p>
+						pre-associate an evaluator with the expression using [[cloneWithEvaluator]], producing an
+					[[ExpressionEval]] directly:</p>
 					<pre><code class="language-typescript"><span style="color: #0000FF">function</span><span style="color: #000000"> </span><span style="color: #795E26">handleSubexpr</span><span style="color: #000000">(</span><span style="color: #001080">expr</span><span style="color: #000000">) {</span>
 <span style="color: #000000">   </span><span style="color: #AF00DB">if</span><span style="color: #000000"> (</span><span style="color: #001080">expr</span><span style="color: #000000">.</span><span style="color: #001080">command</span><span style="color: #000000"> === </span><span style="color: #A31515">&#039;echo&#039;</span><span style="color: #000000">) {</span>
 <span style="color: #000000">      </span><span style="color: #AF00DB">return</span><span style="color: #000000"> </span><span style="color: #001080">expr</span><span style="color: #000000">.</span><span style="color: #001080">positionals</span><span style="color: #000000">.</span><span style="color: #795E26">join</span><span style="color: #000000">(</span><span style="color: #A31515">&#039; &#039;</span><span style="color: #000000">)</span>
@@ -140,7 +140,7 @@
 </code></pre>
 					<p>Does that command have one flag, with the payload <code>world</code>? Or an empty (boolean) flag, and a
 						single positional-argument, <code>world</code>? My answer, in this interface, is “whichever you observe
-						first”. To be more specific, any method of either <a href="expression.html">Expression</a> or <a href="expressioneval.html">ExpressionEval</a> that
+						first”. To be more specific, any method of either <a href="expression.html">Expression</a> or [[ExpressionEval]] that
 						produces flag-payloads or positional arguments, will <em>mutate</em> the data-structure such that
 					subsequent accesses don&#39;t see an inconsistent state.</p>
 					<p>Let&#39;s look at some examples:</p>
@@ -196,11 +196,11 @@
 							<h3>Methods</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#clone" class="tsd-kind-icon">clone</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#clonewithevaluator" class="tsd-kind-icon">clone<wbr>With<wbr>Evaluator</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#evalcommand" class="tsd-kind-icon">eval<wbr>Command</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#clonewithevaluatorsync" class="tsd-kind-icon">clone<wbr>With<wbr>Evaluator<wbr>Sync</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#evalcommandsync" class="tsd-kind-icon">eval<wbr>Command<wbr>Sync</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#evaleachflag" class="tsd-kind-icon">eval<wbr>Each<wbr>Flag</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#evalflag" class="tsd-kind-icon">eval<wbr>Flag</a></li>
-								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#evalpositionals" class="tsd-kind-icon">eval<wbr>Positionals</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#evalflagsync" class="tsd-kind-icon">eval<wbr>Flag<wbr>Sync</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#evalpositionalssync" class="tsd-kind-icon">eval<wbr>Positionals<wbr>Sync</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#foreachflag" class="tsd-kind-icon">for<wbr>Each<wbr>Flag</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#getflag" class="tsd-kind-icon">get<wbr>Flag</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="expression.html#getpositionals" class="tsd-kind-icon">get<wbr>Positionals</a></li>
@@ -284,10 +284,10 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="clonewithevaluator" class="tsd-anchor"></a>
-					<h3>clone<wbr>With<wbr>Evaluator</h3>
+					<a name="clonewithevaluatorsync" class="tsd-anchor"></a>
+					<h3>clone<wbr>With<wbr>Evaluator<wbr>Sync</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">clone<wbr>With<wbr>Evaluator<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluator</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="expressioneval.html" class="tsd-signature-type" data-tsd-kind="Class">ExpressionEval</a></li>
+						<li class="tsd-signature tsd-kind-icon">clone<wbr>With<wbr>Evaluator<wbr>Sync<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluatorSync</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="expressionevalsync.html" class="tsd-signature-type" data-tsd-kind="Class">ExpressionEvalSync</a></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -299,18 +299,18 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>handleSubexpr: <span class="tsd-signature-type">evaluator</span></h5>
+									<h5>handleSubexpr: <span class="tsd-signature-type">evaluatorSync</span></h5>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <a href="expressioneval.html" class="tsd-signature-type" data-tsd-kind="Class">ExpressionEval</a></h4>
+							<h4 class="tsd-returns-title">Returns <a href="expressionevalsync.html" class="tsd-signature-type" data-tsd-kind="Class">ExpressionEvalSync</a></h4>
 						</li>
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="evalcommand" class="tsd-anchor"></a>
-					<h3>eval<wbr>Command</h3>
+					<a name="evalcommandsync" class="tsd-anchor"></a>
+					<h3>eval<wbr>Command<wbr>Sync</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">eval<wbr>Command<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluator</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+						<li class="tsd-signature tsd-kind-icon">eval<wbr>Command<wbr>Sync<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluatorSync</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -322,7 +322,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>handleSubexpr: <span class="tsd-signature-type">evaluator</span></h5>
+									<h5>handleSubexpr: <span class="tsd-signature-type">evaluatorSync</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -333,7 +333,7 @@
 					<a name="evaleachflag" class="tsd-anchor"></a>
 					<h3>eval<wbr>Each<wbr>Flag</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">eval<wbr>Each<wbr>Flag<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluator</span>, f<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, payload<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, idx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">eval<wbr>Each<wbr>Flag<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluatorSync</span>, f<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, payload<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, idx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -345,7 +345,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>handleSubexpr: <span class="tsd-signature-type">evaluator</span></h5>
+									<h5>handleSubexpr: <span class="tsd-signature-type">evaluatorSync</span></h5>
 								</li>
 								<li>
 									<h5>f: <span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, payload<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, idx<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">void</span></h5>
@@ -380,10 +380,10 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="evalflag" class="tsd-anchor"></a>
-					<h3>eval<wbr>Flag</h3>
+					<a name="evalflagsync" class="tsd-anchor"></a>
+					<h3>eval<wbr>Flag<wbr>Sync</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">eval<wbr>Flag<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluator</span>, flag<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+						<li class="tsd-signature tsd-kind-icon">eval<wbr>Flag<wbr>Sync<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluatorSync</span>, flag<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -395,7 +395,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>handleSubexpr: <span class="tsd-signature-type">evaluator</span></h5>
+									<h5>handleSubexpr: <span class="tsd-signature-type">evaluatorSync</span></h5>
 								</li>
 								<li>
 									<h5>flag: <span class="tsd-signature-type">string</span></h5>
@@ -406,10 +406,10 @@
 					</ul>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-					<a name="evalpositionals" class="tsd-anchor"></a>
-					<h3>eval<wbr>Positionals</h3>
+					<a name="evalpositionalssync" class="tsd-anchor"></a>
+					<h3>eval<wbr>Positionals<wbr>Sync</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">eval<wbr>Positionals<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluator</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
+						<li class="tsd-signature tsd-kind-icon">eval<wbr>Positionals<wbr>Sync<span class="tsd-signature-symbol">(</span>handleSubexpr<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">evaluatorSync</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
@@ -421,7 +421,7 @@
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
-									<h5>handleSubexpr: <span class="tsd-signature-type">evaluator</span></h5>
+									<h5>handleSubexpr: <span class="tsd-signature-type">evaluatorSync</span></h5>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h4>
@@ -577,19 +577,19 @@
 								<a href="expression.html#clone" class="tsd-kind-icon">clone</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="expression.html#clonewithevaluator" class="tsd-kind-icon">clone<wbr>With<wbr>Evaluator</a>
+								<a href="expression.html#clonewithevaluatorsync" class="tsd-kind-icon">clone<wbr>With<wbr>Evaluator<wbr>Sync</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="expression.html#evalcommand" class="tsd-kind-icon">eval<wbr>Command</a>
+								<a href="expression.html#evalcommandsync" class="tsd-kind-icon">eval<wbr>Command<wbr>Sync</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="expression.html#evaleachflag" class="tsd-kind-icon">eval<wbr>Each<wbr>Flag</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="expression.html#evalflag" class="tsd-kind-icon">eval<wbr>Flag</a>
+								<a href="expression.html#evalflagsync" class="tsd-kind-icon">eval<wbr>Flag<wbr>Sync</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
-								<a href="expression.html#evalpositionals" class="tsd-kind-icon">eval<wbr>Positionals</a>
+								<a href="expression.html#evalpositionalssync" class="tsd-kind-icon">eval<wbr>Positionals<wbr>Sync</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="expression.html#foreachflag" class="tsd-kind-icon">for<wbr>Each<wbr>Flag</a>
@@ -608,7 +608,7 @@
 				</ul>
 				<ul class="after-current">
 					<li class=" tsd-kind-class">
-						<a href="expressioneval.html" class="tsd-kind-icon">Expression<wbr>Eval</a>
+						<a href="expressionevalsync.html" class="tsd-kind-icon">Expression<wbr>Eval<wbr>Sync</a>
 					</li>
 					<li class=" tsd-kind-class">
 						<a href="lexbuffer.html" class="tsd-kind-icon">Lex<wbr>Buffer</a>
