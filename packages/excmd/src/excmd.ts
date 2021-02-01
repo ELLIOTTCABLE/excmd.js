@@ -267,12 +267,20 @@ interface Sub<T> {
 }
 
 /**
- * The function-signature required of callbacks, passed to `eval*` functions and friends, that can
- * reduce an unevaluated sub-[[Expression]] into a resultant, simple `string`-ish return value.
+ * The function-signature required of callbacks, passed to `eval...Sync` functions and friends, that
+ * can reduce an unevaluated sub-[[Expression]] into a resultant, simple `string`-ish return value.
  *
  * See [[Expression]] for more information.
  */
 type evaluatorSync = (expr: ExpressionEvalSync) => string
+
+/**
+ * The function-signature required of callbacks, passed to `eval...` functions and friends, that can
+ * reduce an unevaluated sub-[[Expression]] into a `Promise` for a simple `string`-ish return value.
+ *
+ * See [[Expression]] for more information.
+ */
+type evaluator = (expr: ExpressionEval) => Promise<string>
 
 // Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`
 /** @hidden */
@@ -286,21 +294,15 @@ function fromOrSubexpr($x: $or_subexpr): Literal | Sub<Expression> {
    }
 }
 
-/**
- * Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`, as `fromOrSubexpr`; but
- * producing `ExpressionEval`s instead of `Expression`s for subexpressions.
- * @hidden
- */
-function fromOrSubexprWithEval(
-   evl: evaluatorSync,
-   $x: $or_subexpr,
-): Literal | Sub<ExpressionEvalSync> {
+/** @hidden */
+function evalOrSubexpr(evl: evaluator, $x: $or_subexpr): Promise<string> {
    if ($AST.is_literal($x)) {
       let $val = $AST.get_literal_exn($x)
-      return {type: 'literal', value: fromFakeUTF8String($val)}
+      return Promise.resolve(fromFakeUTF8String($val))
    } else {
-      let $expr = $AST.get_sub_exn($x)
-      return {type: 'subexpression', expr: new ExpressionEvalSync(INTERNAL, $expr, evl)}
+      let $expr = $AST.get_sub_exn($x),
+         expr = new ExpressionEval(INTERNAL, $expr, evl)
+      return evl.call(null, expr)
    }
 }
 
@@ -567,6 +569,11 @@ export class Expression extends ExpressionCommon {
       return new Expression(INTERNAL, $new)
    }
 
+   cloneWithEvaluator(handleSubexpr: evaluator): ExpressionEval {
+      let $new = $AST.copy_expression(this.$expr)
+      return new ExpressionEval(INTERNAL, $new, handleSubexpr)
+   }
+
    cloneWithEvaluatorSync(handleSubexpr: evaluatorSync): ExpressionEvalSync {
       let $new = $AST.copy_expression(this.$expr)
       return new ExpressionEvalSync(INTERNAL, $new, handleSubexpr)
@@ -575,6 +582,11 @@ export class Expression extends ExpressionCommon {
    get command(): Literal | Sub<Expression> {
       let $command = $Expression.command(this.$expr)
       return fromOrSubexpr($command)
+   }
+
+   evalCommand(handleSubexpr: evaluator): Promise<string> {
+      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      return ee.command
    }
 
    evalCommandSync(handleSubexpr: evaluatorSync): string {
@@ -586,6 +598,11 @@ export class Expression extends ExpressionCommon {
    getPositionals(): (Literal | Sub<Expression>)[] {
       let $positionals = $Expression.positionals_arr(this.$expr)
       return $positionals.map(fromOrSubexpr)
+   }
+
+   evalPositionals(handleSubexpr: evaluator): Promise<string[]> {
+      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      return ee.getPositionals()
    }
 
    evalPositionalsSync(handleSubexpr: evaluatorSync): string[] {
@@ -635,6 +652,11 @@ export class Expression extends ExpressionCommon {
       return typeof $payload === 'undefined' ? undefined : fromOrSubexpr($payload)
    }
 
+   evalFlag(handleSubexpr: evaluator, flag: string): Promise<string | undefined> {
+      let ee = new ExpressionEval(INTERNAL, this.$expr, handleSubexpr)
+      return ee.getFlag(flag)
+   }
+
    evalFlagSync(handleSubexpr: evaluatorSync, flag: string): string | undefined {
       let ee = new ExpressionEvalSync(INTERNAL, this.$expr, handleSubexpr)
       return ee.getFlag(flag)
@@ -642,6 +664,80 @@ export class Expression extends ExpressionCommon {
 }
 
 // `Expression.t`, with recursive evaluation of subexpressions
+export class ExpressionEval extends ExpressionCommon {
+   private evaluator: evaluator
+
+   /** @hidden */
+   constructor(isInternal: sentinel, $expr: $Expressiont, handleSubexpr: evaluator) {
+      if (isInternal !== INTERNAL)
+         throw new Error(
+            '`ExpressionEval` can only be constructed by `Expression#evalPositionals()` and similar.',
+         )
+
+      super(isInternal, $expr)
+
+      console.assert(typeof handleSubexpr === 'function')
+      this.evaluator = handleSubexpr
+   }
+
+   clone(): ExpressionEval {
+      let $new = $AST.copy_expression(this.$expr)
+      return new ExpressionEval(INTERNAL, $new, this.evaluator)
+   }
+
+   get command(): Promise<string> {
+      let $command = $Expression.command(this.$expr)
+      return evalOrSubexpr(this.evaluator, $command)
+   }
+
+   // Wrapper for `Expression.positionals`
+   async getPositionals(): Promise<string[]> {
+      const $positionals = $Expression.positionals_arr(this.$expr)
+      const results: string[] = new Array()
+
+      for (let $positional of $positionals)
+         results.push(await evalOrSubexpr(this.evaluator, $positional))
+
+      return results
+   }
+
+   // Wrapper for `Expression.iter`
+   forEachFlag(
+      f: (name: string, payload: string | undefined, idx: number) => void,
+   ): void {
+      const self = this,
+         flagMapper = function(
+            idx: number,
+            $name: $string,
+            $payloadOpt: $flag_payload | undefined,
+         ) {
+            const name = fromFakeUTF8String($name),
+               $payload = fromFlagPayloadOption($payloadOpt),
+               payload =
+                  typeof $payload === 'undefined'
+                     ? undefined
+                     : evalOrSubexpr(self.evaluator, $payload)
+
+            f.call(null, name, payload, idx)
+         }
+
+      $Expression.iteri(flagMapper, this.$expr)
+   }
+
+   // Wrapper for `Expression.flag`
+   async getFlag(flag: string): Promise<string | undefined> {
+      console.assert(typeof flag === 'string')
+      const $flag = toFakeUTF8String(flag),
+         $payloadOpt = $Expression.flag($flag, this.$expr),
+         $payload = fromFlagPayloadOption($payloadOpt)
+
+      return typeof $payload === 'undefined'
+         ? Promise.resolve(undefined)
+         : evalOrSubexpr(this.evaluator, $payload)
+   }
+}
+
+// `ExpressionEval` when given a synchronous `evaluator`
 export class ExpressionEvalSync extends ExpressionCommon {
    private evaluator: evaluatorSync
 
