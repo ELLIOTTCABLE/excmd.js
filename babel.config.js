@@ -21,6 +21,20 @@ module.exports = {
             ],
          ],
       },
+      {
+         test: 'packages/excmd/examples/**/*',
+         presets: [
+            [
+               '@babel/env',
+               {
+                  targets: {node: '12'},
+
+                  // preserve ESModules intact
+                  modules: false,
+               },
+            ],
+         ],
+      },
    ],
    babelrcRoots: ['.', './packages/*'],
 }

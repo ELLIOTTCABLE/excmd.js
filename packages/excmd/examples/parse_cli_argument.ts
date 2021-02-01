@@ -1,4 +1,4 @@
-import {Parser} from '../'
+import {Parser} from '../dist/excmd.mjs'
 
 let input = process.argv[2]
 console.log('Parsing: "' + input + '"')

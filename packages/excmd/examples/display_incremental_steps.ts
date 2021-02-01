@@ -1,6 +1,6 @@
 import termkit, {ScreenBuffer} from 'terminal-kit'
 
-import Excmd from '../'
+import {Parser, Checkpoint} from '../dist/excmd.mjs'
 
 const term = termkit.terminal
 
@@ -81,7 +81,7 @@ function displayStack(output: ScreenBuffer, cp: Checkpoint) {
 
 function onChange(input: TextBuffer, output: ScreenBuffer) {
    const textContent = input.getText()
-   const start: Excmd.Checkpoint = Excmd.Parser.startExpressionWithString(textContent)
+   const start: Checkpoint = Parser.startExpressionWithString(textContent)
 
    output.fill({char: ' '})
    output.moveTo(0, 0)
@@ -185,7 +185,7 @@ function setupAltMode() {
    // Ensuring a clean exit, and a return to the users' expected terminal-state
    function onExit(code) {
       term.grabInput(false)
-      sleep(2)
+      sleep(0.5)
       term.fullscreen(false)
    }
 
