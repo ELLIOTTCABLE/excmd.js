@@ -15,6 +15,7 @@
    },
    "include": ["src/**/*.ts"],
    "typedocOptions": {
+      "gitRemote": "gh",
       "name": "Excmd.js",
       "entryPoints": ["./src/excmd.ts"],
       "excludeExternals": true,
