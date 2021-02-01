@@ -20,5 +20,8 @@ module.exports = {
    ],
 
    // Typedoc
-   'packages/excmd/**/*.{ts,js,md}': ['cd packages/excmd/ && npm run build:docs ; :'],
+   'packages/excmd/**/*.{ts,js,md}': [
+      'cd packages/excmd/ && npm run build:docs ; :',
+      'git add docs/{{index,modules,globals}.html,classes,interfaces,modules,assets/js/search.js} ; :',
+   ],
 }
