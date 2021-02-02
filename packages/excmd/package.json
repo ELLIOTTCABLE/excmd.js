@@ -1,6 +1,6 @@
 {
    "name": "excmd",
-   "version": "2.0.0-alpha.1",
+   "version": "2.0.0-alpha.2",
    "description": "JavaScript interface to Tridactyl's parser for Vi-style command-line, rc-files, and vimscript",
    "main": "dist/excmd.mjs",
    "type": "module",
