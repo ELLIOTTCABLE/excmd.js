@@ -4,6 +4,9 @@
 # Merlin's various log-files (the lack of escapes is intentional!)
 *merlin-log*
 
+# Lerna errors appear here
+lerna-debug.log
+
 # ocamlbuild working directory
 **/_build/
 
