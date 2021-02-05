@@ -10,6 +10,7 @@ import * as $_Lexer from 'bs-excmd/src/lexer.bs'
 import * as $_Parser from 'bs-excmd/src/parser.bs.js'
 import * as $_Expression from 'bs-excmd/src/expression.bs'
 import * as $_Incremental from 'bs-excmd/src/incremental.bs'
+import {List as $List, $$Array as $Array} from 'bs-excmd/src/reexports.bs'
 
 /** @hidden */
 const $AST: typeof $_AST = mapExposedFunctionsThruErrorTrampoline($_AST)
@@ -37,6 +38,12 @@ type Nominal<Ty, Discriminant> = Ty & {__discriminant: Discriminant}
  * @hidden
  */
 type sentinel = Nominal<symbol, 'INTERNAL'>
+
+/**
+ * An internal BuckleScript `list` (a singly-linked-list).
+ * @hidden
+ */
+type list<T> = Nominal<Array<T>, 'list'>
 
 /** @hidden */
 interface SemanticMap {
@@ -158,29 +165,29 @@ function isOCamlExn($exn: unknown): $exn is $exn {
  *
  * @hidden
  */
-function buckleScriptErrorTrampoline<R>(
-   bs_function: (...args: unknown[]) => R,
-   ...args: unknown[]
-): R {
-   try {
-      return bs_function.apply(null, args)
-   } catch ($exn) {
-      if (isOCamlExn($exn)) {
-         const [[error_variant]] = $exn
-         if (error_variant === 'Caml_js_exceptions.Error') {
-            const orig_error = $exn[1]
-            throw orig_error
-         } else {
-            const ErrorConstructor: typeof OCamlError =
-               errorMap[error_variant as knownExnModule] || OCamlError
-
-            throw new ErrorConstructor($exn)
-         }
-      } else {
-         throw $exn
-      }
-   }
-}
+// function buckleScriptErrorTrampoline<R>(
+//    bs_function: (...args: unknown[]) => R,
+//    ...args: unknown[]
+// ): R {
+//    try {
+//       return bs_function.apply(null, args)
+//    } catch ($exn) {
+//       if (isOCamlExn($exn)) {
+//          const [[error_variant]] = $exn
+//          if (error_variant === 'Caml_js_exceptions.Error') {
+//             const orig_error = $exn[1]
+//             throw orig_error
+//          } else {
+//             const ErrorConstructor: typeof OCamlError =
+//                errorMap[error_variant as knownExnModule] || OCamlError
+//
+//             throw new ErrorConstructor($exn)
+//          }
+//       } else {
+//          throw $exn
+//       }
+//    }
+// }
 
 /**
  * Meta-programmatic nonsense to translate all errors occuring in BuckleScript-land.
@@ -193,20 +200,7 @@ function buckleScriptErrorTrampoline<R>(
 function mapExposedFunctionsThruErrorTrampoline<M extends {[X: string]: unknown}>(
    $module: M,
 ): M {
-   const replacement = {} as M
-
-   Object.getOwnPropertyNames($module).forEach(function(arg) {
-      const key = arg as keyof M
-      const $val = $module[key]
-
-      if ($val instanceof Function) {
-         replacement[key] = buckleScriptErrorTrampoline.bind(null, $val)
-      } else {
-         replacement[key] = $val
-      }
-   })
-
-   return replacement
+   return $module
 }
 
 /** @hidden */
@@ -226,7 +220,7 @@ function fromFakeUTF8StringOption(
  */
 function fromFlagPayloadOption(
    $payloadOpt: $flag_payload | undefined,
-): $or_subexpr | undefined {
+): $word | undefined {
    if (typeof $payloadOpt === 'undefined') {
       // `None`
       return undefined
@@ -237,7 +231,7 @@ function fromFlagPayloadOption(
          // `Some Empty`
          return undefined
       } else {
-         // `Some (Payload (string or_subexpr))`
+         // `Some (Payload (string or_subexpr list))`
          return $payload
       }
    }
@@ -266,6 +260,10 @@ interface Sub<T> {
    expr: T
 }
 
+type or_subexpr<T> = Literal | Sub<T>
+
+type word<SubType> = or_subexpr<SubType>[]
+
 /**
  * The function-signature required of callbacks, passed to `eval...Sync` functions and friends, that
  * can reduce an unevaluated sub-[[Expression]] into a resultant, simple `string`-ish return value.
@@ -284,7 +282,7 @@ type evaluator = (expr: ExpressionEval) => Promise<string>
 
 // Helper to generate a JavaScript-friendly shape for an `AST.or_subexpr`
 /** @hidden */
-function fromOrSubexpr($x: $or_subexpr): Literal | Sub<Expression> {
+function fromOrSubexpr($x: $or_subexpr): or_subexpr<Expression> {
    if ($AST.is_literal($x)) {
       let $val = $AST.get_literal_exn($x)
       return {type: 'literal', value: fromFakeUTF8String($val)}
@@ -292,6 +290,12 @@ function fromOrSubexpr($x: $or_subexpr): Literal | Sub<Expression> {
       let $expr = $AST.get_sub_exn($x)
       return {type: 'subexpression', expr: new Expression(INTERNAL, $expr)}
    }
+}
+
+/** @hidden */
+function fromWord($w: $word): word<Expression> {
+   let w = $Array.of_list($w)
+   return w.map($seg => fromOrSubexpr($seg))
 }
 
 /** @hidden */
@@ -307,6 +311,16 @@ function evalOrSubexpr(evl: evaluator, $x: $or_subexpr): Promise<string> {
 }
 
 /** @hidden */
+async function evalWord(evl: evaluator, $w: $word): Promise<string> {
+   const w = $Array.of_list($w),
+      results: string[] = []
+
+   for (let $seg of w) results.push(await evalOrSubexpr(evl, $seg))
+
+   return results.join('')
+}
+
+/** @hidden */
 function evalOrSubexprSync(evl: evaluatorSync, $x: $or_subexpr): string {
    if ($AST.is_literal($x)) {
       let $val = $AST.get_literal_exn($x)
@@ -316,6 +330,13 @@ function evalOrSubexprSync(evl: evaluatorSync, $x: $or_subexpr): string {
          expr = new ExpressionEvalSync(INTERNAL, $expr, evl)
       return evl.call(null, expr)
    }
+}
+
+/** @hidden */
+function evalWordSync(evl: evaluatorSync, $w: $word): string {
+   const w = $Array.of_list($w)
+
+   return w.map($seg => evalOrSubexprSync(evl, $seg)).join('')
 }
 
 // Wrapper for Parser.script
@@ -579,9 +600,9 @@ export class Expression extends ExpressionCommon {
       return new ExpressionEvalSync(INTERNAL, $new, handleSubexpr)
    }
 
-   get command(): Literal | Sub<Expression> {
+   get command(): word<Expression> {
       let $command = $Expression.command(this.$expr)
-      return fromOrSubexpr($command)
+      return fromWord($command)
    }
 
    evalCommand(handleSubexpr: evaluator): Promise<string> {
@@ -595,9 +616,9 @@ export class Expression extends ExpressionCommon {
    }
 
    // Wrapper for `Expression.positionals`
-   getPositionals(): (Literal | Sub<Expression>)[] {
+   getPositionals(): word<Expression>[] {
       let $positionals = $Expression.positionals_arr(this.$expr)
-      return $positionals.map(fromOrSubexpr)
+      return $positionals.map(fromWord)
    }
 
    evalPositionals(handleSubexpr: evaluator): Promise<string[]> {
@@ -612,11 +633,7 @@ export class Expression extends ExpressionCommon {
 
    // Wrapper for `Expression.iter`
    forEachFlag(
-      f: (
-         name: string,
-         payload: Literal | Sub<Expression> | undefined,
-         idx: number,
-      ) => void,
+      f: (name: string, payload: word<Expression> | undefined, idx: number) => void,
    ): void {
       const flagMapper = function(
          idx: number,
@@ -625,8 +642,7 @@ export class Expression extends ExpressionCommon {
       ) {
          const name = fromFakeUTF8String($name),
             $payload = fromFlagPayloadOption($payloadOpt),
-            payload =
-               typeof $payload === 'undefined' ? undefined : fromOrSubexpr($payload)
+            payload = typeof $payload === 'undefined' ? undefined : fromWord($payload)
 
          f.call(null, name, payload, idx)
       }
@@ -643,13 +659,13 @@ export class Expression extends ExpressionCommon {
 
    // Wrapper for `Expression.flag`
    // TODO: Rename to something clearer, like getPayload
-   getFlag(flag: string): Literal | Sub<Expression> | undefined {
+   getFlag(flag: string): word<Expression> | undefined {
       console.assert(typeof flag === 'string')
       const $flag = toFakeUTF8String(flag),
          $payloadOpt = $Expression.flag($flag, this.$expr),
          $payload = fromFlagPayloadOption($payloadOpt)
 
-      return typeof $payload === 'undefined' ? undefined : fromOrSubexpr($payload)
+      return typeof $payload === 'undefined' ? undefined : fromWord($payload)
    }
 
    evalFlag(handleSubexpr: evaluator, flag: string): Promise<string | undefined> {
@@ -687,7 +703,7 @@ export class ExpressionEval extends ExpressionCommon {
 
    get command(): Promise<string> {
       let $command = $Expression.command(this.$expr)
-      return evalOrSubexpr(this.evaluator, $command)
+      return evalWord(this.evaluator, $command)
    }
 
    // Wrapper for `Expression.positionals`
@@ -696,14 +712,14 @@ export class ExpressionEval extends ExpressionCommon {
       const results: string[] = new Array()
 
       for (let $positional of $positionals)
-         results.push(await evalOrSubexpr(this.evaluator, $positional))
+         results.push(await evalWord(this.evaluator, $positional))
 
       return results
    }
 
    // Wrapper for `Expression.iter`
    forEachFlag(
-      f: (name: string, payload: string | undefined, idx: number) => void,
+      f: (name: string, payload: Promise<string> | undefined, idx: number) => void,
    ): void {
       const self = this,
          flagMapper = function(
@@ -716,7 +732,7 @@ export class ExpressionEval extends ExpressionCommon {
                payload =
                   typeof $payload === 'undefined'
                      ? undefined
-                     : evalOrSubexpr(self.evaluator, $payload)
+                     : evalWord(self.evaluator, $payload)
 
             f.call(null, name, payload, idx)
          }
@@ -733,7 +749,7 @@ export class ExpressionEval extends ExpressionCommon {
 
       return typeof $payload === 'undefined'
          ? Promise.resolve(undefined)
-         : evalOrSubexpr(this.evaluator, $payload)
+         : evalWord(this.evaluator, $payload)
    }
 }
 
@@ -761,14 +777,14 @@ export class ExpressionEvalSync extends ExpressionCommon {
 
    get command(): string {
       let $command = $Expression.command(this.$expr)
-      return evalOrSubexprSync(this.evaluator, $command)
+      return evalWordSync(this.evaluator, $command)
    }
 
    // Wrapper for `Expression.positionals`
    getPositionals(): string[] {
       let $positionals = $Expression.positionals_arr(this.$expr)
 
-      return $positionals.map(evalOrSubexprSync.bind(null, this.evaluator))
+      return $positionals.map(evalWordSync.bind(null, this.evaluator))
    }
 
    // Wrapper for `Expression.iter`
@@ -786,7 +802,7 @@ export class ExpressionEvalSync extends ExpressionCommon {
                payload =
                   typeof $payload === 'undefined'
                      ? undefined
-                     : evalOrSubexprSync(self.evaluator, $payload)
+                     : evalWordSync(self.evaluator, $payload)
 
             f.call(null, name, payload, idx)
          }
@@ -803,7 +819,7 @@ export class ExpressionEvalSync extends ExpressionCommon {
 
       return typeof $payload === 'undefined'
          ? undefined
-         : evalOrSubexprSync(this.evaluator, $payload)
+         : evalWordSync(this.evaluator, $payload)
    }
 }
 
@@ -1018,14 +1034,14 @@ export class Checkpoint<D extends SemanticDiscriminator> {
       return $toks.map($tok => new Token(INTERNAL, $tok))
    }
 
-   get command(): Literal | Sub<Expression> | undefined {
+   get command(): word<Expression> | undefined {
       const $command = $Incremental.current_command(this.$cp)
-      return typeof $command === 'undefined' ? undefined : fromOrSubexpr($command)
+      return typeof $command === 'undefined' ? undefined : fromWord($command)
    }
 
    // FIXME: More accessors
 
-   get automaton_status(): checkpoint_state {
+   get automaton_status(): checkpoint_state | undefined {
       const $str = $Incremental.automaton_status_str(this.$cp)
       if (typeof $str === 'undefined') {
          return undefined
@@ -1081,7 +1097,7 @@ export class AutomatonStack<D extends SemanticDiscriminator> {
       const $get = this.isAfterStack ? $Incremental.get_after : $Incremental.get_before
 
       // Translated, "while get_whichever() isn't None." Yeah, it's a mess.
-      for (let $el: $element, idx = 0; ($el = $get($cp, idx)); idx++) {
+      for (let $el: $element | undefined, idx = 0; ($el = $get($cp, idx)); idx++) {
          yield new AutomatonElement(INTERNAL, $el)
       }
    }

@@ -79,7 +79,8 @@ describe('JavaScript interface', () => {
                nuevo = orig.clone()
 
             expect(nuevo.count).toBe(2)
-            expect(nuevo.command.value).toBe('test')
+            expect(nuevo.command).toHaveLength(1)
+            expect(nuevo.command[0]).toEqual({type: 'literal', value: 'test'})
          })
 
          it("#clone produces a *new* Expression that doesn't mutate the original", () => {
@@ -88,9 +89,11 @@ describe('JavaScript interface', () => {
                nuevo = orig.clone()
 
             // Mutate the clone,
-            expect(nuevo.getPositionals()).toContainEqual({type: 'literal', value: 'mby'})
+            expect(nuevo.getPositionals()).toContainEqual([
+               {type: 'literal', value: 'mby'},
+            ])
             // then check the original
-            expect(orig.getFlag('flg')).toEqual({type: 'literal', value: 'mby'})
+            expect(orig.getFlag('flg')).toEqual([{type: 'literal', value: 'mby'}])
          })
 
          it("#cloneWithEvaluatorSync produces a *new* ExpressionEval that doesn't mutate the original", () => {
@@ -102,7 +105,7 @@ describe('JavaScript interface', () => {
             // Mutate the clone,
             expect(nuevo.getPositionals()).toContain('mby')
             // then check the original
-            expect(orig.getFlag('flg')).toEqual({type: 'literal', value: 'mby'})
+            expect(orig.getFlag('flg')).toEqual([{type: 'literal', value: 'mby'}])
          })
 
          it("#cloneWithEvaluator produces a *new* (async) ExpressionEval that doesn't mutate the original", async () => {
@@ -114,7 +117,7 @@ describe('JavaScript interface', () => {
             // Mutate the clone,
             expect(await nuevo.getPositionals()).toContain('mby')
             // then check the original
-            expect(await orig.getFlag('flg')).toEqual({type: 'literal', value: 'mby'})
+            expect(await orig.getFlag('flg')).toEqual([{type: 'literal', value: 'mby'}])
          })
       })
 
@@ -128,8 +131,8 @@ describe('JavaScript interface', () => {
          it('#command, unevaluated, produces a literal', () => {
             const expr = Parser.expressionOfString('2test')
 
-            expect(expr.command.type).toBe('literal')
-            expect(expr.command.value).toBe('test')
+            expect(expr.command).toHaveLength(1)
+            expect(expr.command[0]).toEqual({type: 'literal', value: 'test'})
          })
 
          it('#evalCommandSync reduces a literal to a string', () => {
@@ -198,7 +201,9 @@ describe('JavaScript interface', () => {
             // Check for the flag,
             expect(expr.hasFlag('flg')).toBe(true)
             // Mutate it away,
-            expect(expr.getPositionals()).toContainEqual({type: 'literal', value: 'mby'})
+            expect(expr.getPositionals()).toContainEqual([
+               {type: 'literal', value: 'mby'},
+            ])
             // then check it again
             expect(expr.hasFlag('flg')).toBe(true)
             expect(expr.getFlag('flg')).toBeUndefined()
@@ -210,8 +215,8 @@ describe('JavaScript interface', () => {
 
             expect(positionals).toBeInstanceOf(Array)
             expect(positionals).toEqual([
-               {type: 'literal', value: 'qux'},
-               {type: 'literal', value: 'quux'},
+               [{type: 'literal', value: 'qux'}],
+               [{type: 'literal', value: 'quux'}],
             ])
          })
 
@@ -280,7 +285,7 @@ describe('JavaScript interface', () => {
                payload = expr.getFlag('bar')
 
             expect(typeof payload).toBe('object')
-            expect(payload).toEqual({type: 'literal', value: 'baz'})
+            expect(payload).toEqual([{type: 'literal', value: 'baz'}])
          })
 
          it('#evalFlagSync returns a string payload for a present, literal argument', () => {
@@ -346,19 +351,23 @@ describe('JavaScript interface', () => {
          it('#getFlag prevents a subsequent getPositionals from resolving a consumed arg', () => {
             const expr = Parser.expressionOfString('foo --bar qux quux')
 
-            expect(expr.getFlag('bar')).toEqual({type: 'literal', value: 'qux'})
-            expect(expr.getPositionals()).not.toContainEqual({
-               type: 'literal',
-               value: 'qux',
-            })
+            expect(expr.getFlag('bar')).toEqual([{type: 'literal', value: 'qux'}])
+            expect(expr.getPositionals()).not.toContainEqual([
+               {
+                  type: 'literal',
+                  value: 'qux',
+               },
+            ])
          })
 
          it('#getPositionals prevents a subsequent getFlag from resolving a consumed arg', () => {
             const expr = Parser.expressionOfString('foo --bar qux quux')
 
-            expect(expr.getPositionals()).toEqual([
-               {type: 'literal', value: 'qux'},
-               {type: 'literal', value: 'quux'},
+            expect(expr.getPositionals()).toContainEqual([
+               {
+                  type: 'literal',
+                  value: 'qux',
+               },
             ])
             expect(expr.getFlag('bar')).toBe(undefined)
          })

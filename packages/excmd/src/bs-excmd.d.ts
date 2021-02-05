@@ -17,6 +17,8 @@ type $SemanticDiscriminator = keyof $SemanticMap
 type $exn = Nominal<Array<any>, 'exn'>
 /** @hidden */
 type $string = import('ocaml-string-convert').string_as_utf_8_buffer
+/** @hidden */
+type $list<T> = Nominal<Array<T>, 'list'>
 
 /** @hidden */
 type $buffer = Nominal<object, 'Lexer.buffer'>
@@ -32,6 +34,8 @@ type $ASTt = Nominal<object, 'AST.t'>
 /** @hidden */
 type $or_subexpr = Nominal<object, 'AST.or_subexpr'>
 /** @hidden */
+type $word = Nominal<$list<$or_subexpr>, 'AST.word'>
+/** @hidden */
 type $Expressiont = Nominal<object, 'Expression.t'>
 /** @hidden */
 type $flag_payload = Nominal<object, 'Expression.flag_payload'>
@@ -40,6 +44,13 @@ type $flag_payload = Nominal<object, 'Expression.flag_payload'>
 type $checkpoint<D extends $SemanticDiscriminator> = Nominal<D, 'Incremental.checkpoint'>
 /** @hidden */
 type $element = Nominal<object, 'MenhirInterpreter.element'>
+
+declare module 'bs-excmd/src/reexports.bs' {
+   module List {}
+   module $$Array {
+      function of_list<T>($xs: $list<T>): Array<T>
+   }
+}
 
 declare module 'bs-excmd/src/aST.bs' {
    function copy_expression($expr: $Expressiont): $Expressiont
@@ -73,7 +84,7 @@ declare module 'bs-excmd/src/parser.bs.js' {
 }
 
 declare module 'bs-excmd/src/expression.bs' {
-   function command($expr: $Expressiont): $or_subexpr
+   function command($expr: $Expressiont): $word
    function count($expr: $Expressiont): number
    function flag($flag: $string, $expr: $Expressiont): $flag_payload | undefined
    function flags_arr($expr: $Expressiont): $string[]
@@ -81,10 +92,10 @@ declare module 'bs-excmd/src/expression.bs' {
    function iteri(
       $mapper: (idx: number, $flag: $string, $fp: $flag_payload) => void,
       $expr: $Expressiont,
-   ): undefined
+   ): void
    function mem($flag: $string, $expr: $Expressiont): boolean
-   function payload_to_opt($fp: $flag_payload): $or_subexpr | undefined
-   function positionals_arr($expr: $Expressiont): $or_subexpr[]
+   function payload_to_opt($fp: $flag_payload): $word | undefined
+   function positionals_arr($expr: $Expressiont): $word[]
 }
 
 declare module 'bs-excmd/src/incremental.bs' {
@@ -96,7 +107,7 @@ declare module 'bs-excmd/src/incremental.bs' {
    function acceptable_token($cp: $checkpoint<any>): $token
    function acceptable_tokens($cp: $checkpoint<any>): $token[]
    function automaton_status_str($cp: $checkpoint<any>): $string
-   function current_command($cp: $checkpoint<any>): $or_subexpr | undefined
+   function current_command($cp: $checkpoint<any>): $word | undefined
    function element_incoming_symbol_category_str($cp: $checkpoint<any>): $string
    function element_incoming_symbol_str($cp: $checkpoint<any>): $string
    function element_incoming_symbol_type_str($cp: $checkpoint<any>): $string

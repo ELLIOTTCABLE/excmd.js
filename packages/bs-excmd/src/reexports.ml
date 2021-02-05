@@ -9,9 +9,14 @@
    {[ import { nth } from 'src/utils' ]} *)
 
 module StdList = List
+module StdArray = Array
 
 module List = struct
    let length = StdList.length
 
    let nth = StdList.nth
+end
+
+module Array = struct
+   let of_list = StdArray.of_list
 end
