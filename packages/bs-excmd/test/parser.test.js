@@ -3,6 +3,7 @@ import * as $Lexer from '../src/lexer.bs'
 import * as $Tokens from '../src/tokens.bs'
 import * as $Parser from '../src/parser.bs'
 import * as $Expression from '../src/expression.bs'
+import {List as $List} from '../src/reexports.bs'
 // import {LexBuffer, Token, Parser, ParseError} from '../src/interface'
 import {toFakeUTF8String, fromFakeUTF8String} from 'ocaml-string-convert'
 
@@ -25,8 +26,11 @@ describe('Parser', () => {
    it('parses a single command', () => {
       const $buf = of_string('hello'),
          $expr = $Parser.expression(true, $buf),
-         $command = $Expression.command($expr)
+         $word = $Expression.command($expr)
 
+      expect($List.length($word)).toBe(1)
+
+      const $command = $List.nth($word, 0)
       expect($AST.is_literal($command)).toBe(true)
       expect($AST.get_literal_exn($command)).toBe('hello')
    })

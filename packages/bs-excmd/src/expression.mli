@@ -9,7 +9,7 @@ open AST
 type t
 (** An alias to {!AST.expression}, abstracted that mutation may be controlled. *)
 
-type flag_payload = Empty | Payload of string or_subexpr
+type flag_payload = Empty | Payload of AST.word
 
 (** {2 Basic getters} *)
 
@@ -17,7 +17,7 @@ type flag_payload = Empty | Payload of string or_subexpr
 
 val count : t -> int
 
-val command : t -> string or_subexpr
+val command : t -> AST.word
 
 val mem : string -> t -> bool
 (** [mem fl expr] returns [true] if [expr] contains flag [fl], [false] otherwise.
@@ -42,7 +42,7 @@ val flags : t -> string list
 
 (** All of these may, in some circumstances, mutate the data-structure. *)
 
-val positionals : t -> string or_subexpr list
+val positionals : t -> AST.word list
 (** [positionals expr] returns a [list] of positional (non-flag) arguments in [expr].
 
     This {{!reso} fully resolves} [expr] — any ambiguous words will be consumed as
@@ -74,9 +74,9 @@ val flag : string -> t -> flag_payload option
     - [None], indicating flag [fl] was not present at all.
     - [Some Empty], indicating a flag [fl] was present, but the last such resolved to
       having no payload.
-    - [Some (Payload str)], indicating a flag [fl] was present and the last such became
-      resolved to the payload [str]. This can involve resolution of the word immediately
-      following said [fl]. *)
+    - [Some (Payload word)], indicating a flag [fl] was present and the last such became
+      resolved to the payload [word]. This can involve resolution of the word immediately
+      following said [fl], removing it from the implicit [positionals]. *)
 
 (** {2 Other helpers} *)
 
@@ -133,11 +133,11 @@ val from_script : AST.t -> t array
 
 (**/**)
 
-val payload_to_opt : flag_payload -> string or_subexpr option
+val payload_to_opt : flag_payload -> AST.word option
 (** Helper to convert a [flag_payload] to a BuckleScript-friendly [option]. *)
 
 val flags_arr : t -> string array
 
-val positionals_arr : t -> string or_subexpr array
+val positionals_arr : t -> AST.word array
 
 val dehydrate : AST.expression -> t

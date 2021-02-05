@@ -43,19 +43,57 @@ let expression_to_yojson _ = unavailable_on `JavaScript "expression_to_yojson"
 
 let expression_of_yojson _ = unavailable_on `JavaScript "expression_of_yojson"
 
+(** This triple extends the usual [option]al type with an intermediate {!Unresolved}
+    state. It's used in {!flag}s to indicate the presence of a subsequent {!Positional}
+    argument that may-or-may-not be the [payload] of said [flag]. *)
 type 'a unresolved = Unresolved | Resolved of 'a | Absent
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
+(** Wraps any value that may be replaced in the AST by a subexpression; i.e., in the
+    expression [echo hello world] the literal [hello] will be wrapped in {!Literal}. This
+    is necessary because it could just as easily be [echo (echo hello) world]. *)
 type 'a or_subexpr = Sub of expression | Literal of 'a
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-and flag = { name : string; mutable payload : string or_subexpr unresolved }
+and word = string or_subexpr list
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
+(** The most granular element of an excmd, like a shell command, is the "word." These are
+    a series of parameters to a command, separated by whitespace:
+
+    {v echo each of these is a separate "word" v}
+
+    Words can also be produced by subexpressions,
+
+    {v echo each of these is a (echo separate) "word" v}
+
+    ... or created via quotation:
+
+    {v echo "this is only a single word" v}
+
+    A single shell "word" can actually be composed of multiple quotations or
+    subexpressions, as long as they are not separated by whitespace:
+
+    {v echo "this""is""only""a""single"(echo word)(echo also) v}
+
+    Such a composition is represented in this type, by a series of {!or_subexpr}s in a
+    [list]. *)
+
+and flag = { name : string; mutable payload : word unresolved }
+[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
+(** A single [--flag], possible with [-a=payload]. The flag's name is always literal; but
+    the payload may be:
+
+    {v cmd --fl="a quotation," v}
+    {v cmd --fl=(echo a subexpression) v}
+    {v cmd --fl=or"a"(echo smooshing)"thereof" v}
+
+    (Although this type is technically mutable, it's probably a better idea to leave the
+    mutation up to the {!Expression}-interface.) *)
+
+and arg = Positional of word | Flag of flag
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-and arg = Positional of string or_subexpr | Flag of flag
-[@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
-
-and expression = { count : int; cmd : string or_subexpr; mutable rev_args : arg list }
+and expression = { count : int; cmd : word; mutable rev_args : arg list }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 type t = { expressions : expression array }
@@ -83,14 +121,17 @@ let pipe_last ~from ~into =
        | Flag { payload = Unresolved; _ } :: _rest ->
          failwith "unreachable: pipe_last, unresolved-flag in last position"
    in
-   let new_args = Positional (Sub from) :: new_args in
+   let new_args = Positional [ Sub from ] :: new_args in
    { into with rev_args = new_args }
 
 
-let rec copy_string_or_subexpr sos =
-   match sos with
-    | Literal str -> Literal (String.copy str)
-    | Sub expr -> Sub (copy_expression expr)
+let rec copy_word xs =
+   List.map
+      (fun seg ->
+            match seg with
+             | Literal str -> Literal (String.copy str)
+             | Sub expr -> Sub (copy_expression expr))
+      xs
 
 
 and copy_flag flg =
@@ -99,23 +140,19 @@ and copy_flag flg =
        payload =
           ( match flg.payload with
              | Unresolved -> Unresolved
-             | Resolved v -> Resolved (copy_string_or_subexpr v)
+             | Resolved word -> Resolved (copy_word word)
              | Absent -> Absent );
    }
 
 
 and copy_arg arg =
    match arg with
-    | Positional sos -> Positional (copy_string_or_subexpr sos)
+    | Positional words -> Positional (copy_word words)
     | Flag flg -> Flag (copy_flag flg)
 
 
 and copy_expression expr =
-   {
-      expr with
-       cmd = copy_string_or_subexpr expr.cmd;
-       rev_args = List.map copy_arg expr.rev_args;
-   }
+   { expr with cmd = copy_word expr.cmd; rev_args = List.map copy_arg expr.rev_args }
 
 
 let copy ast = { expressions = Array.map copy_expression ast.expressions }

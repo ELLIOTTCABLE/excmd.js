@@ -37,7 +37,7 @@
 (* The following type declarations must be updated in accordance with the semantic actions below,
    to satisfy the requirements of Menhir's --inspection API. *)
 %type <AST.expression> expression_chain subexpression unterminated_expression
-%type <string AST.or_subexpr> command noncommand_word
+%type <AST.word>     command noncommand_word
 %type <string>       _flag_long _flags_short _flag_long_literal quotation quotation_chunk
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
 %type <AST.arg list> rev_arguments rev_arguments_and_flag rev_arguments_and_positional
@@ -84,16 +84,16 @@ unterminated_expression:
  ;
 
 command:
- | x = IDENTIFIER { Literal x }
- | x = quotation { Literal x }
- | x = subexpression { Sub x }
+ | x = IDENTIFIER { [ Literal x ] }
+ | x = quotation { [ Literal x ] }
+ | x = subexpression { [ Sub x ] }
  ;
 
 noncommand_word:
- | x = IDENTIFIER { Literal x }
- | hd = URL_START; tl = URL_REST { Literal (hd ^ tl) }
- | x = quotation { Literal x }
- | x = subexpression { Sub x }
+ | x = IDENTIFIER { [ Literal x ] }
+ | hd = URL_START; tl = URL_REST { [ Literal (hd ^ tl) ] }
+ | x = quotation { [ Literal x ] }
+ | x = subexpression { [ Sub x ] }
  ;
 
 rev_arguments:
@@ -112,7 +112,7 @@ rev_arguments_nonempty:
  ;
 
 rev_arguments_and_positional:
- | x = noncommand_word { [Positional x] }
+ | x = noncommand_word { [ Positional x ] }
 
  | xs = rev_arguments_and_positional; x = noncommand_word { (Positional x) :: xs }
  | xs = rev_arguments_and_flag; x = noncommand_word
@@ -132,7 +132,7 @@ rev_arguments_and_positional:
  ;
 
 rev_arguments_and_flag:
- | x = long_flag { [x] }
+ | x = long_flag { [ x ] }
  | xs = short_flags { List.rev xs }
 
  | xs = rev_arguments_nonempty; x = long_flag; { x :: xs }
@@ -145,9 +145,9 @@ rev_positionals_after_doubledash:
  ;
 
 rev_positionals_after_doubledash_nonempty:
- | x = noncommand_word { [Positional x] }
- | x = long_flag_literal { [x] }
- | x = short_flags_literal { [x] }
+ | x = noncommand_word { [ Positional x ] }
+ | x = long_flag_literal { [ x ] }
+ | x = short_flags_literal { [ x ] }
 
  | xs = rev_positionals_after_doubledash_nonempty; x = noncommand_word { (Positional x) :: xs }
  | xs = rev_positionals_after_doubledash_nonempty; x = long_flag_literal; { x :: xs }
@@ -176,7 +176,7 @@ _flags_short:
  ;
 
 long_flag_literal:
- | x = _flag_long_literal { Positional (Literal x) }
+ | x = _flag_long_literal { Positional [ Literal x ] }
  (* FIXME: Handle "smooshed" words, like `echo "bar""baz"` or `echo "bar"(baz)` *)
  (* | x = _flag_long_literal; eq = EQUALS; y = noncommand_word { Literal (x ^ eq ^ y) } *)
  ;
@@ -188,7 +188,7 @@ _flag_long_literal:
 
 short_flags_literal:
  | FLAGS_SHORT_START; x = IDENTIFIER
- | FLAGS_SHORT_START; x = quotation { Positional (Literal ("-" ^ x)) }
+ | FLAGS_SHORT_START; x = quotation { Positional [ Literal ("-" ^ x) ] }
  ;
 
 quotation:
@@ -211,7 +211,7 @@ rev_subquotation:
  * size of [ys]. A better data-structure may be called for ... but at the data-sizes we're dealing
  * with, this becoming a problem is unlikely. *)
 rev_nonempty_subquotation:
- | x = QUOTE_OPEN { [x] }
+ | x = QUOTE_OPEN { [ x ] }
  | xs = rev_nonempty_subquotation; x = quotation_chunk { x :: xs }
  | xs = rev_nonempty_subquotation; ys = rev_subquotation { ys @ xs }
  ;

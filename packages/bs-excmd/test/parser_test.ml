@@ -187,8 +187,9 @@ let tests () =
    let fail last_good _failing =
       match Incremental.current_command last_good with
        | None -> failwith "current_command should have produced a command"
-       | Some (Sub _) -> failwith "current_command should have produced a literal"
-       | Some (Literal str) -> print_endline str
+       | Some [ Sub _ ] -> failwith "current_command should have produced a literal"
+       | Some [ Literal str ] -> print_endline str
+       | _ -> failwith "current_command produced insensible result"
    in
    Incremental.continue ~accept ~fail entrypoint
 

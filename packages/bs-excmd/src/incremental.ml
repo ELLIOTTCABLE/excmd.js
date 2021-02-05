@@ -91,7 +91,7 @@ let current_command cp =
           | None -> None
           | Some (I.Element (lr1state, valu, _startp, _endp)) -> (
                 match I.incoming_symbol lr1state with
-                 | I.N I.N_command -> Some (valu : string AST.or_subexpr)
+                 | I.N I.N_command -> Some (valu : AST.word)
                  | _ -> f (i + 1) )
       in
       f 0
@@ -166,13 +166,13 @@ let element_incoming_symbol_desc = function
             ("optterm_list_break_expression_chain_", "AST.expression list")
           | I.N I.N_option_break_ -> ("option_break_", "unit option")
           | I.N I.N_option_COUNT_ -> ("option_COUNT_", "string option")
-          | I.N I.N_noncommand_word -> ("noncommand_word", "string AST.or_subexpr")
+          | I.N I.N_noncommand_word -> ("noncommand_word", "AST.word")
           | I.N I.N_long_flag_literal -> ("long_flag_literal", "AST.arg")
           | I.N I.N_long_flag -> ("long_flag", "AST.arg")
           | I.N I.N_list_COLON_ -> ("list_COLON_", "unit list")
           | I.N I.N_expression_chain -> ("expression_chain", "AST.expression")
           | I.N I.N_expression -> ("expression", "AST.expression")
-          | I.N I.N_command -> ("command", "string AST.or_subexpr")
+          | I.N I.N_command -> ("command", "AST.word")
           | I.N I.N_break -> ("break", "unit")
           | I.N I.N__flags_short -> ("_flags_short", "string")
           | I.N I.N__flag_long_literal -> ("_flag_long_literal", "string")

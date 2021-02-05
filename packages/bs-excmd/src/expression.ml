@@ -2,7 +2,7 @@ open AST
 
 type t = expression
 
-type flag_payload = Empty | Payload of string AST.or_subexpr
+type flag_payload = Empty | Payload of AST.word
 
 let hydrate expr = expr
 
@@ -18,7 +18,7 @@ let command expr = expr.cmd
 
 let payload_to_opt = function
    | Empty -> None
-   | Payload str -> Some str
+   | Payload word -> Some word
 
 
 (* These are a mess of mutating code instead of simple, functional iteration, mostly because this
@@ -105,7 +105,7 @@ let flag key expr =
     | Some fl -> (
           match fl.payload with
            | Absent -> Some Empty
-           | Resolved str -> Some (Payload str)
+           | Resolved word -> Some (Payload word)
            | Unresolved -> failwith "Unreachable" )
 
 
@@ -158,7 +158,7 @@ let iter f expr =
 
 let positionals expr =
    let iterator = function
-      | Positional str -> Some str
+      | Positional word -> Some word
       | Flag flag -> (
             match flag.payload with
              | Absent | Resolved _ -> None

@@ -52,7 +52,7 @@ val acceptable_tokens : 'a checkpoint -> Tokens.token array
 
     JavaScript interface: [Checkpoint::acceptable_tokens]. *)
 
-val current_command : 'a checkpoint -> string AST.or_subexpr option
+val current_command : 'a checkpoint -> AST.word option
 (** [current_command cp] will, if the automaton has already accepted a token that will
     eventually become the [Expression.command] of the current expression, produce the name
     of that accepted command. If the parser is not in a state where a command-name has
