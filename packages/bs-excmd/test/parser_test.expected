@@ -209,21 +209,14 @@ Parser.expression "test --foo=google.com/search baz"
 
 ### Single command with a bare-double-dash:
 Parser.expression "test --"
-{
-  "count": 1,
-  "cmd": [ "Literal", "test" ],
-  "rev_args": [ [ "Positional", [ "Literal", "--" ] ] ]
-}
+{ "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] }
 
 ### Single command with a bare-double-dash followed by a long-flag:
 Parser.expression "test -- --foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "rev_args": [
-    [ "Flag", { "name": "foo", "payload": [ "Absent" ] } ],
-    [ "Positional", [ "Literal", "--" ] ]
-  ]
+  "rev_args": [ [ "Positional", [ "Literal", "--foo" ] ] ]
 }
 
 ### Single command with a bare-double-dash followed by another, normal positional:
@@ -231,10 +224,7 @@ Parser.expression "test -- foo"
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "rev_args": [
-    [ "Positional", [ "Literal", "foo" ] ],
-    [ "Positional", [ "Literal", "--" ] ]
-  ]
+  "rev_args": [ [ "Positional", [ "Literal", "foo" ] ] ]
 }
 
 ### Single command with mixed flags and parameters:
@@ -319,10 +309,7 @@ Parser.expression "test -- \"foo bar\""
 {
   "count": 1,
   "cmd": [ "Literal", "test" ],
-  "rev_args": [
-    [ "Positional", [ "Literal", "foo bar" ] ],
-    [ "Positional", [ "Literal", "--" ] ]
-  ]
+  "rev_args": [ [ "Positional", [ "Literal", "foo bar" ] ] ]
 }
 
 ### Bare command, long-flag, flag's name quoted:
@@ -783,7 +770,7 @@ fail-continuation invoked! cool.
 
 ### Listing of acceptable tokens during a failure:
 Incremental.expression "hello --where="
-URL_START, QUOTE_OPEN, PAREN_OPEN, IDENTIFIER, BARE_DOUBLE_DASH
+URL_START, QUOTE_OPEN, PAREN_OPEN, IDENTIFIER
 
 
 ### Dumping of stack-debugging information from a checkpoint:

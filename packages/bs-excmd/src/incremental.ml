@@ -139,15 +139,18 @@ let incoming_symbol_category_str cp =
 (* Ugggggggggggggggh literally copy-pasted this into existence out of compiled files,
    there HAS to be a better way to do this ...
 
-   Vi command: %s/\vI.N_(\S+) : \((.+)\) nonterminal/I.N_\1 -> ("\1", "\2") *)
+   Vi command: %s/\vN_(\S+) : \((.+)\) nonterminal/I.N I.N_\1 -> ("\1", "\2") *)
 let element_incoming_symbol_desc = function
    | I.Element (lr1state, _valu, _startp, _endp) -> (
          match I.incoming_symbol lr1state with
           | I.N I.N_unterminated_expression -> ("unterminated_expression", "AST.expression")
           | I.N I.N_subexpression -> ("subexpression", "AST.expression")
+          | I.N I.N_short_flags_literal -> ("short_flags_literal", "AST.arg")
           | I.N I.N_short_flags -> ("short_flags", "AST.arg list")
           | I.N I.N_script -> ("script", "AST.t")
           | I.N I.N_rev_subquotation -> ("rev_subquotation", "string list")
+          | I.N I.N_rev_positionals_after_doubledash_nonempty ->
+            ("rev_positionals_after_doubledash_nonempty", "AST.arg list")
           | I.N I.N_rev_nonempty_subquotation -> ("rev_nonempty_subquotation", "string list")
           | I.N I.N_rev_nonempty_quotation -> ("rev_nonempty_quotation", "string list")
           | I.N I.N_rev_arguments_nonempty -> ("rev_arguments_nonempty", "AST.arg list")
@@ -164,6 +167,7 @@ let element_incoming_symbol_desc = function
           | I.N I.N_option_break_ -> ("option_break_", "unit option")
           | I.N I.N_option_COUNT_ -> ("option_COUNT_", "string option")
           | I.N I.N_noncommand_word -> ("noncommand_word", "string AST.or_subexpr")
+          | I.N I.N_long_flag_literal -> ("long_flag_literal", "AST.arg")
           | I.N I.N_long_flag -> ("long_flag", "AST.arg")
           | I.N I.N_list_COLON_ -> ("list_COLON_", "unit list")
           | I.N I.N_expression_chain -> ("expression_chain", "AST.expression")
@@ -171,6 +175,7 @@ let element_incoming_symbol_desc = function
           | I.N I.N_command -> ("command", "string AST.or_subexpr")
           | I.N I.N_break -> ("break", "unit")
           | I.N I.N__flags_short -> ("_flags_short", "string")
+          | I.N I.N__flag_long_literal -> ("_flag_long_literal", "string")
           | I.N I.N__flag_long -> ("_flag_long", "string")
           | I.T Tokens.T_error -> ("error", "unit")
           | I.T Tokens.T_URL_START -> ("URL_START", "string")

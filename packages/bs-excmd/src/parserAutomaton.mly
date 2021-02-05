@@ -38,11 +38,12 @@
    to satisfy the requirements of Menhir's --inspection API. *)
 %type <AST.expression> expression_chain subexpression unterminated_expression
 %type <string AST.or_subexpr> command noncommand_word
-%type <string>       _flag_long _flags_short quotation quotation_chunk
+%type <string>       _flag_long _flags_short _flag_long_literal quotation quotation_chunk
 %type <string list>  rev_nonempty_quotation rev_subquotation rev_nonempty_subquotation
 %type <AST.arg list> rev_arguments rev_arguments_and_flag rev_arguments_and_positional
-                        rev_arguments_nonempty short_flags
-%type <AST.arg>      long_flag
+                        rev_arguments_nonempty rev_positionals_after_doubledash
+                        rev_positionals_after_doubledash_nonempty short_flags
+%type <AST.arg>      long_flag long_flag_literal short_flags_literal
 %type <unit> break
 
 
@@ -91,14 +92,18 @@ command:
 noncommand_word:
  | x = IDENTIFIER { Literal x }
  | hd = URL_START; tl = URL_REST { Literal (hd ^ tl) }
- | BARE_DOUBLE_DASH { Literal "--" }
  | x = quotation { Literal x }
  | x = subexpression { Sub x }
  ;
 
 rev_arguments:
  | { [] }
+ | BARE_DOUBLE_DASH { [] }
+
  | xs = rev_arguments_nonempty { xs }
+ | BARE_DOUBLE_DASH; xs = rev_positionals_after_doubledash_nonempty { xs }
+ | xs = rev_arguments_nonempty; BARE_DOUBLE_DASH; ys = rev_positionals_after_doubledash_nonempty
+ { ys @ xs }
  ;
 
 rev_arguments_nonempty:
@@ -134,6 +139,21 @@ rev_arguments_and_flag:
  | xs = rev_arguments_nonempty; ys = short_flags { List.rev_append ys xs }
  ;
 
+rev_positionals_after_doubledash:
+ | { [] }
+ | xs = rev_positionals_after_doubledash_nonempty { xs }
+ ;
+
+rev_positionals_after_doubledash_nonempty:
+ | x = noncommand_word { [Positional x] }
+ | x = long_flag_literal { [x] }
+ | x = short_flags_literal { [x] }
+
+ | xs = rev_positionals_after_doubledash_nonempty; x = noncommand_word { (Positional x) :: xs }
+ | xs = rev_positionals_after_doubledash_nonempty; x = long_flag_literal; { x :: xs }
+ | xs = rev_positionals_after_doubledash_nonempty; x = short_flags_literal { x :: xs }
+ ;
+
 long_flag:
  | name = _flag_long { Flag {name; payload = Absent} }
  | name = _flag_long; EQUALS; payload = noncommand_word
@@ -153,6 +173,22 @@ _flag_long:
 _flags_short:
  | FLAGS_SHORT_START; x = IDENTIFIER { x }
  | FLAGS_SHORT_START; x = quotation { x }
+ ;
+
+long_flag_literal:
+ | x = _flag_long_literal { Positional (Literal x) }
+ (* FIXME: Handle "smooshed" words, like `echo "bar""baz"` or `echo "bar"(baz)` *)
+ (* | x = _flag_long_literal; eq = EQUALS; y = noncommand_word { Literal (x ^ eq ^ y) } *)
+ ;
+
+_flag_long_literal:
+ | FLAG_LONG_START; x = IDENTIFIER
+ | FLAG_LONG_START; x = quotation { "--" ^ x }
+ ;
+
+short_flags_literal:
+ | FLAGS_SHORT_START; x = IDENTIFIER
+ | FLAGS_SHORT_START; x = quotation { Positional (Literal ("-" ^ x)) }
  ;
 
 quotation:
