@@ -1,20 +1,22 @@
-type 'a checkpoint = private
-   { status : 'a ParserAutomaton.MenhirInterpreter.checkpoint; buf : Lexer.buffer }
+type 'a checkpoint = private {
+   status : 'a ParserAutomaton.MenhirInterpreter.checkpoint;
+   buf : Lexer.buffer;
+}
 
 type element = ParserAutomaton.MenhirInterpreter.element
 
 (** {2 Incremental entry-checkpoints} *)
 
 val script : Lexer.buffer -> AST.t checkpoint
-(** Start the incremental Excmd parser with intent to consume, and produce, a single
-    Excmd {!Expression.t}. *)
+(** Start the incremental Excmd parser with intent to consume, and produce, a single Excmd
+    {!Expression.t}. *)
 
 val script_of_string : string -> AST.t checkpoint
 (** Helper to invoke {!val:expression} with a [string]. *)
 
 val expression : Lexer.buffer -> AST.expression checkpoint
-(** Start the incremental Excmd parser with intent to consume, and produce, a single
-    Excmd {!Expression.t}. *)
+(** Start the incremental Excmd parser with intent to consume, and produce, a single Excmd
+    {!Expression.t}. *)
 
 val expression_of_string : string -> AST.expression checkpoint
 (** Helper to invoke {!val:expression} with a [string]. *)
@@ -22,10 +24,10 @@ val expression_of_string : string -> AST.expression checkpoint
 (** {2 Incremental actions} *)
 
 val continue
-   :  accept:('semantic -> 'result)
-   -> fail:('semantic checkpoint -> 'semantic checkpoint -> 'result)
-   -> 'semantic checkpoint
-   -> 'result
+   :  accept:('semantic -> 'result) ->
+   fail:('semantic checkpoint -> 'semantic checkpoint -> 'result) ->
+   'semantic checkpoint ->
+   'result
 (** A helper for Menhir's incremental parsers. Feeds the given ... NYD *)
 
 (** {2 High-level introspection helpers}

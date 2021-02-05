@@ -1,6 +1,5 @@
 let no_native name =
-   failwith
-      (Printf.sprintf "`%s` isn't available when compiled for a native target" name)
+   failwith (Printf.sprintf "`%s` isn't available when compiled for a native target" name)
 
 
 module Json = struct
@@ -16,7 +15,7 @@ module Re = struct
       else
          failwith
             (Printf.sprintf "`Js.Re.fromStringWithFlags` can't handle the flags `\"%s\"`."
-                flags)
+                  flags)
 
 
    let test str regex = Str.string_match regex str 0

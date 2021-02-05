@@ -11,8 +11,7 @@ val error_loctoken_exn : exn -> Tokens.token Lexer.located
 (** {2 Parsing entry-points} *)
 
 val script : ?exn:bool -> Lexer.buffer -> script option
-(** Invoke the Excmd parser with intent to consume, and produce, an entire
-    Excmd-[script]. *)
+(** Invoke the Excmd parser with intent to consume, and produce, an entire Excmd-[script]. *)
 
 val script_of_string : ?exn:bool -> string -> script option
 (** Helper to invoke {!val:script} with a [string]. *)

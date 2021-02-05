@@ -197,7 +197,7 @@ let () =
     | [| _; _; _ |] ->
       raise
          (Invalid_argument
-             "First argument must be a valid non-terminal (e.g. 'script' or 'expression')")
+               "First argument must be a valid non-terminal (e.g. 'script' or 'expression')")
     | _ ->
       eprintf
          "!! Please provide either no arguments (to run the automated tests), or exactly \

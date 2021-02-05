@@ -14,8 +14,12 @@ type mode =
 
 type buffer = { sedlex : Sedlexing.lexbuf; mutable mode : mode }
 
-type position = Lexing.position =
-   { pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int }
+type position = Lexing.position = {
+   pos_fname : string;
+   pos_lnum : int;
+   pos_bol : int;
+   pos_cnum : int;
+}
 [@@deriving show]
 
 type 'a located = 'a * position * position [@@deriving show]
@@ -28,8 +32,8 @@ exception LexError of position * string
 
 (* {2 Constants } *)
 
-(* Note that this depends on the JS-shim, so it's limited to the *common* functionality
-   of the JavaScript and OCaml regex engines. Keep it simple. *)
+(* Note that this depends on the JS-shim, so it's limited to the *common* functionality of
+   the JavaScript and OCaml regex engines. Keep it simple. *)
 let known_schemes =
    Js.Re.fromStringWithFlags ~flags:"i"
       "^(about|data?|f(eed|ile|tp)|g(eo|opher)|https?|i(nfo|rc[6s]?)|ldaps?|m(agnet|ailto)|n(ews|fs|ntp)|rsync|t(ag|elnet)|urn|view-source|wss?|xmpp|ymsgr):"
@@ -159,12 +163,12 @@ let error_desc_exn = function
 let token_is_erroneous tok =
    match tok with
     | ERR_MISSING_COMMENT_CLOSE _
-    | ERR_MISSING_DELIM_CLOSE (_, _)
-    | ERR_UNEXPECTED_CHARACTER (_, _)
-    | ERR_UNEXPECTED_COMMENT_CLOSE _
-    | ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
-    | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
-    | ERR_UNEXPECTED_WHITESPACE _ -> true
+    |ERR_MISSING_DELIM_CLOSE (_, _)
+    |ERR_UNEXPECTED_CHARACTER (_, _)
+    |ERR_UNEXPECTED_COMMENT_CLOSE _
+    |ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
+    |ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
+    |ERR_UNEXPECTED_WHITESPACE _ -> true
     | _ -> false
 
 
@@ -225,38 +229,39 @@ let example_of_token tok =
     | URL_REST url -> Some (if url != "" then url else "/search?q=tridactyl")
     | URL_START url -> Some (if url != "" then url else "google.com")
     | ERR_MISSING_COMMENT_CLOSE _
-    | ERR_MISSING_DELIM_CLOSE (_, _)
-    | ERR_UNEXPECTED_CHARACTER (_, _)
-    | ERR_UNEXPECTED_COMMENT_CLOSE _
-    | ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
-    | ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
-    | ERR_UNEXPECTED_WHITESPACE _ -> None
+    |ERR_MISSING_DELIM_CLOSE (_, _)
+    |ERR_UNEXPECTED_CHARACTER (_, _)
+    |ERR_UNEXPECTED_COMMENT_CLOSE _
+    |ERR_UNEXPECTED_QUOTE_CLOSE (_, _)
+    |ERR_UNEXPECTED_QUOTE_ESCAPE (_, _)
+    |ERR_UNEXPECTED_WHITESPACE _ -> None
 
 
 let example_tokens =
    (* This weird backflipping, is to avoid *even more* duplication: every possible
       "example token" is consistently encoded only in [example_of_token]. *)
    let ex = example_of_token in
-   [| BARE_DOUBLE_DASH
-    ; COLON
-    ; COMMENT (COMMENT "" |> ex |> unwrap_exn)
-    ; COMMENT_CLOSE
-    ; COMMENT_OPEN
-    ; COUNT (COUNT "" |> ex |> unwrap_exn)
-    ; EQUALS
-    ; IDENTIFIER (IDENTIFIER "" |> ex |> unwrap_exn)
-    ; FLAG_LONG_START
-    ; FLAGS_SHORT_START
-    ; PAREN_CLOSE
-    ; PAREN_OPEN
-    ; PIPE
-    ; QUOTE_CHUNK (QUOTE_CHUNK "" |> ex |> unwrap_exn)
-    ; QUOTE_CLOSE (QUOTE_CLOSE "" |> ex |> unwrap_exn)
-    ; QUOTE_ESCAPE (QUOTE_ESCAPE "" |> ex |> unwrap_exn)
-    ; QUOTE_OPEN (QUOTE_OPEN "" |> ex |> unwrap_exn)
-    ; SEMICOLON
-    ; URL_REST (URL_REST "" |> ex |> unwrap_exn)
-    ; URL_START (URL_START "" |> ex |> unwrap_exn)
+   [|
+      BARE_DOUBLE_DASH;
+      COLON;
+      COMMENT (COMMENT "" |> ex |> unwrap_exn);
+      COMMENT_CLOSE;
+      COMMENT_OPEN;
+      COUNT (COUNT "" |> ex |> unwrap_exn);
+      EQUALS;
+      IDENTIFIER (IDENTIFIER "" |> ex |> unwrap_exn);
+      FLAG_LONG_START;
+      FLAGS_SHORT_START;
+      PAREN_CLOSE;
+      PAREN_OPEN;
+      PIPE;
+      QUOTE_CHUNK (QUOTE_CHUNK "" |> ex |> unwrap_exn);
+      QUOTE_CLOSE (QUOTE_CLOSE "" |> ex |> unwrap_exn);
+      QUOTE_ESCAPE (QUOTE_ESCAPE "" |> ex |> unwrap_exn);
+      QUOTE_OPEN (QUOTE_OPEN "" |> ex |> unwrap_exn);
+      SEMICOLON;
+      URL_REST (URL_REST "" |> ex |> unwrap_exn);
+      URL_START (URL_START "" |> ex |> unwrap_exn);
    |]
 
 
@@ -265,47 +270,47 @@ let compare_token a b =
    else
    match (a, b) with
     | COUNT _, COUNT _
-    | COMMENT _, COMMENT _
-    | ERR_MISSING_COMMENT_CLOSE _, ERR_MISSING_COMMENT_CLOSE _
-    | ERR_MISSING_DELIM_CLOSE _, ERR_MISSING_DELIM_CLOSE _
-    | ERR_UNEXPECTED_CHARACTER _, ERR_UNEXPECTED_CHARACTER _
-    | ERR_UNEXPECTED_COMMENT_CLOSE _, ERR_UNEXPECTED_COMMENT_CLOSE _
-    | ERR_UNEXPECTED_QUOTE_CLOSE _, ERR_UNEXPECTED_QUOTE_CLOSE _
-    | ERR_UNEXPECTED_QUOTE_ESCAPE _, ERR_UNEXPECTED_QUOTE_ESCAPE _
-    | ERR_UNEXPECTED_WHITESPACE _, ERR_UNEXPECTED_WHITESPACE _
-    | IDENTIFIER _, IDENTIFIER _
-    | QUOTE_CHUNK _, QUOTE_CHUNK _
-    | QUOTE_CLOSE _, QUOTE_CLOSE _
-    | QUOTE_ESCAPE _, QUOTE_ESCAPE _
-    | QUOTE_OPEN _, QUOTE_OPEN _
-    | URL_REST _, URL_REST _
-    | URL_START _, URL_START _ -> true
+    |COMMENT _, COMMENT _
+    |ERR_MISSING_COMMENT_CLOSE _, ERR_MISSING_COMMENT_CLOSE _
+    |ERR_MISSING_DELIM_CLOSE _, ERR_MISSING_DELIM_CLOSE _
+    |ERR_UNEXPECTED_CHARACTER _, ERR_UNEXPECTED_CHARACTER _
+    |ERR_UNEXPECTED_COMMENT_CLOSE _, ERR_UNEXPECTED_COMMENT_CLOSE _
+    |ERR_UNEXPECTED_QUOTE_CLOSE _, ERR_UNEXPECTED_QUOTE_CLOSE _
+    |ERR_UNEXPECTED_QUOTE_ESCAPE _, ERR_UNEXPECTED_QUOTE_ESCAPE _
+    |ERR_UNEXPECTED_WHITESPACE _, ERR_UNEXPECTED_WHITESPACE _
+    |IDENTIFIER _, IDENTIFIER _
+    |QUOTE_CHUNK _, QUOTE_CHUNK _
+    |QUOTE_CLOSE _, QUOTE_CLOSE _
+    |QUOTE_ESCAPE _, QUOTE_ESCAPE _
+    |QUOTE_OPEN _, QUOTE_OPEN _
+    |URL_REST _, URL_REST _
+    |URL_START _, URL_START _ -> true
     | _ -> false
 
 
 let token_body tok =
    match tok with
     | COUNT s
-    | COMMENT s
-    | IDENTIFIER s
-    | QUOTE_CHUNK s
-    | QUOTE_CLOSE s
-    | QUOTE_ESCAPE s
-    | QUOTE_OPEN s
-    | URL_REST s
-    | URL_START s -> Some s
+    |COMMENT s
+    |IDENTIFIER s
+    |QUOTE_CHUNK s
+    |QUOTE_CLOSE s
+    |QUOTE_ESCAPE s
+    |QUOTE_OPEN s
+    |URL_REST s
+    |URL_START s -> Some s
     | _ -> None
 
 
 let token_error_message tok =
    match tok with
     | ERR_MISSING_COMMENT_CLOSE msg
-    | ERR_MISSING_DELIM_CLOSE (_, msg)
-    | ERR_UNEXPECTED_CHARACTER (_, msg)
-    | ERR_UNEXPECTED_COMMENT_CLOSE msg
-    | ERR_UNEXPECTED_QUOTE_CLOSE (_, msg)
-    | ERR_UNEXPECTED_QUOTE_ESCAPE (_, msg)
-    | ERR_UNEXPECTED_WHITESPACE msg -> Some msg
+    |ERR_MISSING_DELIM_CLOSE (_, msg)
+    |ERR_UNEXPECTED_CHARACTER (_, msg)
+    |ERR_UNEXPECTED_COMMENT_CLOSE msg
+    |ERR_UNEXPECTED_QUOTE_CLOSE (_, msg)
+    |ERR_UNEXPECTED_QUOTE_ESCAPE (_, msg)
+    |ERR_UNEXPECTED_WHITESPACE msg -> Some msg
     | _ -> None
 
 
@@ -323,11 +328,12 @@ let string_of_position pos =
 let url_closing_fail buf opening closing =
    let msg =
       String.concat "`"
-         [ "Unmatched opening "
-         ; opening
-         ; " in bare URL - delimiters must be balanced. (Did you forget a "
-         ; closing
-         ; "? If not, try enclosing the URL in quotes.)"
+         [
+            "Unmatched opening ";
+            opening;
+            " in bare URL - delimiters must be balanced. (Did you forget a ";
+            closing;
+            "? If not, try enclosing the URL in quotes.)";
          ]
    in
    ERR_MISSING_DELIM_CLOSE (opening, msg) |> locate buf
@@ -344,11 +350,12 @@ let quote_opening_fail buf opening closing =
 let quote_closing_fail buf opening closing =
    let msg =
       String.concat "`"
-         [ "Unmatched opening-quote "
-         ; opening
-         ; ". (Reached EOF without finding a matching "
-         ; closing
-         ; "; did you forget one?)"
+         [
+            "Unmatched opening-quote ";
+            opening;
+            ". (Reached EOF without finding a matching ";
+            closing;
+            "; did you forget one?)";
          ]
    in
    ERR_MISSING_DELIM_CLOSE (opening, msg) |> locate buf
@@ -357,13 +364,14 @@ let quote_closing_fail buf opening closing =
 let quote_escaping_fail buf delim escape_seq =
    let msg =
       String.concat "`"
-         [ "The escape-sequence "
-         ; escape_seq
-         ; " is not understood in "
-         ; delim
-         ; " strings. (Did you forget to escape a backslash? Try "
-         ; "\\" ^ escape_seq
-         ; " instead.)"
+         [
+            "The escape-sequence ";
+            escape_seq;
+            " is not understood in ";
+            delim;
+            " strings. (Did you forget to escape a backslash? Try ";
+            "\\" ^ escape_seq;
+            " instead.)";
          ]
    in
    ERR_UNEXPECTED_QUOTE_ESCAPE (escape_seq, msg) |> locate buf
@@ -372,11 +380,12 @@ let quote_escaping_fail buf delim escape_seq =
 let comment_opening_fail buf opening closing =
    let msg =
       String.concat "`"
-         [ "Unmatched closing comment-delimiter "
-         ; closing
-         ; ". (Did you forget a "
-         ; opening
-         ; "?)"
+         [
+            "Unmatched closing comment-delimiter ";
+            closing;
+            ". (Did you forget a ";
+            opening;
+            "?)";
          ]
    in
    ERR_UNEXPECTED_COMMENT_CLOSE msg |> locate buf
@@ -385,11 +394,12 @@ let comment_opening_fail buf opening closing =
 let comment_closing_fail buf opening closing =
    let msg =
       String.concat "`"
-         [ "Unmatched opening comment-delimiter "
-         ; opening
-         ; ". (Reached EOF without finding a matching "
-         ; closing
-         ; "; did you forget one?)"
+         [
+            "Unmatched opening comment-delimiter ";
+            opening;
+            ". (Reached EOF without finding a matching ";
+            closing;
+            "; did you forget one?)";
          ]
    in
    ERR_MISSING_COMMENT_CLOSE msg |> locate buf
@@ -497,8 +507,8 @@ let urlbody_medial_special_char = [%sedlex.regexp? Chars "!#$%&*,:;=?@~"]
 let urlbody_continue_char =
    [%sedlex.regexp?
          Sub
-         ( (all_identifier_char | urlbody_continue_special_char)
-         , ( urlbody_medial_special_char
+         ( (all_identifier_char | urlbody_continue_special_char),
+           ( urlbody_medial_special_char
            | urlbody_illegal_char
            | urlbody_opening_char
            | urlbody_closing_char ) )]
@@ -546,8 +556,7 @@ and quote_balanced buf depth =
       buf.mode <- QuoteBalanced (depth + 1) ;
       QUOTE_OPEN (utf8 buf) |> locate buf
     | quote_balanced_close ->
-      buf.mode <-
-         (if depth = 1 then MainIgnoringWhitespace else QuoteBalanced (depth - 1)) ;
+      buf.mode <- (if depth = 1 then MainIgnoringWhitespace else QuoteBalanced (depth - 1)) ;
       QUOTE_CLOSE (utf8 buf) |> locate buf
     | eof -> quote_closing_fail buf quote_balanced_open_char quote_balanced_close_char
     | _ -> unreachable "quote_balanced"
@@ -596,8 +605,7 @@ and url_rest buf =
 and url_no_delim buf orig_start prev_end acc =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
-    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char
-       ->
+    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char ->
       Buffer.add_string acc (utf8 buf) ;
       url_no_delim buf orig_start (curr buf) acc
     | urlbody_opening_char ->
@@ -614,8 +622,7 @@ and url_no_delim buf orig_start prev_end acc =
 and url_inside_delims buf orig_start acc open_delims =
    let slbuf = sedlex_of_buffer buf in
    match%sedlex slbuf with
-    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char
-       ->
+    | Star (urlbody_continue_char | urlbody_medial_special_char), urlbody_continue_char ->
       Buffer.add_string acc (utf8 buf) ;
       url_inside_delims buf orig_start acc open_delims
     | urlbody_opening_char ->

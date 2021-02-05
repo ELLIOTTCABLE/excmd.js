@@ -3,9 +3,8 @@ open AST
 (** Most of these methods take their names from standard OCaml methods over maps. cf.
     {{:https://reasonml.github.io/api/Map.Make.html} [Map.Make]}.
 
-    (An important aspect of the behaviour of this API is the
-    {{!reso} resolution of ambiguous words} in parsed commands. See more details at the
-    bottom of this file.) *)
+    (An important aspect of the behaviour of this API is the {{!reso} resolution of
+    ambiguous words} in parsed commands. See more details at the bottom of this file.) *)
 
 type t
 (** An alias to {!AST.expression}, abstracted that mutation may be controlled. *)
@@ -58,8 +57,8 @@ val iter : (string -> flag_payload -> unit) -> t -> unit
     values to their associated flags, becoming unavailable as positional arguments. *)
 
 val iteri : (int -> string -> flag_payload -> unit) -> t -> unit
-(** [iteri f expr], as with {!iter}, applies [f] to each flag in [expr]. However, [f]
-    will also receive the {e index} of each flag as an argument. *)
+(** [iteri f expr], as with {!iter}, applies [f] to each flag in [expr]. However, [f] will
+    also receive the {e index} of each flag as an argument. *)
 
 val rev_iteri : (int -> string -> flag_payload -> unit) -> t -> unit
 (** [rev_iteri f expr], as with {!iteri}, applies [f] to each flag in [expr]; except that
@@ -109,7 +108,7 @@ val from_script : AST.t -> t array
 
     For example: given the following input command as a {!Expression.t},
 
-    {[ hello --where world ]}
+    {[ hello -- where world ]}
 
     ... there's two possible ways to interpret the ['world'], chosen between by the order
     in which you invoke either {!positionals}, or flag-value-reading functions (like

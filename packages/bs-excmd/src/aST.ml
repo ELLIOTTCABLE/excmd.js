@@ -12,14 +12,14 @@
     {{:https://bucklescript.github.io/docs/en/generate-converters-accessors.html#convert-between-jst-object-and-record}
     [jsConverter]} tooling to generate the built-in
     {{:https://bucklescript.github.io/bucklescript/api/Js.html#TYPEt} [Js.t]} type. These
-    generators also produce functions of different names: {!to_yojson} is available on
-    the native side, and {!tToJs} on the BuckleScript side.
+    generators also produce functions of different names: {!to_yojson} is available on the
+    native side, and {!tToJs} on the BuckleScript side.
 
     Due to the fact that the relevant types differ between platforms, fully generic code
-    involving alternative-format representations like the above isn't clean and easy.
-    Both of the above flavours of conversion-function will raise a runtime exception if
-    called on a platform that doesn't support them; if you need to, you can catch said
-    exception and swap implementations based on that. *)
+    involving alternative-format representations like the above isn't clean and easy. Both
+    of the above flavours of conversion-function will raise a runtime exception if called
+    on a platform that doesn't support them; if you need to, you can catch said exception
+    and swap implementations based on that. *)
 
 exception WrongPlatform of [ `Native | `JavaScript ] * string
 
@@ -62,12 +62,13 @@ type t = { expressions : expression array }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
 let make_expression ?count ~cmd ~rev_args =
-   { count =
-        ( match count with
-          | Some c -> int_of_string c
-          | None -> 1 )
-   ; cmd
-   ; rev_args
+   {
+      count =
+         ( match count with
+            | Some c -> int_of_string c
+            | None -> 1 );
+      cmd;
+      rev_args;
    }
 
 
@@ -78,8 +79,7 @@ let pipe_last ~from ~into =
        | Flag ({ payload = Absent; _ } as flg) :: rest ->
          let new_flag = { flg with payload = Unresolved } in
          Flag new_flag :: rest
-       | Flag { payload = Resolved _; _ } :: _rest | Positional _ :: _rest ->
-         into.rev_args
+       | Flag { payload = Resolved _; _ } :: _rest | Positional _ :: _rest -> into.rev_args
        | Flag { payload = Unresolved; _ } :: _rest ->
          failwith "unreachable: pipe_last, unresolved-flag in last position"
    in
@@ -94,12 +94,13 @@ let rec copy_string_or_subexpr sos =
 
 
 and copy_flag flg =
-   { flg with
-      payload =
-         ( match flg.payload with
-           | Unresolved -> Unresolved
-           | Resolved v -> Resolved (copy_string_or_subexpr v)
-           | Absent -> Absent )
+   {
+      flg with
+       payload =
+          ( match flg.payload with
+             | Unresolved -> Unresolved
+             | Resolved v -> Resolved (copy_string_or_subexpr v)
+             | Absent -> Absent );
    }
 
 
@@ -110,9 +111,10 @@ and copy_arg arg =
 
 
 and copy_expression expr =
-   { expr with
-      cmd = copy_string_or_subexpr expr.cmd
-    ; rev_args = List.map copy_arg expr.rev_args
+   {
+      expr with
+       cmd = copy_string_or_subexpr expr.cmd;
+       rev_args = List.map copy_arg expr.rev_args;
    }
 
 

@@ -64,8 +64,8 @@ let has_payload key expr =
 (* FIXME: Jesus Christ. *)
 let flag key expr =
    let result = ref None in
-   (* Note, because it's confusing: we're "peeking" into the "next" element in a
-      *reversed list*; i.e. yes, [prior] is the correct name. *)
+   (* Note, because it's confusing: we're "peeking" into the "next" element in a *reversed
+      list*; i.e. yes, [prior] is the correct name. *)
    let iterator : arg * arg option -> arg option =
       fun (curr, prior) ->
          match !result with
@@ -91,13 +91,13 @@ let flag key expr =
                           else Some curr
                         (* `prior --current --other` (or `prior --current=val`) *)
                         | _, Flag ({ payload = Resolved _; _ } as fl)
-                        | _, Flag ({ payload = Absent; _ } as fl) ->
+                        |_, Flag ({ payload = Absent; _ } as fl) ->
                           if key == fl.name then result := Some fl ;
                           Some curr
                         | _, Flag { payload = Unresolved; _ }
-                        | Flag { payload = Resolved _; _ }, Positional _
-                        | Flag { payload = Absent; _ }, Positional _
-                        | Positional _, Positional _ -> Some curr ) )
+                        |Flag { payload = Resolved _; _ }, Positional _
+                        |Flag { payload = Absent; _ }, Positional _
+                        |Positional _, Positional _ -> Some curr ) )
    in
    expr.rev_args <- Gen.(of_list expr.rev_args |> peek |> filter_map iterator |> to_list) ;
    match !result with

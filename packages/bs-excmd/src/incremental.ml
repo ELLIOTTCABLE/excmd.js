@@ -4,8 +4,8 @@ module Incremental = ParserAutomaton.Incremental
 
 (* FIXME: So. Soooooooooo. Hmm. Basically everything in this file is *way*, way too
    tightly-coupled to the specifics of the grammar; changes to parserAutomaton.mly are
-   basically always going to require updates to this file in lockstep. That's nasty.
-   These are the kinds of things that keep me up at night.
+   basically always going to require updates to this file in lockstep. That's nasty. These
+   are the kinds of things that keep me up at night.
 
    There *should* be a way to keep this a little more decoupled; but I'm simply not an
    experienced-enough parser-generator-user to produce and maintain a properly-decoupled
@@ -47,12 +47,12 @@ let acceptable_token cp =
    let len = Array.length Lexer.example_tokens in
    let accepted_token = ref None in
    ( try
-        for i = 0 to len do
-           let tok = Lexer.example_tokens.(i) in
-           if I.acceptable cp tok Lexing.dummy_pos then accepted_token := Some tok ;
-           ignore (raise Break)
-        done
-     with Break -> () ) ;
+         for i = 0 to len do
+            let tok = Lexer.example_tokens.(i) in
+            if I.acceptable cp tok Lexing.dummy_pos then accepted_token := Some tok ;
+            ignore (raise Break)
+         done
+      with Break -> () ) ;
    match !accepted_token with
     | Some tok -> tok
     | None -> raise Not_found
@@ -200,7 +200,8 @@ let element_incoming_symbol_desc = function
             ("ERR_UNEXPECTED_QUOTE_CLOSE", "string * string")
           | I.T Tokens.T_ERR_UNEXPECTED_COMMENT_CLOSE ->
             ("ERR_UNEXPECTED_COMMENT_CLOSE", "string")
-          | I.T Tokens.T_ERR_UNEXPECTED_CHARACTER -> ("ERR_UNEXPECTED_CHARACTER", "int * string")
+          | I.T Tokens.T_ERR_UNEXPECTED_CHARACTER ->
+            ("ERR_UNEXPECTED_CHARACTER", "int * string")
           | I.T Tokens.T_ERR_MISSING_DELIM_CLOSE ->
             ("ERR_MISSING_DELIM_CLOSE", "string * string")
           | I.T Tokens.T_ERR_MISSING_COMMENT_CLOSE -> ("ERR_MISSING_COMMENT_CLOSE", "string")
@@ -294,8 +295,7 @@ let get_before cp idx =
        | HandlingError env -> env
        | Accepted _v ->
          failwith "get_before: I don't know how to handle Accepted checkpoints"
-       | Rejected ->
-         failwith "get_before: I don't know how to handle Rejected checkpoints"
+       | Rejected -> failwith "get_before: I don't know how to handle Rejected checkpoints"
    in
    I.get idx the_env
 
@@ -305,7 +305,6 @@ let get_after cp idx =
    let the_env =
       match cp with
        | Shifting (_before, after, _final) -> after
-       | _ ->
-         failwith "get_after: This function is only relevant for Shifting checkpoints"
+       | _ -> failwith "get_after: This function is only relevant for Shifting checkpoints"
    in
    I.get idx the_env

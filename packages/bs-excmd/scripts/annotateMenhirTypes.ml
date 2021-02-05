@@ -1,10 +1,11 @@
 (** Given a pair of filenames as command-line arguments, this script will ... FIXME: NYD *)
 
 let linesToAnnotate =
-   [| ( "type token ="
-      , "\n\
-         [@@bs.deriving jsConverter] [@@deriving show { with_path = false }, to_yojson \
-         { optional = true }]" )
+   [|
+      ( "type token =",
+        "\n\
+         [@@bs.deriving jsConverter] [@@deriving show { with_path = false }, to_yojson { \
+         optional = true }]" );
    |]
 
 
@@ -15,34 +16,28 @@ external readFileAsBufferSync : string -> Node.buffer = "readFileSync"
 external writeFileAsBufferSync : string -> Node.buffer -> unit = "writeFileSync"
 [@@bs.val] [@@bs.module "fs"]
 
-external bufferConcat
-   :  Node.buffer array
-      -> ?length:int
-      -> unit
-      -> Node.buffer
-   = "concat"
-   [@@bs.val] [@@bs.scope "Buffer"]
+external bufferConcat : Node.buffer array -> ?length:int -> unit -> Node.buffer = "concat"
+[@@bs.val] [@@bs.scope "Buffer"]
 
 external bufferIndexOf
-   :  Node.buffer
-      -> string
-      -> ?offset:int
-      -> ?encoding:
-         ([ `ascii | `utf8 | `utf16le | `usc2 | `base64 | `latin1 | `binary | `hex ][@bs.string
-          ])
-      -> unit
-      -> int
+   :  Node.buffer ->
+   string ->
+   ?offset:int ->
+   ?encoding:([ `ascii | `utf8 | `utf16le | `usc2 | `base64 | `latin1 | `binary | `hex ]
+              [@bs.string]) ->
+   unit ->
+   int
    = "indexOf"
-   [@@bs.send]
+[@@bs.send]
 
 external bufferSlice
-   :  Node.buffer
-      -> ?start:int
-      -> ?end_:int
-      -> unit
-      -> Node.buffer
+   :  Node.buffer ->
+   ?start:int ->
+   ?end_:int ->
+   unit ->
+   Node.buffer
    = "slice"
-   [@@bs.send]
+[@@bs.send]
 
 external bufferLength : Node.buffer -> int = "length" [@@bs.get]
 
@@ -64,7 +59,7 @@ let src, dest =
 (* FIXME: This is going to break, if Menhir starts having any extra whitespace. It *only*
    handles direct bytestring indexing; nothing like regexes or globs ... *)
 let prependAfterFirstOccurence ~(input : Node.buffer) ~(matchAfter : string)
-      ~(prependBeforeFollowing : string) ~(addition : string)
+   ~(prependBeforeFollowing : string) ~(addition : string)
    =
    let startIndex = bufferIndexOf input matchAfter () in
    string_of_int startIndex |> print_endline ;
@@ -77,24 +72,26 @@ let prependAfterFirstOccurence ~(input : Node.buffer) ~(matchAfter : string)
    string_of_int followingIndex |> print_endline ;
    if followingIndex == -1 then
       Js.String.concatMany
-         [| "'"
-          ; prependBeforeFollowing
-          ; "' not found following '"
-          ; matchAfter
-          ; "' in input file"
+         [|
+            "'";
+            prependBeforeFollowing;
+            "' not found following '";
+            matchAfter;
+            "' in input file";
          |]
          ""
       |> Js.Exn.raiseError ;
 
    (* Report! *)
    Js.String.concatMany
-      [| "Adding annotation ))))e "
-       ; string_of_int followingIndex
-       ; "( to '"
-       ; matchAfter
-       ; "' (byte "
-       ; string_of_int startIndex
-       ; ")"
+      [|
+         "Adding annotation ))))e ";
+         string_of_int followingIndex;
+         "( to '";
+         matchAfter;
+         "' (byte ";
+         string_of_int startIndex;
+         ")";
       |]
       ""
    |> print_endline ;

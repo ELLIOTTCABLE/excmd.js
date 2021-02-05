@@ -26,28 +26,29 @@ let name_of ucd cp =
 
 
 (* This is about to get ugly. *)
-type state =
-   { mutable curr : Uchar.t
-   ; mutable transparents : Uchar.t list
-   ; mutable right_joins : Uchar.t list
-   ; mutable left_joins : Uchar.t list
-   ; mutable letters : Uchar.t list
-   ; mutable viramas : Uchar.t list
-   ; mutable nonspacings : Uchar.t list
-   ; mutable non_reordered_nonspacings : Uchar.t list
-   ; mutable vowel_dependents : Uchar.t list
-   }
+type state = {
+   mutable curr : Uchar.t;
+   mutable transparents : Uchar.t list;
+   mutable right_joins : Uchar.t list;
+   mutable left_joins : Uchar.t list;
+   mutable letters : Uchar.t list;
+   mutable viramas : Uchar.t list;
+   mutable nonspacings : Uchar.t list;
+   mutable non_reordered_nonspacings : Uchar.t list;
+   mutable vowel_dependents : Uchar.t list;
+}
 
 let s : state =
-   { curr = Uchar.min
-   ; transparents = []
-   ; right_joins = []
-   ; left_joins = []
-   ; letters = []
-   ; viramas = []
-   ; nonspacings = []
-   ; non_reordered_nonspacings = []
-   ; vowel_dependents = []
+   {
+      curr = Uchar.min;
+      transparents = [];
+      right_joins = [];
+      left_joins = [];
+      letters = [];
+      viramas = [];
+      nonspacings = [];
+      non_reordered_nonspacings = [];
+      vowel_dependents = [];
    }
 
 
@@ -108,13 +109,13 @@ let () =
 
          (* UAX #31-R1a, A1: http://unicode.org/reports/tr31/#A1 *)
          ( match Uucd.cp_prop ucd i Uucd.joining_type with
-           | Some `R -> s.right_joins <- s.curr :: s.right_joins
-           | Some `L -> s.left_joins <- s.curr :: s.left_joins
-           | Some `D ->
-             s.right_joins <- s.curr :: s.right_joins ;
-             s.left_joins <- s.curr :: s.left_joins
-           | Some `T -> s.transparents <- s.curr :: s.transparents
-           | Some _ | None -> () ) ;
+            | Some `R -> s.right_joins <- s.curr :: s.right_joins
+            | Some `L -> s.left_joins <- s.curr :: s.left_joins
+            | Some `D ->
+              s.right_joins <- s.curr :: s.right_joins ;
+              s.left_joins <- s.curr :: s.left_joins
+            | Some `T -> s.transparents <- s.curr :: s.transparents
+            | Some _ | None -> () ) ;
 
          (* UAX #31-R1a, A2: http://unicode.org/reports/tr31/#A2 *)
          let general_category = get_exn (Uucd.cp_prop ucd i Uucd.general_category)
@@ -122,18 +123,17 @@ let () =
             get_exn (Uucd.cp_prop ucd i Uucd.canonical_combining_class)
          in
          ( match (general_category, combining_class) with
-           (* General_Category = Letter *)
-           | `Lu, _ | `Ll, _ | `Lt, _ | `Lm, _ | `Lo, _ -> s.letters <- s.curr :: s.letters
-           (* General_Category = Nonspacing_Mark && Canonical_Combining_Class = Not_Reordered *)
-           | `Mn, 0 -> s.nonspacings <- s.curr :: s.nonspacings
-           (* General_Category = Nonspacing_Mark && Canonical_Combining_Class !=
-              Not_Reordered *)
-           | `Mn, _ ->
-             s.nonspacings <- s.curr :: s.nonspacings ;
-             s.non_reordered_nonspacings <- s.curr :: s.non_reordered_nonspacings
-           (* Canonical_Combining_Class = Virama *)
-           | _, 9 -> s.viramas <- s.curr :: s.viramas
-           | _ -> () ) ;
+               (* General_Category = Letter *)
+               | `Lu, _ | `Ll, _ | `Lt, _ | `Lm, _ | `Lo, _ -> s.letters <- s.curr :: s.letters
+               (* General_Category = Nonspacing_Mark && Canonical_Combining_Class = Not_Reordered *)
+               | `Mn, 0 -> s.nonspacings <- s.curr :: s.nonspacings
+               (* General_Category = Nonspacing_Mark && Canonical_Combining_Class != Not_Reordered *)
+               | `Mn, _ ->
+                 s.nonspacings <- s.curr :: s.nonspacings ;
+                 s.non_reordered_nonspacings <- s.curr :: s.non_reordered_nonspacings
+               (* Canonical_Combining_Class = Virama *)
+               | _, 9 -> s.viramas <- s.curr :: s.viramas
+               | _ -> () ) ;
 
          (* UAX #31-R1a, B: http://unicode.org/reports/tr31/#B *)
          match get_exn (Uucd.cp_prop ucd i Uucd.indic_syllabic_category) with
@@ -146,8 +146,7 @@ let () =
       Printf.eprintf "Joining_Type = Right: %i\n" (List.length s.right_joins) ;
       Printf.eprintf "Joining_Type = Left: %i\n" (List.length s.left_joins) ;
       Printf.eprintf "General_Category = Letter: %i\n" (List.length s.letters) ;
-      Printf.eprintf "General_Category = Nonspacing_Mark: %i\n"
-         (List.length s.nonspacings) ;
+      Printf.eprintf "General_Category = Nonspacing_Mark: %i\n" (List.length s.nonspacings) ;
       Printf.eprintf "General_Category = Nonspacing_Mark, minus CCC=0: %i\n"
          (List.length s.non_reordered_nonspacings) ;
       Printf.eprintf "Canonical_Combining_Class = Virama: %i\n" (List.length s.viramas) ;

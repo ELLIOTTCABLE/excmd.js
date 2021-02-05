@@ -1,8 +1,12 @@
 type buffer
 (** {2 Types} *)
 
-type position = Lexing.position =
-   { pos_fname : string; pos_lnum : int; pos_bol : int; pos_cnum : int }
+type position = Lexing.position = {
+   pos_fname : string;
+   pos_lnum : int;
+   pos_bol : int;
+   pos_cnum : int;
+}
 [@@deriving show]
 
 type 'a located = 'a * position * position
@@ -38,8 +42,8 @@ val show_token : Tokens.token -> string
     For a more human-friendly version, see {!example_of_token}. *)
 
 val example_of_token : Tokens.token -> string option
-(** [example_of_token tok] will provide an example string that, when consumed by the
-    lexer (in, of course, an appropriate position), would produce the given token. e.g.
+(** [example_of_token tok] will provide an example string that, when consumed by the lexer
+    (in, of course, an appropriate position), would produce the given token. e.g.
     [example_of_token FLAG_LONG] would produce ["--flag"].
 
     Notably, this *does not* produce a full, parseable input-fragment; simple an example
@@ -52,9 +56,9 @@ val token_is_erroneous : Tokens.token -> bool
 
     This lexer will return tokens, instead of raising exceptions, for some common
     failure-states; this allows error-handling to be lifted into the parser, and more
-    importantly, allows incremental recovery. In the parser itself, this is handled
-    simply by not handling these erroneous tokens; if you're calling the lexer directly
-    for any reason, you can use this function to ensure valid output. *)
+    importantly, allows incremental recovery. In the parser itself, this is handled simply
+    by not handling these erroneous tokens; if you're calling the lexer directly for any
+    reason, you can use this function to ensure valid output. *)
 
 val token_body : Tokens.token -> string option
 (** [token_body tok] produces [Some string_payload] if the token carries a body-payload,
@@ -67,9 +71,9 @@ val token_is_erroneous : Tokens.token -> bool
 
     This lexer will return tokens, instead of raising exceptions, for some common
     failure-states; this allows error-handling to be lifted into the parser, and more
-    importantly, allows incremental recovery. In the parser itself, this is handled
-    simply by not handling these erroneous tokens; if you're calling the lexer directly
-    for any reason, you can use this function to ensure valid output. *)
+    importantly, allows incremental recovery. In the parser itself, this is handled simply
+    by not handling these erroneous tokens; if you're calling the lexer directly for any
+    reason, you can use this function to ensure valid output. *)
 
 val token_error_message : Tokens.token -> string option
 (** [token_error_message tok] produces [Some message] if the token represents a
