@@ -67,14 +67,22 @@ let tests () =
       "test --foo=google.com/search baz" ;
 
    test_expression "Single command with a bare-double-dash" "test --" ;
+   test_expression "Single command with a bare-double-dash followed by short-flags"
+      "test -- -foo" ;
    test_expression "Single command with a bare-double-dash followed by a long-flag"
       "test -- --foo" ;
-   test_expression
-      "Single command with a bare-double-dash followed by another, normal positional"
+   (* test_expression "Single command with a bare-double-dash, a long-flag, and an
+      explicit payload" *)
+   (* "test -- --foo=bar" ; *)
+   test_expression "Single command with a bare-double-dash followed by a positional"
       "test -- foo" ;
 
    test_expression "Single command with mixed flags and parameters"
       "test --foo bar --baz=widget qux -qu ux" ;
+
+   (* test_expression "Single command with mixed flags, parameters, and a
+      bare-double-dash" *)
+   (* "test --foo bar --baz=widget qux -qu ux -- --foo bar --baz=widget qux -qu ux" ; *)
 
    (* Quotation. These are, of course, going to be a nightmare of double-escaping. I'm
       sorry, Jon. *)

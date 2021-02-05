@@ -211,6 +211,14 @@ Parser.expression "test --foo=google.com/search baz"
 Parser.expression "test --"
 { "count": 1, "cmd": [ "Literal", "test" ], "rev_args": [] }
 
+### Single command with a bare-double-dash followed by short-flags:
+Parser.expression "test -- -foo"
+{
+  "count": 1,
+  "cmd": [ "Literal", "test" ],
+  "rev_args": [ [ "Positional", [ "Literal", "-foo" ] ] ]
+}
+
 ### Single command with a bare-double-dash followed by a long-flag:
 Parser.expression "test -- --foo"
 {
@@ -219,7 +227,7 @@ Parser.expression "test -- --foo"
   "rev_args": [ [ "Positional", [ "Literal", "--foo" ] ] ]
 }
 
-### Single command with a bare-double-dash followed by another, normal positional:
+### Single command with a bare-double-dash followed by a positional:
 Parser.expression "test -- foo"
 {
   "count": 1,
