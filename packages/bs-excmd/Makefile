@@ -9,7 +9,7 @@ test-ml: build-ml
 	dune runtest
 
 .PHONY: build-ml
-build-ml: src/parserAutomaton.mli
+build-ml: src/parserAutomaton.ml
 	dune build
 
 .PHONY: build-js
