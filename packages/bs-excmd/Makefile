@@ -9,20 +9,34 @@ test-ml: build-ml
 	dune runtest
 
 .PHONY: build-ml
-build-ml: build-js
-	# FIXME: Horrible hack, to avoid using our local, BuckleScript-friendly copy of MenhirLib.
-	#        (This should really be moved to an npm package ...)
-	@mv -fv src/menhirLib.ml{,.bucklescript}
-	@mv -fv src/menhirLib.mli{,.bucklescript}
+build-ml: src/parserAutomaton.mli
 	dune build
-	@mv -fv src/menhirLib.ml{.bucklescript,}
-	@mv -fv src/menhirLib.mli{.bucklescript,}
 
 .PHONY: build-js
 build-js: scripts/annotateMenhirTypes.bs.js src/uAX31.ml src/parserAutomaton.mly
 	-./node_modules/.bin/bsb -make-world
 
 	@cp -fRv lib/js/src/* lib
+
+# for logging, try:
+#     MENFLAGS="--log-automaton 1 --log-code 1 --log-grammar 1 --trace" make
+src/parserAutomaton.ml src/parserAutomaton.mli: src/parserAutomaton.mly src/parserUtils.mly src/tokens.mli src/tokens.ml
+	menhir src/parserAutomaton.mly src/parserUtils.mly --external-tokens Tokens --base src/parserAutomaton --explain --table --lalr --inspection $(MENFLAGS)
+
+.PHONY: tokens
+tokens: src/tokens.ml src/tokens.mli
+
+src/tokens.%: src/tokens.generated.%
+	node scripts/annotateMenhirTypes.bs.js "$<" "$@"
+
+# This generates multiple targets from a single invocation:
+#    <https://stackoverflow.com/a/3077254/31897>
+src/tokens.generated%ml src/tokens.generated%mli: src/parserAutomaton.mly src/parserUtils.mly
+	menhir --table --inspection --only-tokens $^ --base "src/tokens.generated"
+
+src/lexer.ml: src/uAX31.ml src/lexer.body.ml
+	cp "$<" "$@"
+	tail -n +2 "$(word 2,$^)" >> "$@"
 
 src/uAX31.ml: pkg/ucd.nounihan.grouped.xml
 	dune exec pkg/generate_uchar_ranges.exe $< > $@
