@@ -687,8 +687,7 @@ Parser.expression "defer (2echo -n --sep=\"\\n - \" (bookmark_get \"sommat else\
                           {
                             "name": "sep",
                             "payload": [
-                              "Resolved",
-                              [ [ "Literal", "\n - " ] ]
+                              "Resolved", [ [ "Literal", "\n - " ] ]
                             ]
                           }
                         ],
