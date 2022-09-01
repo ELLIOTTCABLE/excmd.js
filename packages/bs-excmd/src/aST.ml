@@ -165,7 +165,8 @@ let pp_bs ast =
 let pp_native ast =
    let json = to_yojson ast in
    let out = Format.formatter_of_out_channel stdout in
-   Yojson.Safe.pretty_print out json
+   Yojson.Safe.pretty_print out json;
+   Format.pp_print_flush out ()
 
 
 let pp ast = try pp_bs ast with WrongPlatform (`Native, _) -> pp_native ast
@@ -178,7 +179,8 @@ let pp_expression_bs expr =
 let pp_expression_native expr =
    let json = expression_to_yojson expr in
    let out = Format.formatter_of_out_channel stdout in
-   Yojson.Safe.pretty_print out json
+   Yojson.Safe.pretty_print out json;
+   Format.pp_print_flush out ()
 
 
 let pp_expression ast =
