@@ -3,68 +3,65 @@ name: "excmd"
 version: "~dev"
 maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
 authors: "ELLIOTTCABLE <ocaml@ell.io>"
-build: [ [make] ]
 depends: [
-  "astring" {= "0.8.3"}
+  "astring" {= "0.8.5"}
+  "base-bigarray" {= "base"}
   "base-bytes" {= "base"}
-  "base-ocamlbuild" {= "base"}
   "base-threads" {= "base"}
   "base-unix" {= "base"}
-  "biniou" {= "1.2.0"}
-  "bos" {= "0.2.0"}
-  "camomile" {= "1.0.1"}
-  "cmdliner" {= "1.0.2"}
-  "conf-m4" {= "1"}
-  "conf-which" {= "1"}
-  "cppo" {= "1.6.5"}
-  "cppo_ocamlbuild" {= "1.6.0"}
-  "dune" {= "1.11.4"}
-  "easy-format" {= "1.3.1"}
-  "fmt" {= "0.8.5"}
-  "fpath" {= "0.7.2"}
-  "gen" {= "0.5.2"}
-  "jbuilder" {= "transition"}
-  "lambda-term" {= "1.13"}
-  "logs" {= "0.6.2"}
-  "lwt" {= "4.1.0"}
-  "lwt_log" {= "1.1.0"}
-  "lwt_react" {= "1.1.1"}
-  "menhir" {= "20190626"}
-  "merlin" {= "3.3.2"}
-  "ocaml" {= "4.02.3"}
-  "ocaml-base-compiler" {= "4.02.3"}
-  "ocaml-config" {= "1"}
-  "ocaml-migrate-parsetree" {= "1.1.0"}
-  "ocamlbuild" {= "0"}
-  "ocamlfind" {= "1.8.0"}
-  "odoc" {= "1.3.0"}
-  "ppx_derivers" {= "1.0"}
-  "ppx_deriving" {= "4.2.1"}
-  "ppx_deriving_yojson" {= "3.1"}
-  "ppx_tools" {= "5.0+4.02.0"}
-  "ppx_tools_versioned" {= "5.2"}
-  "re" {= "1.8.0"}
-  "react" {= "1.2.1"}
-  "result" {= "1.3"}
-  "rresult" {= "0.6.0"}
-  "sedlex" {= "2.0"}
-  "seq" {= "0.1"}
-  "topkg" {= "0.9.1"}
-  "tyxml" {= "4.3.0"}
+  "camlp-streams" {= "5.0.1"}
+  "cmdliner" {= "1.1.1"}
+  "cppo" {= "1.6.9"}
+  "csexp" {= "1.5.1"}
+  "dune" {= "3.4.1"}
+  "dune-configurator" {= "3.4.1"}
+  "fmt" {= "0.9.0"}
+  "fpath" {= "0.7.3"}
+  "gen" {= "1.0"}
+  "lambda-term" {= "3.3.1"}
+  "logs" {= "0.7.0"}
+  "lwt" {= "5.6.1"}
+  "lwt_react" {= "1.2.0"}
+  "menhir" {= "20220210"}
+  "menhirLib" {= "20220210"}
+  "menhirSdk" {= "20220210"}
+  "mew" {= "0.1.0"}
+  "mew_vi" {= "0.5.0"}
+  "ocaml" {= "4.14.0"}
+  "ocaml-base-compiler" {= "4.14.0"}
+  "ocaml-compiler-libs" {= "v0.12.4"}
+  "ocaml-config" {= "2"}
+  "ocaml-options-vanilla" {= "1"}
+  "ocamlbuild" {= "0.14.1"}
+  "ocamlfind" {= "1.9.5"}
+  "ocplib-endian" {= "1.2"}
+  "odoc" {dev & = "2.1.1"}
+  "odoc-parser" {= "1.0.1"}
+  "ppx_derivers" {= "1.2.1"}
+  "ppx_deriving" {= "5.2.1"}
+  "ppx_deriving_yojson" {= "3.7.0"}
+  "ppxlib" {= "0.27.0"}
+  "re" {= "1.10.4"}
+  "react" {= "1.2.2"}
+  "result" {= "1.5"}
+  "sedlex" {= "3.0"}
+  "seq" {= "base"}
+  "sexplib0" {= "v0.15.1"}
+  "stdlib-shims" {= "0.3.0"}
+  "topkg" {= "1.0.5"}
+  "trie" {= "1.0.0"}
+  "tyxml" {= "4.5.0"}
   "uchar" {= "0.0.2"}
-  "utop" {= "2.2.0"}
-  "uucd" {= "11.0.0"}
-  "uutf" {= "1.0.1"}
-  "xmlm" {= "1.3.0"}
-  "yojson" {= "1.5.0"}
-  "zed" {= "1.6"}
+  "utop" {dev & = "2.10.0"}
+  "uucd" {= "14.0.0"}
+  "uucp" {= "14.0.0"}
+  "uuseg" {= "14.0.0"}
+  "uutf" {= "1.0.3"}
+  "xmlm" {= "1.4.0"}
+  "yojson" {= "2.0.2"}
+  "zed" {= "3.2.0"}
 ]
+build: make
 url {
   src: "https://github.com/ELLIOTTCABLE/excmd.js.git"
 }
-pin-depends: [
-  [
-    "ppx_deriving.4.2.1"
-    "https://github.com/ocaml-ppx/ppx_deriving/archive/v4.2.1.tar.gz"
-  ]
-]

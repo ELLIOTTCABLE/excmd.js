@@ -7,6 +7,6 @@
 (rule
  (with-stdout-to parser_test.output (run ./parser_test.exe)))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (action (diff parser_test.expected parser_test.output)))

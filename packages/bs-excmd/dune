@@ -1,4 +1,4 @@
-(ignored_subdirs (node_modules lib))
+(data_only_dirs node_modules)
 
 (env
  (dev

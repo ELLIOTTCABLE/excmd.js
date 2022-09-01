@@ -5,24 +5,21 @@ maintainer: "ELLIOTTCABLE <ocaml@ell.io>"
 authors: "ELLIOTTCABLE <ocaml@ell.io>"
 build: [ [make] ]
 depends: [
-   "ocaml" {= "4.02.3"}
+   "ocaml" {= "4.14.0"}
 
-   "uchar" {>= "0.0.2" & < "0.1.0"}
-   "gen" {>= "0.5" & < "0.6"}
+   "gen" {>= "0.5"}
 
-   "sedlex" {>= "2.0" & < "3.0"}
-   "ppx_tools" {= "5.0+4.02.0"}
+   "sedlex" {>= "2.0"}
 
-   "ppx_deriving" {>= "4.2.1" & < "5.0.0"}
-   "ppx_deriving_yojson" {>= "3.1" & < "4.0"}
+   "ppx_deriving" {>= "4.2.1"}
+   "ppx_deriving_yojson" {>= "3.1"}
 
-   "menhir" {build & >= "20190626"}
+   "menhir" {build & >= "20220210"}
    "uucd" {build & >= "11.0.0"}
-   "dune" {build & >= "1.11.4"}
+   "dune" {build & >= "3.3.0"}
 
    "utop" {dev & >= "2.2.0"}
    "odoc" {dev & >= "1.3.0"}
-   "merlin" {dev & >= "3.3.2"}
 ]
 url {
   src: "https://github.com/ELLIOTTCABLE/excmd.js.git"
