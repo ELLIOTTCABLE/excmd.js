@@ -99,7 +99,7 @@ and expression = { count : int; cmd : word; mutable rev_args : arg list }
 type t = { expressions : expression array }
 [@@bs.deriving jsConverter] [@@deriving to_yojson { optional = true }]
 
-let make_expression ?count ~cmd ~rev_args =
+let make_expression ~cmd ~rev_args ?count () =
    {
       count =
          ( match count with

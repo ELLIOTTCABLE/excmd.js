@@ -80,7 +80,7 @@ subexpression:
 
 unterminated_expression:
  | COLON*; count = COUNT?; cmd = command; rev_args = rev_arguments
- { make_expression ?count ~cmd ~rev_args }
+ { make_expression ~cmd ~rev_args ?count () }
  ;
 
 command:
